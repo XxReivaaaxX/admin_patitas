@@ -14,7 +14,7 @@ class AnimalShelterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Refugio de Animales',
+      title: 'Refugio de Animales - AdminPatitas',
       theme: ThemeData(primarySwatch: Colors.teal),
       home: LoginScreen(),
     );
@@ -240,51 +240,6 @@ Future<void> confirmAndDeleteAnimal(BuildContext context, String docId) async {
   if (confirm == true) {
     await FirebaseFirestore.instance.collection('animals').doc(docId).delete();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Animal eliminado')));
-  }
-}
- 
-// Detección por IA (simulada)
-class DetectionScreen extends StatefulWidget {
-  @override
-  _DetectionScreenState createState() => _DetectionScreenState();
-}
- 
-class _DetectionScreenState extends State<DetectionScreen> {
-  File? _image;
-  String? _result;
- 
-  Future<void> pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-        _result = null;
-      });
-      await Future.delayed(Duration(seconds: 2));
-      setState(() {
-        _result = 'Especie: Perro\nRaza: Labrador\nEstado: Saludable';
-      });
-    }
-  }
- 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Detección por IA')),
-      body: Padding(
-        padding: EdgeInsets.all(16),
-        child: Column(
-          children: [
-            ElevatedButton.icon(onPressed: pickImage, icon: Icon(Icons.image), label: Text('Subir Imagen')),
-            SizedBox(height: 20),
-            _image != null ? Image.file(_image!, height: 200) : Text('No se ha seleccionado imagen'),
-            SizedBox(height: 20),
-            _result != null ? Card(child: Padding(padding: EdgeInsets.all(16), child: Text(_result!, style: TextStyle(fontSize: 18)))) : Container(),
-          ],
-        ),
-      ),
-    );
   }
 }
  
