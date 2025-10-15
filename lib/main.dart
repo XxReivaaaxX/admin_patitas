@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dashboard_screen.dart';
  
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
