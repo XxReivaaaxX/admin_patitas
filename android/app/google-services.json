@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "173118255779",
+    "firebase_url": "https://admin-patitas-default-rtdb.firebaseio.com",
+    "project_id": "admin-patitas",
+    "storage_bucket": "admin-patitas.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:173118255779:android:a92af144a3db24669b4516",
+        "android_client_info": {
+          "package_name": "com.example.admin_patitas"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATEsbfA3vYCgpkocfjhXpvOsFW2QlgQH8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

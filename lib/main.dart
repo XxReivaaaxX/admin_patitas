@@ -3,14 +3,14 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'dashboard_screen.dart';
- 
+import 'firebase_options.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(AnimalShelterApp());
 }
- 
+
 class AnimalShelterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -21,16 +21,19 @@ class AnimalShelterApp extends StatelessWidget {
     );
   }
 }
- 
+
 // Login
 class LoginScreen extends StatelessWidget {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
- 
+
   void login(BuildContext context) {
-    Navigator.push(context, MaterialPageRoute(builder: (_) => DashboardScreen()));
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => DashboardScreen()),
+    );
   }
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,10 +45,20 @@ class LoginScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text('Iniciar Sesión', style: TextStyle(fontSize: 24)),
-              TextField(controller: emailController, decoration: InputDecoration(labelText: 'Correo')),
-              TextField(controller: passwordController, decoration: InputDecoration(labelText: 'Contraseña'), obscureText: true),
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(labelText: 'Correo'),
+              ),
+              TextField(
+                controller: passwordController,
+                decoration: InputDecoration(labelText: 'Contraseña'),
+                obscureText: true,
+              ),
               SizedBox(height: 20),
-              ElevatedButton(onPressed: () => login(context), child: Text('Entrar')),
+              ElevatedButton(
+                onPressed: () => login(context),
+                child: Text('Entrar'),
+              ),
             ],
           ),
         ),
@@ -53,7 +66,7 @@ class LoginScreen extends StatelessWidget {
     );
   }
 }
- 
+
 // Dashboard
 class DashboardScreen extends StatelessWidget {
   @override
@@ -66,19 +79,28 @@ class DashboardScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ElevatedButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterAnimalScreen())),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => RegisterAnimalScreen()),
+              ),
               child: Text('Registrar Nuevo Animal'),
             ),
             ElevatedButton(
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => DetectionScreen())),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => DashboardScreen()),
+              ),
               child: Text('Detección por IA'),
             ),
             SizedBox(height: 20),
             Expanded(
               child: StreamBuilder<QuerySnapshot>(
-                stream: FirebaseFirestore.instance.collection('animals').snapshots(),
+                stream: FirebaseFirestore.instance
+                    .collection('animals')
+                    .snapshots(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData) return Center(child: CircularProgressIndicator());
+                  if (!snapshot.hasData)
+                    return Center(child: CircularProgressIndicator());
                   final animals = snapshot.data!.docs;
                   return ListView.builder(
                     itemCount: animals.length,
@@ -90,21 +112,39 @@ class DashboardScreen extends StatelessWidget {
                         child: ListTile(
                           leading: Icon(Icons.pets, color: Colors.teal),
                           title: Text(data['name'] ?? ''),
-                          subtitle: Text('${data['species']} - ${data['health']}'),
+                          subtitle: Text(
+                            '${data['species']} - ${data['health']}',
+                          ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
                                 icon: Icon(Icons.edit, color: Colors.blue),
-                                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => EditAnimalScreen(docId: docId, data: data))),
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => EditAnimalScreen(
+                                      docId: docId,
+                                      data: data,
+                                    ),
+                                  ),
+                                ),
                               ),
                               IconButton(
                                 icon: Icon(Icons.delete, color: Colors.red),
-                                onPressed: () => confirmAndDeleteAnimal(context, docId),
+                                onPressed: () =>
+                                    confirmAndDeleteAnimal(context, docId),
                               ),
                             ],
                           ),
-                          onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MedicalHistoryScreen(animalName: data['name']))),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MedicalHistoryScreen(
+                                animalName: data['name'],
+                              ),
+                            ),
+                          ),
                         ),
                       );
                     },
@@ -118,13 +158,13 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 }
- 
+
 // Registro
 class RegisterAnimalScreen extends StatefulWidget {
   @override
   _RegisterAnimalScreenState createState() => _RegisterAnimalScreenState();
 }
- 
+
 class _RegisterAnimalScreenState extends State<RegisterAnimalScreen> {
   final _formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
@@ -132,7 +172,7 @@ class _RegisterAnimalScreenState extends State<RegisterAnimalScreen> {
   final breedController = TextEditingController();
   final ageController = TextEditingController();
   final healthController = TextEditingController();
- 
+
   void saveAnimal() async {
     if (_formKey.currentState!.validate()) {
       await FirebaseFirestore.instance.collection('animals').add({
@@ -143,11 +183,13 @@ class _RegisterAnimalScreenState extends State<RegisterAnimalScreen> {
         'health': healthController.text,
         'createdAt': Timestamp.now(),
       });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Animal registrado')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Animal registrado')));
       Navigator.pop(context);
     }
   }
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -158,11 +200,29 @@ class _RegisterAnimalScreenState extends State<RegisterAnimalScreen> {
           key: _formKey,
           child: ListView(
             children: [
-              TextFormField(controller: nameController, decoration: InputDecoration(labelText: 'Nombre'), validator: (v) => v!.isEmpty ? 'Requerido' : null),
-              TextFormField(controller: speciesController, decoration: InputDecoration(labelText: 'Especie'), validator: (v) => v!.isEmpty ? 'Requerido' : null),
-              TextFormField(controller: breedController, decoration: InputDecoration(labelText: 'Raza')),
-              TextFormField(controller: ageController, decoration: InputDecoration(labelText: 'Edad'), keyboardType: TextInputType.number),
-              TextFormField(controller: healthController, decoration: InputDecoration(labelText: 'Estado de salud')),
+              TextFormField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'Nombre'),
+                validator: (v) => v!.isEmpty ? 'Requerido' : null,
+              ),
+              TextFormField(
+                controller: speciesController,
+                decoration: InputDecoration(labelText: 'Especie'),
+                validator: (v) => v!.isEmpty ? 'Requerido' : null,
+              ),
+              TextFormField(
+                controller: breedController,
+                decoration: InputDecoration(labelText: 'Raza'),
+              ),
+              TextFormField(
+                controller: ageController,
+                decoration: InputDecoration(labelText: 'Edad'),
+                keyboardType: TextInputType.number,
+              ),
+              TextFormField(
+                controller: healthController,
+                decoration: InputDecoration(labelText: 'Estado de salud'),
+              ),
               SizedBox(height: 20),
               ElevatedButton(onPressed: saveAnimal, child: Text('Guardar')),
             ],
@@ -172,7 +232,7 @@ class _RegisterAnimalScreenState extends State<RegisterAnimalScreen> {
     );
   }
 }
- 
+
 // Edición
 class EditAnimalScreen extends StatefulWidget {
   final String docId;
@@ -181,12 +241,12 @@ class EditAnimalScreen extends StatefulWidget {
   @override
   _EditAnimalScreenState createState() => _EditAnimalScreenState();
 }
- 
+
 class _EditAnimalScreenState extends State<EditAnimalScreen> {
   late TextEditingController nameController;
   late TextEditingController speciesController;
   late TextEditingController healthController;
- 
+
   @override
   void initState() {
     super.initState();
@@ -194,17 +254,22 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
     speciesController = TextEditingController(text: widget.data['species']);
     healthController = TextEditingController(text: widget.data['health']);
   }
- 
+
   void updateAnimal() async {
-    await FirebaseFirestore.instance.collection('animals').doc(widget.docId).update({
-      'name': nameController.text,
-      'species': speciesController.text,
-      'health': healthController.text,
-    });
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Animal actualizado')));
+    await FirebaseFirestore.instance
+        .collection('animals')
+        .doc(widget.docId)
+        .update({
+          'name': nameController.text,
+          'species': speciesController.text,
+          'health': healthController.text,
+        });
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Animal actualizado')));
     Navigator.pop(context);
   }
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -213,18 +278,30 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
         padding: EdgeInsets.all(16),
         child: Column(
           children: [
-            TextField(controller: nameController, decoration: InputDecoration(labelText: 'Nombre')),
-            TextField(controller: speciesController, decoration: InputDecoration(labelText: 'Especie')),
-            TextField(controller: healthController, decoration: InputDecoration(labelText: 'Estado de salud')),
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(labelText: 'Nombre'),
+            ),
+            TextField(
+              controller: speciesController,
+              decoration: InputDecoration(labelText: 'Especie'),
+            ),
+            TextField(
+              controller: healthController,
+              decoration: InputDecoration(labelText: 'Estado de salud'),
+            ),
             SizedBox(height: 20),
-            ElevatedButton(onPressed: updateAnimal, child: Text('Guardar cambios')),
+            ElevatedButton(
+              onPressed: updateAnimal,
+              child: Text('Guardar cambios'),
+            ),
           ],
         ),
       ),
     );
   }
 }
- 
+
 // Eliminación con confirmación
 Future<void> confirmAndDeleteAnimal(BuildContext context, String docId) async {
   final confirm = await showDialog<bool>(
@@ -233,28 +310,40 @@ Future<void> confirmAndDeleteAnimal(BuildContext context, String docId) async {
       title: Text('¿Eliminar animal?'),
       content: Text('¿Estás seguro? Esta acción no se puede deshacer.'),
       actions: [
-        TextButton(onPressed: () => Navigator.pop(context, false), child: Text('Cancelar')),
-        TextButton(onPressed: () => Navigator.pop(context, true), child: Text('Eliminar', style: TextStyle(color: Colors.red))),
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text('Cancelar'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+        ),
       ],
     ),
   );
   if (confirm == true) {
     await FirebaseFirestore.instance.collection('animals').doc(docId).delete();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Animal eliminado')));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Animal eliminado')));
   }
 }
- 
+
 // Historial médico (simulado)
 class MedicalHistoryScreen extends StatelessWidget {
   final String animalName;
   MedicalHistoryScreen({required this.animalName});
- 
+
   final List<Map<String, String>> medicalRecords = [
-    {'date': '2025-09-01', 'type': 'Vacuna', 'details': 'Vacuna contra la rabia'},
+    {
+      'date': '2025-09-01',
+      'type': 'Vacuna',
+      'details': 'Vacuna contra la rabia',
+    },
     {'date': '2025-09-15', 'type': 'Tratamiento', 'details': 'Antibióticos'},
     {'date': '2025-10-01', 'type': 'Chequeo', 'details': 'Chequeo general'},
   ];
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -277,3 +366,4 @@ class MedicalHistoryScreen extends StatelessWidget {
       ),
     );
   }
+}
