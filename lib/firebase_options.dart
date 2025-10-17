@@ -25,9 +25,15 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        return macos;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for macos - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.windows:
-        return windows;
+        throw UnsupportedError(
+          'DefaultFirebaseOptions have not been configured for windows - '
+          'you can reconfigure this by running the FlutterFire CLI again.',
+        );
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -68,26 +74,5 @@ class DefaultFirebaseOptions {
     databaseURL: 'https://admin-patitas-default-rtdb.firebaseio.com',
     storageBucket: 'admin-patitas.firebasestorage.app',
     iosBundleId: 'com.example.adminPatitas',
-  );
-
-  static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyDTn5wdDIENKRk_gcoZJIN2r1m064hSMpc',
-    appId: '1:173118255779:ios:4dca0d98feb78d6c9b4516',
-    messagingSenderId: '173118255779',
-    projectId: 'admin-patitas',
-    databaseURL: 'https://admin-patitas-default-rtdb.firebaseio.com',
-    storageBucket: 'admin-patitas.firebasestorage.app',
-    iosBundleId: 'com.example.adminPatitas',
-  );
-
-  static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyBdnTOsgN8Ts-lIsdrK8GXSAN1JQ0kzURM',
-    appId: '1:173118255779:web:caaca31a6a3453b09b4516',
-    messagingSenderId: '173118255779',
-    projectId: 'admin-patitas',
-    authDomain: 'admin-patitas.firebaseapp.com',
-    databaseURL: 'https://admin-patitas-default-rtdb.firebaseio.com',
-    storageBucket: 'admin-patitas.firebasestorage.app',
-    measurementId: 'G-7MFYVS6Q8W',
   );
 }
