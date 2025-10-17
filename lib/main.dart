@@ -26,6 +26,9 @@ class AnimalShelterApp extends StatelessWidget {
 class LoginScreen extends StatelessWidget {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+<<<<<<< HEAD
+  // Puedes dejar 'login' aquí, aunque la lógica completa va en el _buildContent
+=======
 
   LoginScreen({super.key});
 
@@ -35,35 +38,208 @@ class LoginScreen extends StatelessWidget {
       MaterialPageRoute(builder: (_) => DashboardScreen()),
     );
   }
+>>>>>>> origin/main
 
   @override
   Widget build(BuildContext context) {
+    // Usamos un Stack para poner el fondo y el contenido uno encima del otro
     return Scaffold(
-      body: Center(
-        child: Container(
-          width: 400,
-          padding: EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Iniciar Sesión', style: TextStyle(fontSize: 24)),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(labelText: 'Correo'),
-              ),
-              TextField(
-                controller: passwordController,
-                decoration: InputDecoration(labelText: 'Contraseña'),
-                obscureText: true,
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () => login(context),
-                child: Text('Entrar'),
-              ),
+      body: Stack(
+        children: [
+          // 1. Fondo (Imagen y Degradado)
+          _buildBackground(),
+
+          // 2. Contenido (Logo, Campos y Botones)
+          _buildContent(context),
+        ],
+      ),
+    );
+  }
+
+  // --- WIDGETS AUXILIARES PARA EL DISEÑO ---
+
+  // Widget para el fondo de imagen con un overlay (degradado)
+  Widget _buildBackground() {
+    return Container(
+      decoration: const BoxDecoration(
+        image: DecorationImage(
+          // ¡Asegúrate de que esta ruta sea correcta y la imagen esté en tu carpeta 'assets'!
+          image: AssetImage('assets/img/Backgound_image_1.png'), 
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.black.withAlpha(128), // 50% de opacidad (con alpha)
+              Colors.black.withAlpha(230), // 90% de opacidad (con alpha)
             ],
+            stops: const [0.0, 1.0],
           ),
         ),
+      ),
+    );
+  }
+
+  // Widget principal que contiene el logo, texto y formulario
+  Widget _buildContent(BuildContext context) {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 40.0),
+        child: Column(
+          children: [
+            const SizedBox(height: 100),
+
+            // Logo y Título (Asegúrate de tener tu logo en assets/img/logo.png)
+            Image.asset(
+              'assets/img/Logo_AdminPatitas.png',
+              height: 100,
+            ),
+            const Text(
+              'ADMINPATITAS',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 30,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 2,
+              ),
+            ),
+
+            const SizedBox(height: 50),
+
+            // Texto Descriptivo con Fondo (Para mejor visibilidad)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(100),
+                borderRadius: BorderRadius.circular(5.0),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Facilitamos la gestion para que\nmejores el cuidado',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    '¡REGISTRATE AHORA!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF4FC3F7),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            const SizedBox(height: 100),
+
+            // --- Formulario ---
+            // Campo Correo
+            _buildTextField(
+              emailController,
+              'Correo electrónico',
+              Icons.email,
+            ),
+            const SizedBox(height: 20),
+
+            // Campo Contraseña
+            _buildTextField(
+              passwordController,
+              'Contraseña',
+              Icons.lock,
+              obscureText: true,
+              showVisibilityIcon: true,
+            ),
+            const SizedBox(height: 30),
+
+            // Botones
+            ElevatedButton(
+              onPressed: () => print('Login...'), // Lógica pendiente
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 55),
+                backgroundColor: const Color(0xFF4FC3F7),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Text('Entrar', style: TextStyle(fontSize: 18, color: Colors.white)),
+            ),
+            const SizedBox(height: 15),
+
+            OutlinedButton(
+              onPressed: () => print('Registrar...'), // Lógica pendiente
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 55),
+                side: const BorderSide(color: Colors.white),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              child: const Text('Registrar', style: TextStyle(fontSize: 18, color: Colors.white)),
+            ),
+            const SizedBox(height: 50),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Widget auxiliar para construir los campos de texto
+  Widget _buildTextField(
+    TextEditingController controller,
+    String label,
+    IconData icon, {
+    bool obscureText = false,
+    TextInputType keyboardType = TextInputType.text,
+    bool showVisibilityIcon = false,
+    bool showCheckmark = false,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      obscureText: obscureText,
+      style: const TextStyle(color: Colors.black),
+      decoration: InputDecoration(
+        labelText: label,
+        // Texto dentro del campo (Negro para contraste con fondo blanco del campo)
+        labelStyle: const TextStyle(color: Colors.black),
+        // Texto que flota (Blanco para contraste con fondo oscuro de la imagen)
+        floatingLabelStyle: const TextStyle(color: Colors.white),
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 10.0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+          borderSide: BorderSide.none,
+        ),
+        prefixIcon: Icon(icon, color: Colors.grey.shade700),
+        suffixIcon: showCheckmark 
+          ? const Icon(Icons.check, color: Colors.green) 
+          : (showVisibilityIcon 
+              ? IconButton(
+                  icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility, color: Colors.grey.shade700),
+                  onPressed: () {
+                    // TODO: Implementar el toggle de visibilidad
+                  },
+                )
+              : null
+            ),
       ),
     );
   }

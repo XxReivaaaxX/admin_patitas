@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:developer'; // Usamos dart:developer para un logging más robusto
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,6 +15,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? _errorMessage;
   bool _isLoading = false;
+  
+  // Nuevo estado para controlar la visibilidad de la contraseña
+  bool _isPasswordVisible = false; 
 
   @override
   void dispose() {
@@ -22,6 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  // Mapeo de códigos de error de Firebase a mensajes en español.
   String? _getErrorMessage(String code) {
     switch (code) {
       case 'invalid-email':
@@ -41,7 +46,17 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // Lógica de inicio de sesión
   Future<void> _signIn() async {
+    // Validación básica antes de intentar la llamada a Firebase
+    if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
+       setState(() {
+        _errorMessage = 'Por favor, ingrese su correo y contraseña.';
+        _isLoading = false;
+       });
+       return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -53,15 +68,20 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text.trim(),
       );
 
-      print("¡Inicio de sesión exitoso!");
+      // Usamos log en lugar de print para una mejor trazabilidad
+      log("¡Inicio de sesión exitoso!", name: 'Auth');
 
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = _getErrorMessage(e.code);
+        // Registramos el error de Firebase en la consola
+        log('Error de autenticación Firebase: ${e.code}', error: e, name: 'AuthError');
       });
     } catch (e) {
       setState(() {
         _errorMessage = "Ocurrió un error inesperado. Inténtelo de nuevo.";
+        // Registramos cualquier otro error inesperado
+        log('Error inesperado en _signIn: $e', error: e, name: 'GeneralError');
       });
     } finally {
       setState(() {
@@ -73,6 +93,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // Evita el error de overflow al abrir el teclado en modo apaisado
+      resizeToAvoidBottomInset: true, 
       body: Stack(
         children: <Widget>[
           _buildBackground(),
@@ -84,22 +106,25 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Widget para el fondo con imagen y gradiente
   Widget _buildBackground() {
     return Container(
       decoration: const BoxDecoration(
         image: DecorationImage(
+          // Asumiendo que esta imagen existe en tus assets
           image: AssetImage('assets/img/Backgound_image_1.png'),
           fit: BoxFit.cover,
         )
       ),
       child: Container(
         decoration: BoxDecoration(
+          // Gradiente oscuro para mejorar el contraste del texto
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.black.withAlpha(128),
-              Colors.black.withAlpha(230)
+              Colors.black.withOpacity(0.5), // Alfa ajustado para claridad
+              Colors.black.withOpacity(0.9), // Más oscuro abajo
             ],
             stops: const [0.0, 1.0],
           )
@@ -108,6 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Contenido principal de la pantalla (logo, campos, botones)
   Widget _buildContent(BuildContext context) {
     return SafeArea(
       child: SingleChildScrollView(
@@ -117,7 +143,10 @@ class _LoginScreenState extends State<LoginScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
 
-              Center(child: Image.asset('assets/img/Logo_AdminPatitas.png', height: 100)),
+              Center(
+                // Asumiendo que esta imagen existe en tus assets
+                child: Image.asset('assets/img/Logo_AdminPatitas.png', height: 100)
+              ),
 
               const SizedBox(height: 50),
 
@@ -137,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 '¡REGISTRATE AHORA!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color(0xFF1E88E5),
+                  color: Color(0xFF4FC3F7), // Usando el color del botón para consistencia
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -145,19 +174,36 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 120),
 
-              _buildTextField(_emailController, 'Correo', Icons.email, keyboardType: TextInputType.emailAddress, showCheckmark: true),
+              // Campo de Correo
+              _buildTextField(
+                _emailController, 
+                'Correo', 
+                Icons.email, 
+                keyboardType: TextInputType.emailAddress, 
+                showCheckmark: true
+              ),
+              
               const SizedBox(height: 20.0),
-              _buildTextField(_passwordController, 'Contraseña', Icons.lock, obscureText: true, showVisibilityIcon: true),
+              
+              // Campo de Contraseña
+              _buildTextField(
+                _passwordController, 
+                'Contraseña', 
+                Icons.lock, 
+                showVisibilityIcon: true
+              ),
 
               const SizedBox(height: 8.0),
 
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    log('Navegar a Olvidó Contraseña', name: 'Navigation');
+                  },
                   child: const Text(
                     '¿Olvido la contraseña?',
-                    style: TextStyle(color: Color(0xFF1E88E5)),
+                    style: TextStyle(color: Color(0xFF4FC3F7)), // Usando el color azul claro
                   ),
                 ),
               ),
@@ -170,6 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
               const SizedBox(height: 20.0),
 
+              // Mensaje de error (si existe)
               if (_errorMessage != null)
                 Text(
                   _errorMessage!,
@@ -185,24 +232,27 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  // Widget para construir los campos de texto
   Widget _buildTextField(
     TextEditingController controller,
     String label,
     IconData icon, {
-    bool obscureText = false,
     TextInputType keyboardType = TextInputType.text,
     bool showVisibilityIcon = false,
     bool showCheckmark = false,
   }) {
+    // Si showVisibilityIcon es true, la propiedad obscureText depende del estado _isPasswordVisible
+    final bool obscureText = showVisibilityIcon ? !_isPasswordVisible : false;
+
     return TextField(
       controller: controller,
       keyboardType: keyboardType,
-      obscureText: obscureText,
+      obscureText: obscureText, // Aplicación dinámica
       style: const TextStyle(color: Colors.black),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.black),
-        floatingLabelStyle: const TextStyle(color: Colors.white),
+        labelStyle: const TextStyle(color: Colors.black),
+        floatingLabelStyle: const TextStyle(color: Color(0xFF4FC3F7)), // Color al enfocar
         filled: true,
         fillColor: Colors.white,
         contentPadding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 10.0),
@@ -214,19 +264,35 @@ class _LoginScreenState extends State<LoginScreen> {
           borderRadius: BorderRadius.circular(10.0),
           borderSide: BorderSide.none,
         ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+          borderSide: const BorderSide(color: Color(0xFF4FC3F7), width: 2.0), // Borde cuando está enfocado
+        ),
         prefixIcon: Icon(icon, color: Colors.grey.shade700),
+        
+        // Icono de sufijo
         suffixIcon: showCheckmark 
-          ? const Icon(Icons.check, color: Colors.green) 
+          ? (controller.text.isNotEmpty ? const Icon(Icons.check, color: Colors.green) : null)
           : (showVisibilityIcon 
               ? IconButton(
-                  icon: Icon(obscureText ? Icons.visibility_off : Icons.visibility, color: Colors.grey.shade700),
+                  icon: Icon(
+                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off, 
+                    color: Colors.grey.shade700
+                  ),
                   onPressed: () {
-                    // TODO: Implementar el toggle de visibilidad de contraseña
+                    setState(() {
+                      _isPasswordVisible = !_isPasswordVisible;
+                    });
                   },
                 )
               : null
             ),
       ),
+      onChanged: (text) {
+        if (showCheckmark) {
+          setState(() {}); // Forzar el rebuild para reevaluar el suffixIcon del email
+        }
+      },
     );
   }
   
@@ -240,7 +306,7 @@ class _LoginScreenState extends State<LoginScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0), // Bordes redondeados
         ),
-        elevation: 0,
+        elevation: 5, // Sombra sutil para el botón principal
       ),
       child: _isLoading
         ? const SizedBox(
@@ -250,7 +316,7 @@ class _LoginScreenState extends State<LoginScreen> {
           )
         : const Text(
             'Entrar',
-            style: TextStyle(fontSize: 18, color: Colors.white),
+            style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
           ),
     );
   }
@@ -259,8 +325,8 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildRegisterButton() {
     return OutlinedButton(
       onPressed: () {
-        // TODO: Navegar a la pantalla de registro
-        print('Navegar a Registro');
+        // Implementación de ejemplo para navegación
+        log('Navegar a Registro', name: 'Navigation');
       },
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 15),
@@ -271,7 +337,7 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: const Text(
         'Registrar',
-        style: TextStyle(fontSize: 18, color: Colors.white),
+        style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
       ),
     );
   }
