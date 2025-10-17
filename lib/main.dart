@@ -1,122 +1,369 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'firebase_options.dart';
 
-void main() {
-  runApp(const MyApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  runApp(AnimalShelterApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
+class AnimalShelterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      title: 'Refugio de Animales - AdminPatitas',
+      theme: ThemeData(primarySwatch: Colors.teal),
+      home: LoginScreen(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+// Login
+class LoginScreen extends StatelessWidget {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  void login(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => DashboardScreen()),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
       body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+        child: Container(
+          width: 400,
+          padding: EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Iniciar Sesión', style: TextStyle(fontSize: 24)),
+              TextField(
+                controller: emailController,
+                decoration: InputDecoration(labelText: 'Correo'),
+              ),
+              TextField(
+                controller: passwordController,
+                decoration: InputDecoration(labelText: 'Contraseña'),
+                obscureText: true,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => login(context),
+                child: Text('Entrar'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Dashboard
+class DashboardScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Dashboard Refugio')),
+      body: Padding(
+        padding: EdgeInsets.all(16),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ElevatedButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => RegisterAnimalScreen()),
+              ),
+              child: Text('Registrar Nuevo Animal'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => DashboardScreen()),
+              ),
+              child: Text('Detección por IA'),
+            ),
+            SizedBox(height: 20),
+            Expanded(
+              child: StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('animals')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData)
+                    return Center(child: CircularProgressIndicator());
+                  final animals = snapshot.data!.docs;
+                  return ListView.builder(
+                    itemCount: animals.length,
+                    itemBuilder: (context, index) {
+                      final animal = animals[index];
+                      final docId = animal.id;
+                      final data = animal.data() as Map<String, dynamic>;
+                      return Card(
+                        child: ListTile(
+                          leading: Icon(Icons.pets, color: Colors.teal),
+                          title: Text(data['name'] ?? ''),
+                          subtitle: Text(
+                            '${data['species']} - ${data['health']}',
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => EditAnimalScreen(
+                                      docId: docId,
+                                      data: data,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              IconButton(
+                                icon: Icon(Icons.delete, color: Colors.red),
+                                onPressed: () =>
+                                    confirmAndDeleteAnimal(context, docId),
+                              ),
+                            ],
+                          ),
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => MedicalHistoryScreen(
+                                animalName: data['name'],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
+// Registro
+class RegisterAnimalScreen extends StatefulWidget {
+  @override
+  _RegisterAnimalScreenState createState() => _RegisterAnimalScreenState();
+}
+
+class _RegisterAnimalScreenState extends State<RegisterAnimalScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final nameController = TextEditingController();
+  final speciesController = TextEditingController();
+  final breedController = TextEditingController();
+  final ageController = TextEditingController();
+  final healthController = TextEditingController();
+
+  void saveAnimal() async {
+    if (_formKey.currentState!.validate()) {
+      await FirebaseFirestore.instance.collection('animals').add({
+        'name': nameController.text,
+        'species': speciesController.text,
+        'breed': breedController.text,
+        'age': int.tryParse(ageController.text) ?? 0,
+        'health': healthController.text,
+        'createdAt': Timestamp.now(),
+      });
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Animal registrado')));
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Registrar Animal')),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: nameController,
+                decoration: InputDecoration(labelText: 'Nombre'),
+                validator: (v) => v!.isEmpty ? 'Requerido' : null,
+              ),
+              TextFormField(
+                controller: speciesController,
+                decoration: InputDecoration(labelText: 'Especie'),
+                validator: (v) => v!.isEmpty ? 'Requerido' : null,
+              ),
+              TextFormField(
+                controller: breedController,
+                decoration: InputDecoration(labelText: 'Raza'),
+              ),
+              TextFormField(
+                controller: ageController,
+                decoration: InputDecoration(labelText: 'Edad'),
+                keyboardType: TextInputType.number,
+              ),
+              TextFormField(
+                controller: healthController,
+                decoration: InputDecoration(labelText: 'Estado de salud'),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(onPressed: saveAnimal, child: Text('Guardar')),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// Edición
+class EditAnimalScreen extends StatefulWidget {
+  final String docId;
+  final Map<String, dynamic> data;
+  EditAnimalScreen({required this.docId, required this.data});
+  @override
+  _EditAnimalScreenState createState() => _EditAnimalScreenState();
+}
+
+class _EditAnimalScreenState extends State<EditAnimalScreen> {
+  late TextEditingController nameController;
+  late TextEditingController speciesController;
+  late TextEditingController healthController;
+
+  @override
+  void initState() {
+    super.initState();
+    nameController = TextEditingController(text: widget.data['name']);
+    speciesController = TextEditingController(text: widget.data['species']);
+    healthController = TextEditingController(text: widget.data['health']);
+  }
+
+  void updateAnimal() async {
+    await FirebaseFirestore.instance
+        .collection('animals')
+        .doc(widget.docId)
+        .update({
+          'name': nameController.text,
+          'species': speciesController.text,
+          'health': healthController.text,
+        });
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Animal actualizado')));
+    Navigator.pop(context);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Editar Animal')),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(labelText: 'Nombre'),
+            ),
+            TextField(
+              controller: speciesController,
+              decoration: InputDecoration(labelText: 'Especie'),
+            ),
+            TextField(
+              controller: healthController,
+              decoration: InputDecoration(labelText: 'Estado de salud'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: updateAnimal,
+              child: Text('Guardar cambios'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Eliminación con confirmación
+Future<void> confirmAndDeleteAnimal(BuildContext context, String docId) async {
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('¿Eliminar animal?'),
+      content: Text('¿Estás seguro? Esta acción no se puede deshacer.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, false),
+          child: Text('Cancelar'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.pop(context, true),
+          child: Text('Eliminar', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
+  if (confirm == true) {
+    await FirebaseFirestore.instance.collection('animals').doc(docId).delete();
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Animal eliminado')));
+  }
+}
+
+// Historial médico (simulado)
+class MedicalHistoryScreen extends StatelessWidget {
+  final String animalName;
+  MedicalHistoryScreen({required this.animalName});
+
+  final List<Map<String, String>> medicalRecords = [
+    {
+      'date': '2025-09-01',
+      'type': 'Vacuna',
+      'details': 'Vacuna contra la rabia',
+    },
+    {'date': '2025-09-15', 'type': 'Tratamiento', 'details': 'Antibióticos'},
+    {'date': '2025-10-01', 'type': 'Chequeo', 'details': 'Chequeo general'},
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Historial Médico - $animalName')),
+      body: Padding(
+        padding: EdgeInsets.all(16),
+        child: ListView.builder(
+          itemCount: medicalRecords.length,
+          itemBuilder: (context, index) {
+            final record = medicalRecords[index];
+            return Card(
+              child: ListTile(
+                leading: Icon(Icons.medical_services, color: Colors.teal),
+                title: Text('${record['type']} - ${record['date']}'),
+                subtitle: Text(record['details']!),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }
