@@ -12,6 +12,8 @@ void main() async {
 }
 
 class AnimalShelterApp extends StatelessWidget {
+  const AnimalShelterApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -26,6 +28,8 @@ class AnimalShelterApp extends StatelessWidget {
 class LoginScreen extends StatelessWidget {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+
+  LoginScreen({super.key});
 
   void login(BuildContext context) {
     Navigator.push(
@@ -69,6 +73,8 @@ class LoginScreen extends StatelessWidget {
 
 // Dashboard
 class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -99,8 +105,9 @@ class DashboardScreen extends StatelessWidget {
                     .collection('animals')
                     .snapshots(),
                 builder: (context, snapshot) {
-                  if (!snapshot.hasData)
+                  if (!snapshot.hasData) {
                     return Center(child: CircularProgressIndicator());
+                  }
                   final animals = snapshot.data!.docs;
                   return ListView.builder(
                     itemCount: animals.length,
@@ -161,6 +168,8 @@ class DashboardScreen extends StatelessWidget {
 
 // Registro
 class RegisterAnimalScreen extends StatefulWidget {
+  const RegisterAnimalScreen({super.key});
+
   @override
   _RegisterAnimalScreenState createState() => _RegisterAnimalScreenState();
 }
@@ -237,7 +246,7 @@ class _RegisterAnimalScreenState extends State<RegisterAnimalScreen> {
 class EditAnimalScreen extends StatefulWidget {
   final String docId;
   final Map<String, dynamic> data;
-  EditAnimalScreen({required this.docId, required this.data});
+  const EditAnimalScreen({super.key, required this.docId, required this.data});
   @override
   _EditAnimalScreenState createState() => _EditAnimalScreenState();
 }
@@ -332,7 +341,7 @@ Future<void> confirmAndDeleteAnimal(BuildContext context, String docId) async {
 // Historial médico (simulado)
 class MedicalHistoryScreen extends StatelessWidget {
   final String animalName;
-  MedicalHistoryScreen({required this.animalName});
+  MedicalHistoryScreen({super.key, required this.animalName});
 
   final List<Map<String, String>> medicalRecords = [
     {
