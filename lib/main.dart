@@ -26,9 +26,6 @@ class AnimalShelterApp extends StatelessWidget {
 class LoginScreen extends StatelessWidget {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-<<<<<<< HEAD
-  // Puedes dejar 'login' aquí, aunque la lógica completa va en el _buildContent
-=======
 
   LoginScreen({super.key});
 
@@ -38,7 +35,6 @@ class LoginScreen extends StatelessWidget {
       MaterialPageRoute(builder: (_) => DashboardScreen()),
     );
   }
->>>>>>> origin/main
 
   @override
   Widget build(BuildContext context) {
