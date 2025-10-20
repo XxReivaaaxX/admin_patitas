@@ -15,9 +15,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   String? _errorMessage;
   bool _isLoading = false;
-  
+
   // Nuevo estado para controlar la visibilidad de la contraseña
-  bool _isPasswordVisible = false; 
+  bool _isPasswordVisible = false;
 
   @override
   void dispose() {
@@ -49,12 +49,13 @@ class _LoginScreenState extends State<LoginScreen> {
   // Lógica de inicio de sesión
   Future<void> _signIn() async {
     // Validación básica antes de intentar la llamada a Firebase
-    if (_emailController.text.trim().isEmpty || _passwordController.text.trim().isEmpty) {
-       setState(() {
+    if (_emailController.text.trim().isEmpty ||
+        _passwordController.text.trim().isEmpty) {
+      setState(() {
         _errorMessage = 'Por favor, ingrese su correo y contraseña.';
         _isLoading = false;
-       });
-       return;
+      });
+      return;
     }
 
     setState(() {
@@ -70,12 +71,16 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Usamos log en lugar de print para una mejor trazabilidad
       log("¡Inicio de sesión exitoso!", name: 'Auth');
-
+      Navigator.pushNamed(context, '/animalScreen');
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = _getErrorMessage(e.code);
         // Registramos el error de Firebase en la consola
-        log('Error de autenticación Firebase: ${e.code}', error: e, name: 'AuthError');
+        log(
+          'Error de autenticación Firebase: ${e.code}',
+          error: e,
+          name: 'AuthError',
+        );
       });
     } catch (e) {
       setState(() {
@@ -94,14 +99,9 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // Evita el error de overflow al abrir el teclado en modo apaisado
-      resizeToAvoidBottomInset: true, 
+      resizeToAvoidBottomInset: true,
       body: Stack(
-        children: <Widget>[
-          _buildBackground(),
-
-          _buildContent(context),
-
-        ],
+        children: <Widget>[_buildBackground(), _buildContent(context)],
       ),
     );
   }
@@ -114,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
           // Asumiendo que esta imagen existe en tus assets
           image: AssetImage('assets/img/Backgound_image_1.png'),
           fit: BoxFit.cover,
-        )
+        ),
       ),
       child: Container(
         decoration: BoxDecoration(
@@ -127,7 +127,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Colors.black.withOpacity(0.9), // Más oscuro abajo
             ],
             stops: const [0.0, 1.0],
-          )
+          ),
         ),
       ),
     );
@@ -142,10 +142,12 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-
               Center(
                 // Asumiendo que esta imagen existe en tus assets
-                child: Image.asset('assets/img/Logo_AdminPatitas.png', height: 100)
+                child: Image.asset(
+                  'assets/img/Logo_AdminPatitas.png',
+                  height: 100,
+                ),
               ),
 
               const SizedBox(height: 50),
@@ -166,7 +168,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 '¡REGISTRATE AHORA!',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color(0xFF4FC3F7), // Usando el color del botón para consistencia
+                  color: Color(
+                    0xFF4FC3F7,
+                  ), // Usando el color del botón para consistencia
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
@@ -176,21 +180,21 @@ class _LoginScreenState extends State<LoginScreen> {
 
               // Campo de Correo
               _buildTextField(
-                _emailController, 
-                'Correo', 
-                Icons.email, 
-                keyboardType: TextInputType.emailAddress, 
-                showCheckmark: true
+                _emailController,
+                'Correo',
+                Icons.email,
+                keyboardType: TextInputType.emailAddress,
+                showCheckmark: true,
               ),
-              
+
               const SizedBox(height: 20.0),
-              
+
               // Campo de Contraseña
               _buildTextField(
-                _passwordController, 
-                'Contraseña', 
-                Icons.lock, 
-                showVisibilityIcon: true
+                _passwordController,
+                'Contraseña',
+                Icons.lock,
+                showVisibilityIcon: true,
               ),
 
               const SizedBox(height: 8.0),
@@ -199,11 +203,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 alignment: Alignment.centerRight,
                 child: TextButton(
                   onPressed: () {
+                    Navigator.pushNamed(context, '/dashboardAnimals');
                     log('Navegar a Olvidó Contraseña', name: 'Navigation');
                   },
                   child: const Text(
                     '¿Olvido la contraseña?',
-                    style: TextStyle(color: Color(0xFF4FC3F7)), // Usando el color azul claro
+                    style: TextStyle(
+                      color: Color(0xFF4FC3F7),
+                    ), // Usando el color azul claro
                   ),
                 ),
               ),
@@ -221,12 +228,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   _errorMessage!,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(color: Colors.redAccent, fontSize: 14, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    color: Colors.redAccent,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-
             ],
           ),
-
         ),
       ),
     );
@@ -252,10 +261,15 @@ class _LoginScreenState extends State<LoginScreen> {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: const TextStyle(color: Colors.black),
-        floatingLabelStyle: const TextStyle(color: Color(0xFF4FC3F7)), // Color al enfocar
+        floatingLabelStyle: const TextStyle(
+          color: Color(0xFF4FC3F7),
+        ), // Color al enfocar
         filled: true,
         fillColor: Colors.white,
-        contentPadding: const EdgeInsets.symmetric(vertical: 18.0, horizontal: 10.0),
+        contentPadding: const EdgeInsets.symmetric(
+          vertical: 18.0,
+          horizontal: 10.0,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
           borderSide: BorderSide.none,
@@ -266,36 +280,44 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
-          borderSide: const BorderSide(color: Color(0xFF4FC3F7), width: 2.0), // Borde cuando está enfocado
+          borderSide: const BorderSide(
+            color: Color(0xFF4FC3F7),
+            width: 2.0,
+          ), // Borde cuando está enfocado
         ),
         prefixIcon: Icon(icon, color: Colors.grey.shade700),
-        
+
         // Icono de sufijo
-        suffixIcon: showCheckmark 
-          ? (controller.text.isNotEmpty ? const Icon(Icons.check, color: Colors.green) : null)
-          : (showVisibilityIcon 
-              ? IconButton(
-                  icon: Icon(
-                    _isPasswordVisible ? Icons.visibility : Icons.visibility_off, 
-                    color: Colors.grey.shade700
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isPasswordVisible = !_isPasswordVisible;
-                    });
-                  },
-                )
-              : null
-            ),
+        suffixIcon: showCheckmark
+            ? (controller.text.isNotEmpty
+                  ? const Icon(Icons.check, color: Colors.green)
+                  : null)
+            : (showVisibilityIcon
+                  ? IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.grey.shade700,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    )
+                  : null),
       ),
       onChanged: (text) {
         if (showCheckmark) {
-          setState(() {}); // Forzar el rebuild para reevaluar el suffixIcon del email
+          setState(
+            () {},
+          ); // Forzar el rebuild para reevaluar el suffixIcon del email
         }
       },
     );
   }
-  
+
   // Widget auxiliar para el botón de Iniciar Sesión (Entrar)
   Widget _buildSignInButton(BuildContext context) {
     return ElevatedButton(
@@ -309,15 +331,22 @@ class _LoginScreenState extends State<LoginScreen> {
         elevation: 5, // Sombra sutil para el botón principal
       ),
       child: _isLoading
-        ? const SizedBox(
-            width: 24,
-            height: 24,
-            child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-          )
-        : const Text(
-            'Entrar',
-            style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
-          ),
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                color: Colors.white,
+                strokeWidth: 2,
+              ),
+            )
+          : const Text(
+              'Entrar',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
     );
   }
 
@@ -337,9 +366,12 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       child: const Text(
         'Registrar',
-        style: TextStyle(fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold),
+        style: TextStyle(
+          fontSize: 18,
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+        ),
       ),
     );
   }
-
 }
