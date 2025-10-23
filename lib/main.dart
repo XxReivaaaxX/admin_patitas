@@ -21,9 +21,9 @@ class AdminPatitasApp extends StatelessWidget {
     return MaterialApp(
       title: 'Refugio de Animales - AdminPatitas',
       theme: ThemeData(primarySwatch: Colors.teal),
-      initialRoute: '/', // 👈 Splash como ruta inicial
+      initialRoute: '/', 
       routes: {
-        '/': (context) => SplashScreen(), // 👈 SplashScreen como primera pantalla
+        '/': (context) => SplashScreen(), 
         '/login': (context) => LoginScreen(),
         '/dashboardAnimals': (context) => DashboardAnimal(),
         '/animalScreen': (context) => AnimalScreen(),
