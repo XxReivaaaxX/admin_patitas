@@ -71,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Usamos log en lugar de print para una mejor trazabilidad
       log("¡Inicio de sesión exitoso!", name: 'Auth');
-      Navigator.pushNamed(context, '/animalScreen');
+      Navigator.pushReplacementNamed(context, '/principal');
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = _getErrorMessage(e.code);
@@ -355,6 +355,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return OutlinedButton(
       onPressed: () {
         // Implementación de ejemplo para navegación
+        Navigator.pushNamed(context, '/register');
         log('Navegar a Registro', name: 'Navigation');
       },
       style: OutlinedButton.styleFrom(

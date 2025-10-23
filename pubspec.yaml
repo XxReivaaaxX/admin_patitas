@@ -16,6 +16,8 @@ dependencies:
   cloud_firestore: ^6.0.3
   image_picker: ^1.2.0
   flutter_screenshot_detect: ^0.1.7
+  http: ^1.5.0
+  google_fonts: ^6.3.2
 
 dev_dependencies:
   flutter_test:
