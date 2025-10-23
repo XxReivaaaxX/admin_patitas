@@ -1,7 +1,7 @@
-import 'package:admin_patitas/screens/dashboard_animals.dart';
+import 'package:admin_patitas/screens/panel_animales.dart';
 import 'package:admin_patitas/screens/animals_screen.dart';
-import 'package:admin_patitas/screens/login_screen.dart';
-import 'package:admin_patitas/screens/screen_splash.dart'; 
+import 'package:admin_patitas/screens/login.dart';
+import 'package:admin_patitas/screens/pantalla_bienvenida.dart'; 
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
