@@ -1,16 +1,22 @@
+import 'package:admin_patitas/screens/animal_screen.dart';
 import 'package:admin_patitas/screens/dashboard_animals.dart';
 import 'package:admin_patitas/screens/principal_screen.dart';
 import 'package:admin_patitas/screens/login_screen.dart';
 import 'package:admin_patitas/screens/register_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:admin_patitas/screens/panel_animales.dart' hide DashboardAnimal;
+import 'package:admin_patitas/screens/login.dart' hide LoginScreen;
+import 'package:admin_patitas/screens/pantalla_bienvenida.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  runApp(AdminPatitasApp());
+  runApp(const AdminPatitasApp());
 }
 
 class AdminPatitasApp extends StatelessWidget {
@@ -21,12 +27,18 @@ class AdminPatitasApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.teal),
+
       title: 'Refugio de Animales - AdminPatitas',
-      initialRoute: '/login',
+
+      initialRoute: '/',
       routes: {
-        '/login': (context) => LoginScreen(),
-        '/dashboardAnimals': (context) => DashboardAnimal(),
-        '/principal': (context) => PrincipalScreen(),
+        '/': (context) => const SplashScreen(
+          mensaje: 'Bienvenido al Refugio AdminPatitas',
+          nextRoute: '/login',
+        ),
+        '/login': (context) => const LoginScreen(),
+        '/dashboardAnimals': (context) => const DashboardAnimal(),
+        '/principal': (context) => const PrincipalScreen(),
         '/register': (context) => RegisterUser(),
       },
     );
