@@ -22,8 +22,8 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('assets/Logo_AdminPatitas.png', width: 150),
-            SizedBox(height: 20),
+            Image.asset('assets/img/Logo_AdminPatitas.png', width: 150),
+            SizedBox(height: 60),
             Text(
               'Refugio de Animales - AdminPatitas',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
