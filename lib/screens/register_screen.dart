@@ -58,6 +58,7 @@ class _RegisterUserState extends State<RegisterUser> {
                     negrita: FontWeight.bold,
                   ),
                 ),
+
                 Formulario(
                   controller: _email,
                   text: 'Correo',
