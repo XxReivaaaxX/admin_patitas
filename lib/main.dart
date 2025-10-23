@@ -1,16 +1,12 @@
-import 'package:admin_patitas/screens/animal_screen.dart';
-import 'package:admin_patitas/screens/dashboard_animals.dart';
-import 'package:admin_patitas/screens/principal_screen.dart';
-import 'package:admin_patitas/screens/login_screen.dart';
-import 'package:admin_patitas/screens/register_screen.dart';
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:http/http.dart' as http;
+import 'package:admin_patitas/screens/principal_screen.dart';
+import 'package:admin_patitas/screens/register_screen.dart';
 
-import 'package:admin_patitas/screens/panel_animales.dart' hide DashboardAnimal;
-import 'package:admin_patitas/screens/login.dart' hide LoginScreen;
+import 'package:admin_patitas/screens/panel_animales.dart';
+import 'package:admin_patitas/screens/login.dart';
 import 'package:admin_patitas/screens/pantalla_bienvenida.dart';
 
 void main() async {
