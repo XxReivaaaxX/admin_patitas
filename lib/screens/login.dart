@@ -71,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Usamos log en lugar de print para una mejor trazabilidad
       log("¡Inicio de sesión exitoso!", name: 'Auth');
-      Navigator.pushNamed(context, '/animalScreen');
+      Navigator.pushNamed(context, '/DashboardAnimal');
     } on FirebaseAuthException catch (e) {
       setState(() {
         _errorMessage = _getErrorMessage(e.code);
