@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'pantalla_bienvenida.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});
@@ -8,6 +9,7 @@ class PerfilScreen extends StatefulWidget {
 }
 
 class _PerfilScreenState extends State<PerfilScreen> {
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,7 +18,13 @@ class _PerfilScreenState extends State<PerfilScreen> {
         child: ElevatedButton(
           child: Text('Cerrar sesion'),
           onPressed: () {
-            Navigator.pushReplacementNamed(context, '/login');
+        Navigator.pushReplacement(context, MaterialPageRoute(
+          builder: (context) => SplashScreen(
+            mensaje: 'Cerrando sesión...',
+            nextRoute: '/login',
+          ),
+        ),
+      );
           },
         ),
       ),
