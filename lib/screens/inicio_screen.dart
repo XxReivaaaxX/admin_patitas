@@ -24,7 +24,7 @@ class _InicioScreenState extends State<InicioScreen> {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                  child: Image.asset('assets/img/perros_principal.png', width: 150, height: 200)
+                  child: Image.asset('assets/img/perros_principal.png', width: 150)
                 ),
                 const ListTile(
                   title: Text('Perros'),
@@ -43,7 +43,7 @@ class _InicioScreenState extends State<InicioScreen> {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                  child: Image.asset('assets/img/gatos_principal.jpg', width: 150, height: 200)
+                  child: Image.asset('assets/img/gatos_principal.jpg', width: 150)
                 ),
                 const ListTile(
                   title: Text('Gatos'),
