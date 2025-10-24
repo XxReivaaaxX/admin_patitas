@@ -25,7 +25,7 @@ class _RegistroAnimalState extends State<RegistroAnimal> {
   Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
 
   void RegistrarAnimal() async {
-  const url = 'http://localhost:5000/registro-animal'; 
+  const url = 'http://192.168.20.1:6000/registro-animal'; 
   final uri = Uri.parse(url);
 
   try {
