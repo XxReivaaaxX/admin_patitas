@@ -24,15 +24,15 @@ class _InicioScreenState extends State<InicioScreen> {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                  child: Image.asset('assets/img/Logo_AdminPatitas.png', width: 150)
+                  child: Image.asset('assets/img/perros_principal.png', width: 150)
                 ),
                 const ListTile(
                   title: Text('Perro'),
-                  subtitle: Text('Amigo fiel y protector'),
+                  subtitle: Text('Amigos fieles, Amorosos y Protectores'),
                 ),
               ],
             ),
-          ),
+          ),gatos_
           const SizedBox(height: 16),
           Card(
             elevation: 4,
@@ -43,11 +43,11 @@ class _InicioScreenState extends State<InicioScreen> {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                  child: Image.asset('assets/img/Logo_AdminPatitas.png', width: 150)
+                  child: Image.asset('assets/img/gatos_principal.jpg', width: 150)
                 ),
                 const ListTile(
                   title: Text('Gato'),
-                  subtitle: Text('Independiente y curioso'),
+                  subtitle: Text('Independientes, Curiosos y Extrovertidos'),
                 ),
               ],
             ),
