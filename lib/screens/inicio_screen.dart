@@ -32,7 +32,7 @@ class _InicioScreenState extends State<InicioScreen> {
                 ),
               ],
             ),
-          ),gatos_
+          ),
           const SizedBox(height: 16),
           Card(
             elevation: 4,
