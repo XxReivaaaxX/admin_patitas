@@ -1,4 +1,4 @@
-import 'package:admin_patitas/screens/animal_screen.dart';
+//import 'package:admin_patitas/screens/animal_screen.dart';
 import 'package:admin_patitas/screens/inicio_screen.dart';
 import 'package:admin_patitas/screens/panel_animales.dart' show RegistroAnimal;
 import 'package:admin_patitas/screens/perfil_screen.dart';
