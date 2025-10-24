@@ -17,7 +17,7 @@ class _RegistroAnimalState extends State<RegistroAnimal> {
   final _formKey = GlobalKey<FormState>();
 
   TextEditingController _nombre = TextEditingController();
-  TextEditingController _edad = TextEditingController();
+  TextEditingController _sexo = TextEditingController();
   TextEditingController _estadoSalud = TextEditingController();
   String? _especie;
   DateTime? _fechaIngreso;
@@ -25,14 +25,14 @@ class _RegistroAnimalState extends State<RegistroAnimal> {
   Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
 
   Future<void> registrarAnimal() async {
-    final url = Uri.parse('https://tu-api-de-firebase.com/registro-animal'); // Reemplaza con tu endpoint real
+    final url = Uri.parse('https://admin-patitas-default-rtdb.firebaseio.com/'); 
     final response = await http.post(
       url,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'nombre': _nombre.text,
         'especie': _especie,
-        'edad': _edad.text,
+        'sexo': _sexo.text,
         'estado_salud': _estadoSalud.text,
         'fecha_ingreso': _fechaIngreso?.toIso8601String(),
       }),
@@ -101,8 +101,8 @@ class _RegistroAnimalState extends State<RegistroAnimal> {
                   validator: (value) => value == null ? 'Seleccione una especie' : null,
                 ),
                 Formulario(
-                  controller: _edad,
-                  text: 'Edad',
+                  controller: _sexo,
+                  text: 'Sexo',
                   textOcul: false,
                   colorBorder: Colors.black,
                   colorBorderFocus: colorPrincipal,
