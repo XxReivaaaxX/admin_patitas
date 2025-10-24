@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'pantalla_bienvenida.dart';
+import 'pantalla_carga.dart';
 
 class PerfilScreen extends StatefulWidget {
   const PerfilScreen({super.key});

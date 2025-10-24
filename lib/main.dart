@@ -7,7 +7,7 @@ import 'package:admin_patitas/screens/register_screen.dart';
 
 import 'package:admin_patitas/screens/panel_animales.dart';
 import 'package:admin_patitas/screens/login.dart';
-import 'package:admin_patitas/screens/pantalla_bienvenida.dart';
+import 'package:admin_patitas/screens/pantalla_carga.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
