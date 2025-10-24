@@ -24,10 +24,13 @@ class _RegistroAnimalState extends State<RegistroAnimal> {
 
   Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
 
-  Future<void> registrarAnimal() async {
-    final url = Uri.parse('http://localhost:5000/registro-animal');
+  void RegistrarAnimal() async {
+  const url = 'http://localhost:5000/registro-animal'; 
+  final uri = Uri.parse(url);
+
+  try {
     final response = await http.post(
-      url,
+      uri,
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'nombre': _nombre.text,
@@ -38,6 +41,9 @@ class _RegistroAnimalState extends State<RegistroAnimal> {
       }),
     );
 
+    print('Código de estado: ${response.statusCode}');
+    print('Respuesta: ${response.body}');
+
     if (response.statusCode == 200) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Animal registrado exitosamente')),
@@ -45,10 +51,16 @@ class _RegistroAnimalState extends State<RegistroAnimal> {
       Navigator.pushNamed(context, '/principal');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al registrar el animal')),
+        SnackBar(content: Text('Error: ${response.body}')),
       );
     }
+  } catch (e) {
+    print('Excepción de Flutter/Dart: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Excepción: $e')),
+    );
   }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +154,7 @@ class _RegistroAnimalState extends State<RegistroAnimal> {
                 BotonLogin(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      registrarAnimal();
+                      RegistrarAnimal();
                     }
                   },
                   texto: 'Registrar Animal',
