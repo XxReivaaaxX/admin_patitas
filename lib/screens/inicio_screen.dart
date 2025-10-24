@@ -43,12 +43,13 @@ class _InicioScreenState extends State<InicioScreen> {
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-                  child: Image.asset('assets/img/gatos_principal.jpg', width: 250)
+                  child: Image.asset('assets/img/gatos_principal.jpg', width: 350)
                 ),
                 const ListTile(
                   title: Text('Gatos'),
                   subtitle: Text('Independientes, Curiosos y Extrovertidos'),
                 ),
+                
               ],
             ),
           ),

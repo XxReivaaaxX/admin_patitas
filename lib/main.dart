@@ -33,7 +33,7 @@ class AdminPatitasApp extends StatelessWidget {
           nextRoute: '/login',
         ),
         '/login': (context) => const LoginScreen(),
-        '/dashboardAnimals': (context) => const DashboardAnimal(),
+        '/dashboardAnimals': (context) => const RegistroAnimal(),
         '/principal': (context) => const PrincipalScreen(),
         '/register': (context) => RegisterUser(),
       },
