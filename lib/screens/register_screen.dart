@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:admin_patitas/controllers/user_controller.dart';
+import 'package:admin_patitas/screens/pantalla_carga.dart';
 import 'package:admin_patitas/screens/widgets/botonlogin.dart';
 import 'package:admin_patitas/screens/widgets/formulario.dart';
 import 'package:admin_patitas/screens/widgets/logo_bar.dart';
@@ -17,12 +19,20 @@ class RegisterUser extends StatefulWidget {
 
 class _RegisterUserState extends State<RegisterUser> {
   final _formkey = GlobalKey<FormState>();
+  late final UserController userController;
 
   String email = "", password = "", validatePassword = "";
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _validePassword = TextEditingController();
   bool isChecked = false;
+
+  @override
+  void initState() {
+    userController = UserController();
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     Color colorPrincipal = Color.fromRGBO(55, 148, 194, 1);
@@ -113,8 +123,23 @@ class _RegisterUserState extends State<RegisterUser> {
                         email = _email.text;
                         password = _password.text;
                       });
-                      userRegister(email, password);
-                      Navigator.pushNamed(context, '/principal');
+                      userController.registerUser(email, password);
+                      /*
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/refugio',
+                        (route) => false,
+                      );*/
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SplashScreen(
+                            mensaje: 'Cargando página principal...',
+                            nextRoute: '/refugio',
+                            mainScreen: false,
+                          ),
+                        ),
+                      );
                     }
                     //registroUsuario();
                   },
@@ -133,26 +158,11 @@ class _RegisterUserState extends State<RegisterUser> {
   }
 }
 
-//prueba funcion enviar datos a la base de datos
-void userFetched() async {
-  const url = 'http://localhost:5000/submit';
-  final uri = Uri.parse(url);
-
-  try {
-    await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'name': 'Firulais', 'email': 'firulais@email.com'}),
-    );
-    print("Datos subidos correctamente");
-  } catch (e) {
-    print('Excepción de Flutter/Dart: $e');
-  }
-}
-
 // prueba crear usuario
+/*
 void userRegister(String email, password) async {
   const url = 'http://localhost:5000/register';
+  final UserController userController = UserController();
   final uri = Uri.parse(url);
 
   try {
@@ -161,8 +171,9 @@ void userRegister(String email, password) async {
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'password': password, 'email': email}),
     );
+    await userController.iniciarSesion(email, password);
     print("Usuario enviado correctamente");
   } catch (e) {
     print('Excepción de Flutter/Dart: $e');
   }
-}
+}*/

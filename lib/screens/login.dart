@@ -1,3 +1,4 @@
+import 'package:admin_patitas/controllers/user_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:developer';
@@ -17,6 +18,11 @@ class _LoginScreenState extends State<LoginScreen> {
   String? _errorMessage;
   bool _isLoading = false;
   bool _isPasswordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -72,7 +78,8 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(
           builder: (context) => SplashScreen(
             mensaje: 'Cargando página principal...',
-            nextRoute: '/principal',
+            nextRoute: '/refugio',
+            mainScreen: false,
           ),
         ),
       );
