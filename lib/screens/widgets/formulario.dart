@@ -9,7 +9,7 @@ class Formulario extends StatelessWidget {
   final double sizeM, sizeP;
 
   const Formulario({
-    Key? key,
+    super.key,
     required this.controller,
     required this.text,
     required this.textOcul,
@@ -19,7 +19,7 @@ class Formulario extends StatelessWidget {
     required this.colorText,
     required this.sizeM,
     required this.sizeP,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +35,7 @@ class Formulario extends StatelessWidget {
           if (value == null || value.isEmpty) {
             return 'Porfavor ingrese el dato solicitado';
           }
+          return null;
         },
         decoration: InputDecoration(
           contentPadding: EdgeInsets.all(sizeP),

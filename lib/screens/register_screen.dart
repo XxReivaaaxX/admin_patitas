@@ -19,9 +19,9 @@ class _RegisterUserState extends State<RegisterUser> {
   final _formkey = GlobalKey<FormState>();
 
   String email = "", password = "", validatePassword = "";
-  TextEditingController _email = new TextEditingController();
-  TextEditingController _password = new TextEditingController();
-  TextEditingController _validePassword = new TextEditingController();
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+  final TextEditingController _validePassword = TextEditingController();
   bool isChecked = false;
   @override
   Widget build(BuildContext context) {

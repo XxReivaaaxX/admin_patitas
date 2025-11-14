@@ -5,10 +5,10 @@ class SplashScreen extends StatefulWidget {
   final String nextRoute;
 
   const SplashScreen({
-    Key? key,
+    super.key,
     required this.mensaje,
     required this.nextRoute,
-  }) : super(key: key);
+  });
 
   @override
   _SplashScreenState createState() => _SplashScreenState();

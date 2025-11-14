@@ -8,14 +8,14 @@ class BotonLogin extends StatelessWidget {
   final FontWeight negrita;
 
   const BotonLogin({
-    Key? key,
+    super.key,
     required this.texto,
     required this.onPressed,
     required this.color,
     required this.colorB,
     required this.size,
     required this.negrita,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

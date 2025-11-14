@@ -16,8 +16,8 @@ class RegistroAnimal extends StatefulWidget {
 class _RegistroAnimalState extends State<RegistroAnimal> {
   final _formKey = GlobalKey<FormState>();
 
-  TextEditingController _nombre = TextEditingController();
-  TextEditingController _estadoSalud = TextEditingController();
+  final TextEditingController _nombre = TextEditingController();
+  final TextEditingController _estadoSalud = TextEditingController();
   String? _especie;
   String? _sexo;
   DateTime? _fechaIngreso;
