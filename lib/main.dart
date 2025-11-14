@@ -41,7 +41,7 @@ class AdminPatitasApp extends StatelessWidget {
       routes: {
         //'/': (context) => const StreamScreen(),
         '/': (context) => SplashScreen(
-          mensaje: "cargando aplicacion",
+          mensaje: "Cargando Aplicación",
           nextRoute: '/login',
           mainScreen: false,
         ),
