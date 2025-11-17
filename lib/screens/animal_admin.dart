@@ -5,6 +5,8 @@ import 'package:admin_patitas/controllers/animals_controller.dart';
 import 'package:admin_patitas/controllers/preferences_controller.dart';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/screens/animal_register.dart';
+import 'package:admin_patitas/screens/animal_view.dart';
+import 'package:admin_patitas/screens/panel_animales.dart';
 import 'package:admin_patitas/screens/widgets/botonlogin.dart';
 import 'package:admin_patitas/screens/widgets/formulario.dart';
 import 'package:admin_patitas/screens/widgets/item_animal.dart';
@@ -52,7 +54,15 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                     nombre: snapshot.data![index].nombre,
                     edad: snapshot.data![index].especie,
                     estado: snapshot.data![index].estadoSalud,
-                    onTap: () {},
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AnimalView(animal: snapshot.data![index]),
+                        ),
+                      );
+                    },
                     onpressedEliminar: () {},
                     onpressedModificar: () {},
                   );
