@@ -6,12 +6,12 @@ class LogoBar extends StatelessWidget {
   final sizeImg;
 
   const LogoBar({
-    Key? key,
+    super.key,
     required this.sizeImg,
     required this.colorIzq,
     required this.colorDer,
     required this.sizeText,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

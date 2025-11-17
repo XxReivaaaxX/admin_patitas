@@ -22,9 +22,9 @@ class _RegisterUserState extends State<RegisterUser> {
   late final UserController userController;
 
   String email = "", password = "", validatePassword = "";
-  TextEditingController _email = new TextEditingController();
-  TextEditingController _password = new TextEditingController();
-  TextEditingController _validePassword = new TextEditingController();
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+  final TextEditingController _validePassword = TextEditingController();
   bool isChecked = false;
 
   @override

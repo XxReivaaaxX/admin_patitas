@@ -25,7 +25,7 @@ class MenuRefugios extends StatelessWidget {
             ),
             ElevatedButton.icon(
               icon: const Icon(Icons.person_search),
-              label: const Text('Entrar como colavorador'),
+              label: const Text('Entrar como colaborador'),
               onPressed: () => (),
             ),
             ElevatedButton.icon(

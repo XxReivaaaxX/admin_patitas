@@ -10,14 +10,14 @@ class TextForm extends StatelessWidget {
   final FontWeight negrita;
 
   const TextForm({
-    Key? key,
+    super.key,
     required this.lines,
     required this.texto,
     required this.color,
     required this.size,
     required this.aling,
     required this.negrita,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

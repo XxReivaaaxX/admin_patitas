@@ -1,25 +1,25 @@
 import 'dart:async';
-
+ 
 import 'package:admin_patitas/controllers/user_controller.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+ 
 class SplashScreen extends StatefulWidget {
   final String mensaje;
   final String nextRoute;
   final bool mainScreen;
-
+ 
   const SplashScreen({
     Key? key,
     required this.mensaje,
     required this.nextRoute,
     required this.mainScreen,
   }) : super(key: key);
-
+ 
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
-
+ 
 class _SplashScreenState extends State<SplashScreen> {
   StreamSubscription<User?>? _authSubscription;
   @override
@@ -33,7 +33,7 @@ class _SplashScreenState extends State<SplashScreen> {
       );
     });
   }
-
+ 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,7 +56,7 @@ class _SplashScreenState extends State<SplashScreen> {
       ),
     );
   }
-
+ 
   /*
   sesionActiva() {
     _authSubscription = FirebaseAuth.instance.authStateChanges().listen((
