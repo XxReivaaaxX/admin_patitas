@@ -1,8 +1,8 @@
 import 'dart:developer';
 
 import 'package:admin_patitas/models/animal.dart';
-import 'package:admin_patitas/screens/widgets/card_info_animal.dart';
-import 'package:admin_patitas/screens/widgets/logo_bar.dart';
+import 'package:admin_patitas/widgets/card_info_animal.dart';
+import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:flutter/material.dart';
 
 class AnimalView extends StatefulWidget {
@@ -97,7 +97,7 @@ class _AnimalViewState extends State<AnimalView> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.white,
         title: LogoBar(
           sizeImg: 25,
           colorIzq: Color.fromRGBO(55, 148, 194, 1),

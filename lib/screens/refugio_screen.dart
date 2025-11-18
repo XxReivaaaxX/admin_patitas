@@ -1,17 +1,17 @@
 import 'dart:developer';
 
-import 'package:admin_patitas/controllers/animals_controller.dart';
-import 'package:admin_patitas/controllers/preferences_controller.dart';
-import 'package:admin_patitas/controllers/refugio_controller.dart';
-import 'package:admin_patitas/controllers/user_controller.dart';
+import 'package:admin_patitas/services/animals_service.dart';
+import 'package:admin_patitas/utils/preferences_service.dart';
+import 'package:admin_patitas/services/refugio_service.dart';
+import 'package:admin_patitas/services/user_service.dart';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/models/refugio.dart';
 import 'package:admin_patitas/models/routes_menu.dart';
 import 'package:admin_patitas/models/usuario.dart';
 import 'package:admin_patitas/screens/menu_refugios.dart';
 import 'package:admin_patitas/screens/register_refugio.dart';
-import 'package:admin_patitas/screens/widgets/card_refugios.dart';
-import 'package:admin_patitas/screens/widgets/logo_bar.dart';
+import 'package:admin_patitas/widgets/card_refugios.dart';
+import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';

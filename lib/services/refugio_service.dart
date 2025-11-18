@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:admin_patitas/controllers/user_controller.dart';
+import 'package:admin_patitas/services/user_service.dart';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/models/refugio.dart';
 import 'package:admin_patitas/models/usuario.dart';

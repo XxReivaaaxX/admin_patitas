@@ -1,19 +1,11 @@
-import 'dart:convert';
 import 'dart:developer';
 
-import 'package:admin_patitas/controllers/animals_controller.dart';
-import 'package:admin_patitas/controllers/preferences_controller.dart';
+import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/screens/animal_register.dart';
 import 'package:admin_patitas/screens/animal_view.dart';
-import 'package:admin_patitas/screens/panel_animales.dart';
-import 'package:admin_patitas/screens/widgets/botonlogin.dart';
-import 'package:admin_patitas/screens/widgets/formulario.dart';
-import 'package:admin_patitas/screens/widgets/item_animal.dart';
-import 'package:admin_patitas/screens/widgets/text_form_register.dart';
+import 'package:admin_patitas/widgets/item_animal.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AnimalAdmin extends StatefulWidget {
   final String? refugio;

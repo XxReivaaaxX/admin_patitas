@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:admin_patitas/screens/widgets/text_form_register.dart';
+import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
 
 class ItemAnimal extends StatelessWidget {

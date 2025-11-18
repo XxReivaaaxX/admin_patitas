@@ -1,9 +1,10 @@
 import 'dart:convert';
 
-import 'package:admin_patitas/screens/widgets/botonlogin.dart';
-import 'package:admin_patitas/screens/widgets/formulario.dart';
-import 'package:admin_patitas/screens/widgets/logo_bar.dart';
-import 'package:admin_patitas/screens/widgets/text_form_register.dart';
+import 'package:admin_patitas/widgets/botonlogin.dart';
+import 'package:admin_patitas/widgets/formulario.dart';
+import 'package:admin_patitas/widgets/item_form_selection.dart';
+import 'package:admin_patitas/widgets/logo_bar.dart';
+import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -20,6 +21,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
 
   TextEditingController _nombre = TextEditingController();
   TextEditingController _estadoSalud = TextEditingController();
+  TextEditingController _raza = TextEditingController();
   String? _especie;
   String? _sexo;
   DateTime? _fechaIngreso;
@@ -45,6 +47,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
           'id_refugio': widget.id_refugio,
           'nombre': _nombre.text,
           'especie': _especie,
+          'raza': _raza.text,
           'sexo': _sexo,
           'estado_salud': _estadoSalud.text,
           'fecha_ingreso': _fechaIngreso?.toIso8601String(),
@@ -91,7 +94,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
         child: Form(
           key: _formKey,
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 70, vertical: 40),
+            margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 40),
             child: ListView(
               shrinkWrap: true,
               children: [
@@ -115,30 +118,44 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                   sizeM: 30,
                   sizeP: 10,
                 ),
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(labelText: 'Especie'),
-                  items: ['Perro', 'Gato', 'Otro'].map((especie) {
-                    return DropdownMenuItem(
-                      value: especie,
-                      child: Text(especie),
-                    );
-                  }).toList(),
-                  onChanged: (value) => _especie = value,
-                  validator: (value) =>
-                      value == null ? 'Seleccione una especie' : null,
+
+                Row(
+                  children: [
+                    Expanded(
+                      child: ItemFormSelection(
+                        onChanged: (value) => _especie = value,
+                        validator: (value) =>
+                            value == null ? 'Seleccione una especie' : null,
+                        items: ['Perro', 'Gato', 'Otro'],
+                        text: 'Especie',
+                      ),
+                    ),
+                    Expanded(
+                      child: ItemFormSelection(
+                        onChanged: (value) => _sexo = value,
+                        validator: (value) =>
+                            value == null ? 'Seleccione el Sexo' : null,
+                        items: ['Macho', 'Hembra'],
+                        text: 'Sexo',
+                      ),
+                    ),
+                  ],
                 ),
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(labelText: 'Sexo'),
-                  items: ['Macho', 'Hembra'].map((sexo) {
-                    return DropdownMenuItem(value: sexo, child: Text(sexo));
-                  }).toList(),
-                  onChanged: (value) => _sexo = value,
-                  validator: (value) =>
-                      value == null ? 'Seleccione el sexo' : null,
-                ),
+
                 Formulario(
                   controller: _estadoSalud,
                   text: 'Estado de salud',
+                  textOcul: false,
+                  colorBorder: Colors.black,
+                  colorBorderFocus: colorPrincipal,
+                  colorTextForm: Colors.grey,
+                  colorText: Colors.black,
+                  sizeM: 30,
+                  sizeP: 10,
+                ),
+                Formulario(
+                  controller: _raza,
+                  text: 'Raza',
                   textOcul: false,
                   colorBorder: Colors.black,
                   colorBorderFocus: colorPrincipal,

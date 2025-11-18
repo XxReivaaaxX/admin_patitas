@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import 'package:admin_patitas/controllers/user_controller.dart';
+import 'package:admin_patitas/services/user_service.dart';
 import 'package:admin_patitas/screens/pantalla_carga.dart';
-import 'package:admin_patitas/screens/widgets/botonlogin.dart';
-import 'package:admin_patitas/screens/widgets/formulario.dart';
-import 'package:admin_patitas/screens/widgets/logo_bar.dart';
-import 'package:admin_patitas/screens/widgets/text_form_register.dart';
+import 'package:admin_patitas/widgets/botonlogin.dart';
+import 'package:admin_patitas/widgets/formulario.dart';
+import 'package:admin_patitas/widgets/logo_bar.dart';
+import 'package:admin_patitas/widgets/text_form_register.dart';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;

@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:admin_patitas/screens/widgets/botonlogin.dart';
-import 'package:admin_patitas/screens/widgets/formulario.dart';
-import 'package:admin_patitas/screens/widgets/logo_bar.dart';
-import 'package:admin_patitas/screens/widgets/text_form_register.dart';
+import 'package:admin_patitas/widgets/botonlogin.dart';
+import 'package:admin_patitas/widgets/formulario.dart';
+import 'package:admin_patitas/widgets/logo_bar.dart';
+import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';

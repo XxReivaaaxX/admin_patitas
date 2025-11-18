@@ -1,5 +1,5 @@
-import 'package:admin_patitas/controllers/preferences_controller.dart';
-import 'package:admin_patitas/controllers/user_controller.dart';
+import 'package:admin_patitas/utils/preferences_service.dart';
+import 'package:admin_patitas/services/user_service.dart';
 import 'package:admin_patitas/screens/refugio_screen.dart';
 import 'package:admin_patitas/screens/sin_refugio.dart';
 import 'package:admin_patitas/screens/stream_screen.dart';

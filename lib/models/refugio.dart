@@ -1,4 +1,4 @@
-import 'package:admin_patitas/controllers/user_controller.dart';
+import 'package:admin_patitas/services/user_service.dart';
 import 'package:admin_patitas/models/usuario.dart';
 
 class Refugio {
