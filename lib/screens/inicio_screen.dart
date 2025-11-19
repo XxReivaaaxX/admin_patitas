@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:admin_patitas/screens/refugio_screen.dart';
 
 class InicioScreen extends StatefulWidget {
   const InicioScreen({super.key});
@@ -16,7 +17,11 @@ class _InicioScreenState extends State<InicioScreen> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.pop(context); // Regresa a la pantalla anterior
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(builder: (_) => const RefugioScreen()),
+              (route) => false, 
+            );
           },
         ),
       ),
@@ -39,7 +44,11 @@ class _InicioScreenState extends State<InicioScreen> {
     );
   }
 
-  Widget _buildCard({required String imagePath, required String title, required String subtitle}) {
+  Widget _buildCard({
+    required String imagePath,
+    required String title,
+    required String subtitle,
+  }) {
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
@@ -48,14 +57,13 @@ class _InicioScreenState extends State<InicioScreen> {
         children: [
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(15)),
-            child: Image.asset(
-              imagePath,
-              height: 180,
-              fit: BoxFit.cover,
-            ),
+            child: Image.asset(imagePath, height: 180, fit: BoxFit.cover),
           ),
           ListTile(
-            title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(
+              title,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
             subtitle: Text(subtitle),
           ),
         ],
