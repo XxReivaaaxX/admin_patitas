@@ -38,7 +38,7 @@ class _RegisterRefugioState extends State<RegisterRefugio> {
   }
 
   void registerRefugio() async {
-    const url = 'http://localhost:5000/registro-refugio';
+    const url = 'https://api-patitas-production-e508.up.railway.app/';
     final uri = Uri.parse(url);
 
     try {
