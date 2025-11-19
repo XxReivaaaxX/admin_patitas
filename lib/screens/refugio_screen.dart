@@ -12,6 +12,7 @@ import 'package:admin_patitas/screens/menu_refugios.dart';
 import 'package:admin_patitas/screens/register_refugio.dart';
 import 'package:admin_patitas/widgets/card_refugios.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
+import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';
@@ -106,7 +107,68 @@ class _RefugioScreenState extends State<RefugioScreen> {
 
   // visualisacion para pantallas grandes
   Widget getWeb() {
-    return Center(child: Text("falta version web"));
+    return Scaffold(
+      body: ListView(
+        children: [
+          FutureBuilder<List<Refugio>>(
+            future: _futureRefugios,
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return SizedBox(
+                  height: 150,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: snapshot.data!.length,
+                    itemBuilder: (context, index) {
+                      return CardRefugios(
+                        onTap: () {
+                          PreferencesController.preferences.setString(
+                            'refugio',
+                            snapshot.data![index].id,
+                          );
+
+                          Navigator.pushNamedAndRemoveUntil(
+                            context,
+                            '/principal',
+                            (route) => false,
+                          );
+                        },
+                        colorDer: Colors.black,
+                        colorIzq: Colors.white,
+                        sizeImg: 60,
+                        sizeText: 10,
+                        nombre: snapshot.data![index].nombre,
+                        correo: user?.email,
+                      );
+                      //return Text(snapshot.data![index].nombre);
+                    },
+                  ),
+                );
+              } else if (snapshot.hasError) {
+                return Text('${snapshot.error}');
+              }
+
+              return const CircularProgressIndicator();
+            },
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await showModalBottomSheet<void>(
+            context: context,
+            builder: (BuildContext context) {
+              return MenuRefugios();
+            },
+          );
+          setState(() {
+            _futureRefugios = RefugioController().getRefugios(user!.uid);
+          });
+        },
+
+        child: const Icon(Icons.add),
+      ),
+    );
   }
 
   // construcción de la pantalla principal

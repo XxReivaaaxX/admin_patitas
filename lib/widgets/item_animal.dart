@@ -25,6 +25,9 @@ class ItemAnimal extends StatelessWidget {
       height: 155,
       child: Card(
         margin: EdgeInsets.all(20),
+        color: Colors.white,
+        shadowColor: Colors.grey,
+        elevation: 8,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         child: InkWell(
           onTap: onTap,
@@ -103,11 +106,11 @@ class ItemAnimal extends StatelessWidget {
                       children: [
                         IconButton(
                           onPressed: onpressedModificar,
-                          icon: Icon(Icons.edit),
+                          icon: Icon(Icons.edit, color: Colors.greenAccent),
                         ),
                         IconButton(
                           onPressed: onpressedEliminar,
-                          icon: Icon(Icons.delete),
+                          icon: Icon(Icons.delete, color: Colors.red),
                         ),
                       ],
                     ),

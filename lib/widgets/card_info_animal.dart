@@ -11,9 +11,11 @@ class CardInfoAnimal extends StatelessWidget {
       padding: EdgeInsets.all(20),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisSize: MainAxisSize.min,
         children: datos.entries.map((entry) {
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
             children: [
               Text(entry.key, style: TextStyle(color: Colors.blue)),
               Text(entry.value),

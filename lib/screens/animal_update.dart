@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
@@ -8,17 +6,21 @@ import 'package:admin_patitas/widgets/item_form_selection.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
-class AnimalRegister extends StatefulWidget {
+class AnimalUpdate extends StatefulWidget {
   final String? id_refugio;
-  const AnimalRegister({super.key, required this.id_refugio});
+  final Animal animal;
+  const AnimalUpdate({
+    super.key,
+    required this.id_refugio,
+    required this.animal,
+  });
 
   @override
-  State<AnimalRegister> createState() => _AnimalRegisterState();
+  State<AnimalUpdate> createState() => _AnimalUpdateState();
 }
 
-class _AnimalRegisterState extends State<AnimalRegister> {
+class _AnimalUpdateState extends State<AnimalUpdate> {
   final _formKey = GlobalKey<FormState>();
 
   TextEditingController _nombre = TextEditingController();
@@ -35,9 +37,10 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     // TODO: implement initState
 
     super.initState();
+    getValues();
   }
 
-  void RegistrarAnimal() async {
+  void updateAnimal() async {
     try {
       final Animal animal = Animal(
         nombre: _nombre.text,
@@ -46,13 +49,13 @@ class _AnimalRegisterState extends State<AnimalRegister> {
         genero: _sexo!,
         estadoSalud: _estadoSalud.text,
         fechaIngreso: _fechaIngreso?.toIso8601String() ?? '',
-        id: '',
-        historialMedicoId: '',
+        id: widget.animal.id,
+        historialMedicoId: widget.animal.historialMedicoId,
       );
-      await AnimalsService().registerAnimals(widget.id_refugio!, animal);
+      await AnimalsService().updateAnimals(widget.id_refugio!, animal);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Animal registrado exitosamente')),
+        const SnackBar(content: Text('Animal actualizado exitosamente')),
       );
       Navigator.pop(context);
     } catch (e) {
@@ -63,18 +66,22 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     }
   }
 
+  void getValues() {
+    _nombre.text = widget.animal.nombre;
+    _estadoSalud.text = widget.animal.estadoSalud;
+    _raza.text = widget.animal.raza;
+    _especie = widget.animal.especie;
+    _sexo = widget.animal.genero;
+    _fechaIngreso = DateTime.parse(widget.animal.fechaIngreso);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
 
-        title: LogoBar(
-          sizeImg: 32,
-          colorIzq: colorPrincipal,
-          colorDer: Colors.black,
-          sizeText: 20,
-        ),
+        title: Text(widget.animal.nombre),
       ),
       body: Container(
         alignment: Alignment.center,
@@ -88,7 +95,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
               children: [
                 TextForm(
                   lines: 2,
-                  texto: 'REGISTRO DE ANIMAL',
+                  texto: 'Actualizar ' + widget.animal.nombre,
                   color: colorPrincipal,
                   size: 30,
                   aling: TextAlign.center,
@@ -193,10 +200,10 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 BotonLogin(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
-                      RegistrarAnimal();
+                      updateAnimal();
                     }
                   },
-                  texto: 'Registrar Animal',
+                  texto: 'Actualizar Animal',
                   color: Colors.white,
                   colorB: colorPrincipal,
                   size: 15,

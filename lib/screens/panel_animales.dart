@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:admin_patitas/screens/salud_admin.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/screens/animal_admin.dart';
 import 'package:admin_patitas/screens/animal_register.dart';
@@ -29,8 +30,11 @@ class _AnimalScreenState extends State<AnimalScreen> {
       initialIndex: 0,
       length: 2,
       child: Scaffold(
+        backgroundColor: Colors.black,
         appBar: TabBar.secondary(
           isScrollable: true,
+          labelColor: Colors.white,
+          indicatorColor: Colors.blue,
           tabAlignment: TabAlignment.center,
           tabs: <Widget>[
             Tab(text: "Administrar Animales"),
@@ -40,7 +44,8 @@ class _AnimalScreenState extends State<AnimalScreen> {
         body: TabBarView(
           children: <Widget>[
             AnimalAdmin(refugio: id_refugio),
-            AnimalRegister(id_refugio: id_refugio),
+
+            SaludAdmin(id_refugio: id_refugio),
           ],
         ),
       ),

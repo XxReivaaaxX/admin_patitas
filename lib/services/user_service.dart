@@ -2,12 +2,11 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:admin_patitas/models/usuario.dart';
+import 'package:admin_patitas/utils/url_api.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 
 class UserController {
-  final String url = 'http://localhost:5000/';
-
   Future<bool> userActive() async {
     final user = FirebaseAuth.instance.currentUser;
     return user != null;
@@ -26,7 +25,7 @@ class UserController {
 
   Future<void> registerUser(String email, String password) async {
     final UserController userController = UserController();
-    final uri = Uri.parse(url + "register");
+    final uri = Uri.parse(UrlApi.url + "register");
 
     try {
       await http.post(
@@ -42,7 +41,7 @@ class UserController {
   }
 
   Future<Usuario> getUsuario(String id_user) async {
-    final uri = Uri.parse(url + 'usuarios/' + id_user);
+    final uri = Uri.parse(UrlApi.url + 'usuarios/' + id_user);
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
