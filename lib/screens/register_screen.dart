@@ -57,6 +57,13 @@ class _RegisterUserState extends State<RegisterUser> {
 
   void _register() async {
     if (_formkey.currentState!.validate()) {
+      if (_password.text != _validePassword.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Las contraseñas no coinciden')),
+        );
+        return;
+      }
+
       if (!isChecked) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Debes aceptar nuestros términos y condiciones')),
@@ -164,7 +171,6 @@ class _RegisterUserState extends State<RegisterUser> {
                   sizeM: 30,
                   sizeP: 10,
                 ),
-                // ✅ Validación para confirmar contraseña
                 Formulario(
                   controller: _validePassword,
                   text: 'Validar Contraseña',
@@ -175,7 +181,6 @@ class _RegisterUserState extends State<RegisterUser> {
                   colorTextForm: Colors.grey,
                   sizeM: 30,
                   sizeP: 10,
-                  passwordToCompare: _password.text, // ✅ Comparación directa
                 ),
                 Row(
                   children: [
