@@ -17,28 +17,38 @@ class UserController {
         body: jsonEncode({'email': email, 'password': password}),
       );
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      log('Código de respuesta: ${response.statusCode}');
+      log('Respuesta: ${response.body}');
 
-        // Guardar token en SharedPreferences
+      if (response.statusCode == 200) {
+        // Login exitoso
+        final data = jsonDecode(response.body);
         if (data['token'] != null) {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('auth_token', data['token']);
           log('Token guardado correctamente');
         }
-
         log('Sesión iniciada correctamente');
         return "success";
-      } else if (response.statusCode == 404) {
-        log('Usuario no encontrado');
-        return "user_not_found";
-      } else if (response.statusCode == 401) {
-        log('Credenciales incorrectas');
-        return "invalid_credentials";
-      } else {
-        log('Error al iniciar sesión: ${response.body}');
-        return "error";
       }
+
+      // Usuario no encontrado (status o mensaje en body)
+      if (response.statusCode == 404 ||
+          response.statusCode == 400 ||
+          response.body.toLowerCase().contains("usuario no encontrado") ||
+          response.body.toLowerCase().contains("user not found")) {
+        return "user_not_found";
+      }
+
+      // Credenciales incorrectas
+      if (response.statusCode == 401 ||
+          response.body.toLowerCase().contains("contraseña incorrecta") ||
+          response.body.toLowerCase().contains("invalid credentials")) {
+        return "invalid_credentials";
+      }
+
+      // Otro error
+      return "error";
     } catch (e) {
       log('Excepción en iniciarSesion: $e');
       return "error";
