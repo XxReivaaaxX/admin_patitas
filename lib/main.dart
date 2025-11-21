@@ -1,22 +1,27 @@
-import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
-
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/services/user_service.dart';
-
-import 'package:admin_patitas/screens/login.dart';
-import 'package:admin_patitas/screens/register_screen.dart';
 import 'package:admin_patitas/screens/refugio_screen.dart';
-import 'package:admin_patitas/screens/principal_screen.dart';
-import 'package:admin_patitas/screens/panel_animales.dart';
 import 'package:admin_patitas/screens/sin_refugio.dart';
+import 'package:admin_patitas/screens/stream_screen.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'firebase_options.dart';
+//import 'package:http/http.dart' as http;
+import 'package:admin_patitas/screens/principal_screen.dart';
+import 'package:admin_patitas/screens/register_screen.dart';
+
+import 'package:admin_patitas/screens/panel_animales.dart';
+import 'package:admin_patitas/screens/login.dart';
 import 'package:admin_patitas/screens/pantalla_carga.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await PreferencesController.iniciarPref();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  //UserController userController = UserController();
+  //bool estado = await userController.userActive();
 
   runApp(const AdminPatitasApp());
 }
@@ -28,39 +33,25 @@ class AdminPatitasApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Refugio de Animales - AdminPatitas',
       theme: ThemeData(primarySwatch: Colors.teal),
-      home: FutureBuilder<bool>(
-        future: _verificarSesion(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Mostrar SplashScreen mientras carga
-            return SplashScreen(
-              mensaje: "Verificando sesión...",
-              nextRoute: '',
-              mainScreen: false,
-            );
-          } else if (snapshot.hasError) {
-            return const Center(child: Text('Error al verificar sesión'));
-          } else {
-            bool isLoggedIn = snapshot.data ?? false;
-            return isLoggedIn ? const RefugioScreen() : const LoginScreen();
-          }
-        },
-      ),
+
+      title: 'Refugio de Animales - AdminPatitas',
+
+      initialRoute: '/',
       routes: {
+        //'/': (context) => const StreamScreen(),
+        '/': (context) => SplashScreen(
+          mensaje: "Cargando Aplicación",
+          nextRoute: '/login',
+          mainScreen: false,
+        ),
         '/login': (context) => const LoginScreen(),
+        '/animales': (context) => const AnimalScreen(),
+        '/principal': (context) => const PrincipalScreen(),
         '/register': (context) => const RegisterUser(),
         '/refugio': (context) => const RefugioScreen(),
-        '/principal': (context) => const PrincipalScreen(),
-        '/animales': (context) => const AnimalScreen(),
         '/sinRefugio': (context) => const SinRefugio(),
       },
     );
-  }
-
-  Future<bool> _verificarSesion() async {
-    UserController userController = UserController();
-    return await userController.verificarSesion();
   }
 }
