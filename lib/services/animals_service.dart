@@ -54,7 +54,8 @@ class AnimalsService {
       }
     } catch (e) {
       log('error al obtener en la funcion par aobtener datos de animales $e');
-      throw Exception('error al caregar datos');
+
+      return [];
     }
   }
 

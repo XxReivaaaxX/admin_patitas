@@ -30,6 +30,15 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  assets:
-    - assets/img/
-    - assets/terminosycondiciones.pdf
+
+  
+  assets:     
+       
+     - assets/img/Backgound_image_1.png
+     - assets/img/gatos_principal.jpg
+     - assets/img/gatos_principal7.jpg
+     - assets/img/Logo_AdminPatitas.png
+     - assets/img/perros_principal.png
+     - assets/img/perros_principal7.png
+     - assets/terminosycondiciones.pdf
+

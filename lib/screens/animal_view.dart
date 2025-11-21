@@ -1,6 +1,4 @@
 import 'dart:developer';
-import 'dart:js_interop';
-import 'dart:math' hide log;
 
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/models/historial_medico.dart';
@@ -9,7 +7,6 @@ import 'package:admin_patitas/services/historial_medico_service.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/widgets/card_info_animal.dart';
 import 'package:admin_patitas/widgets/card_info_historial.dart';
-import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
 
