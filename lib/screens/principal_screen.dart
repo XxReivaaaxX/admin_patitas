@@ -14,41 +14,39 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
   int itemIndex = 0;
 
   // visualisacion para pantallas pequeñas
-  Widget getMovil() {
-    return Scaffold(
-      body: Expanded(child: RoutesMenu(index: itemIndex)),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: itemIndex,
-        onTap: (int index) {
-          setState(() {
-            itemIndex = index;
-          });
-        },
-
-        backgroundColor: Colors.white,
-        selectedItemColor: Color.fromRGBO(55, 148, 194, 1),
-        unselectedItemColor: Colors.black,
-
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            activeIcon: Icon(Icons.home),
-            icon: Icon(Icons.home_outlined),
-            label: 'Principal',
-          ),
-          BottomNavigationBarItem(
-            activeIcon: Icon(Icons.pets),
-            icon: Icon(Icons.pets_outlined),
-            label: 'Animales',
-          ),
-          BottomNavigationBarItem(
-            activeIcon: Icon(Icons.person),
-            icon: Icon(Icons.person_outline),
-            label: 'Perfil',
-          ),
-        ],
-      ),
-    );
-  }
+ Widget getMovil() {
+  return Scaffold(
+    body: RoutesMenu(index: itemIndex),
+    bottomNavigationBar: BottomNavigationBar(
+      currentIndex: itemIndex,
+      onTap: (int index) {
+        setState(() {
+          itemIndex = index;
+        });
+      },
+      backgroundColor: Colors.white,
+      selectedItemColor: Color.fromRGBO(55, 148, 194, 1),
+      unselectedItemColor: Colors.black,
+      items: const <BottomNavigationBarItem>[
+        BottomNavigationBarItem(
+          activeIcon: Icon(Icons.home),
+          icon: Icon(Icons.home_outlined),
+          label: 'Principal',
+        ),
+        BottomNavigationBarItem(
+          activeIcon: Icon(Icons.pets),
+          icon: Icon(Icons.pets_outlined),
+          label: 'Animales',
+        ),
+        BottomNavigationBarItem(
+          activeIcon: Icon(Icons.person),
+          icon: Icon(Icons.person_outline),
+          label: 'Perfil',
+        ),
+      ],
+    ),
+  );
+}
 
   // visualisacion para pantallas grandes
   Widget getWeb() {

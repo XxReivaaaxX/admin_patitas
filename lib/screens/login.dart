@@ -154,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 50),
               const Text(
-                'Facilitamos la gestión para que\nmejores el cuidado',
+                'Facilitamos la gestión para que\nmejores el cuidado animal',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,

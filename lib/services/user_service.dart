@@ -1,84 +1,93 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:admin_patitas/models/usuario.dart';
 import 'package:admin_patitas/utils/url_api.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class UserController {
-  Future<bool> userActive() async {
-    final user = FirebaseAuth.instance.currentUser;
-    return user != null;
-  }
-
-  Future<void> iniciarSesion(String email, String password) async {
-    try {
-      final credential = FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-    } catch (e) {
-      print("error al iniciar sesion $e");
-    }
-  }
-
-  Future<void> registerUser(String email, String password) async {
-    final UserController userController = UserController();
-    final uri = Uri.parse(UrlApi.url + "register");
+  /// Inicia sesión en la API y guarda token en SharedPreferences
+  Future<bool> iniciarSesion(String email, String password) async {
+    final uri = Uri.parse('${UrlApi.url}login');
 
     try {
-      await http.post(
+      final response = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'password': password, 'email': email}),
+        body: jsonEncode({'email': email, 'password': password}),
       );
-      await userController.iniciarSesion(email, password);
-      print("Usuario enviado correctamente");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // Guardar token en SharedPreferences
+        if (data['token'] != null) {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('auth_token', data['token']);
+          log('Token guardado correctamente');
+        }
+
+        log('Sesión iniciada correctamente');
+        return true;
+      } else {
+        log('Error al iniciar sesión: ${response.body}');
+        return false;
+      }
     } catch (e) {
-      print('Excepción de Flutter/Dart: $e');
+      log('Excepción en iniciarSesion: $e');
+      return false;
     }
   }
 
+  /// Registra usuario en la API
+  Future<bool> registerUser(String email, String password) async {
+    final uri = Uri.parse('${UrlApi.url}register');
+
+    try {
+      final response = await http.post(
+        uri,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email, 'password': password}),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        log('Usuario registrado correctamente en API');
+        return true;
+      } else {
+        log('Error al registrar usuario: ${response.body}');
+        return false;
+      }
+    } catch (e) {
+      log('Excepción en registerUser: $e');
+      return false;
+    }
+  }
+
+  /// Obtiene datos del usuario desde la API
   Future<Usuario> getUsuario(String id_user) async {
-    final uri = Uri.parse(UrlApi.url + 'usuarios/' + id_user);
+    final uri = Uri.parse('${UrlApi.url}usuarios/$id_user');
     final response = await http.get(uri);
 
     if (response.statusCode == 200) {
       log('Usuario obtenido: ${response.body}');
-      final User data = jsonDecode(response.body);
+      final data = jsonDecode(response.body);
       return Usuario.getUsuario(data);
     } else {
       throw Exception('Error al cargar los datos del usuario');
     }
   }
 
-  /*
-    var estado = false;
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user == null) {
-        estado = false;
-        print('User is currently signed out!');
-      } else {
-        estado = true;
-        print('User is signed in!');
-      }
-    });
-    return estado;*/
+  /// Cierra sesión y elimina token
+  Future<void> cerrarSesion() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.remove('auth_token');
+    log('Sesión cerrada correctamente');
+  }
 
-  /*
-  Future<void> registerUser(String email, String password) async {
-    try {
-      final credential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        print('la contraseña no es segura.');
-      } else if (e.code == 'email-already-in-use') {
-        print('ya esta registrado este correo electronico.');
-      }
-    } catch (e) {
-      print(e);
-    }
-  }*/
+  /// Verifica si hay token guardado
+  Future<bool> verificarSesion() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('auth_token');
+    return token != null && token.isNotEmpty;
+  }
 }
