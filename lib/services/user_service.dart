@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-
 import 'package:admin_patitas/models/usuario.dart';
 import 'package:admin_patitas/utils/url_api.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -14,29 +13,38 @@ class UserController {
 
   Future<void> iniciarSesion(String email, String password) async {
     try {
-      final credential = FirebaseAuth.instance.signInWithEmailAndPassword(
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
     } catch (e) {
-      print("error al iniciar sesion $e");
+      print("Error al iniciar sesión: $e");
     }
   }
 
-  Future<void> registerUser(String email, String password) async {
-    final UserController userController = UserController();
+  /// Cambiado para devolver bool
+  Future<bool> registerUser(String email, String password) async {
     final uri = Uri.parse(UrlApi.url + "register");
 
     try {
-      await http.post(
+      final response = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'password': password, 'email': email}),
       );
-      await userController.iniciarSesion(email, password);
-      print("Usuario enviado correctamente");
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // Inicia sesión automáticamente después del registro
+        await iniciarSesion(email, password);
+        print("Usuario registrado y sesión iniciada correctamente");
+        return true;
+      } else {
+        print("Error al registrar usuario: ${response.body}");
+        return false;
+      }
     } catch (e) {
-      print('Excepción de Flutter/Dart: $e');
+      print('⚠ Excepción en registerUser: $e');
+      return false;
     }
   }
 
@@ -46,39 +54,10 @@ class UserController {
 
     if (response.statusCode == 200) {
       log('Usuario obtenido: ${response.body}');
-      final User data = jsonDecode(response.body);
+      final data = jsonDecode(response.body);
       return Usuario.getUsuario(data);
     } else {
       throw Exception('Error al cargar los datos del usuario');
     }
   }
-
-  /*
-    var estado = false;
-    FirebaseAuth.instance.authStateChanges().listen((User? user) {
-      if (user == null) {
-        estado = false;
-        print('User is currently signed out!');
-      } else {
-        estado = true;
-        print('User is signed in!');
-      }
-    });
-    return estado;*/
-
-  /*
-  Future<void> registerUser(String email, String password) async {
-    try {
-      final credential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(email: email, password: password);
-    } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        print('la contraseña no es segura.');
-      } else if (e.code == 'email-already-in-use') {
-        print('ya esta registrado este correo electronico.');
-      }
-    } catch (e) {
-      print(e);
-    }
-  }*/
 }

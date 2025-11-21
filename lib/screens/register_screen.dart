@@ -1,14 +1,11 @@
 import 'dart:convert';
-
 import 'package:admin_patitas/services/user_service.dart';
 import 'package:admin_patitas/screens/pantalla_carga.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
@@ -21,7 +18,7 @@ class _RegisterUserState extends State<RegisterUser> {
   final _formkey = GlobalKey<FormState>();
   late final UserController userController;
 
-  String email = "", password = "", validatePassword = "";
+  String email = "", password = "";
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _validePassword = TextEditingController();
@@ -33,13 +30,57 @@ class _RegisterUserState extends State<RegisterUser> {
     super.initState();
   }
 
+  void _register() async {
+    if (_formkey.currentState!.validate()) {
+      // Validar contraseñas iguales
+      if (_password.text != _validePassword.text) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Las contraseñas no coinciden')),
+        );
+        return;
+      }
+
+      // Validar checkbox
+      if (!isChecked) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Debes aceptar los términos y condiciones')),
+        );
+        return;
+      }
+
+      setState(() {
+        email = _email.text.trim();
+        password = _password.text.trim();
+      });
+
+      // Llamar al método de registro
+      bool success = await userController.registerUser(email, password);
+
+      if (success) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => SplashScreen(
+              mensaje: 'Cargando página principal...',
+              nextRoute: '/refugio',
+              mainScreen: false,
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al registrar usuario')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    Color colorPrincipal = Color.fromRGBO(55, 148, 194, 1);
+    Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-
         title: LogoBar(
           sizeImg: 32,
           colorIzq: colorPrincipal,
@@ -53,22 +94,21 @@ class _RegisterUserState extends State<RegisterUser> {
         child: Form(
           key: _formkey,
           child: Container(
-            margin: EdgeInsets.only(bottom: 40, left: 70, right: 70, top: 40),
+            margin: const EdgeInsets.symmetric(horizontal: 70, vertical: 40),
             child: ListView(
               shrinkWrap: true,
               children: [
                 Container(
-                  margin: EdgeInsets.only(bottom: 50),
+                  margin: const EdgeInsets.only(bottom: 50),
                   child: TextForm(
                     lines: 2,
-                    texto: '¡REGISTRATE AHORA!',
+                    texto: '¡REGÍSTRATE AHORA!',
                     color: colorPrincipal,
                     size: 40,
                     aling: TextAlign.center,
                     negrita: FontWeight.bold,
                   ),
                 ),
-
                 Formulario(
                   controller: _email,
                   text: 'Correo',
@@ -80,69 +120,46 @@ class _RegisterUserState extends State<RegisterUser> {
                   sizeM: 30,
                   sizeP: 10,
                 ),
-
                 Formulario(
                   controller: _password,
                   text: 'Contraseña',
-                  textOcul: false,
-                  colorBorder: Colors.white,
+                  textOcul: true,
+                  colorBorder: Colors.black,
                   colorBorderFocus: colorPrincipal,
                   colorText: Colors.black,
                   colorTextForm: Colors.grey,
                   sizeM: 30,
                   sizeP: 10,
                 ),
-
                 Formulario(
                   controller: _validePassword,
                   text: 'Validar Contraseña',
                   textOcul: true,
-                  colorBorder: Colors.white,
+                  colorBorder: Colors.black,
                   colorBorderFocus: colorPrincipal,
                   colorText: Colors.black,
                   colorTextForm: Colors.grey,
                   sizeM: 30,
                   sizeP: 10,
                 ),
-                Checkbox(
-                  checkColor: Colors.blue,
-                  activeColor: Colors.white,
-                  fillColor: null,
-                  side: BorderSide(color: Colors.blue),
-                  value: isChecked,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      isChecked = value!;
-                    });
-                  },
+                Row(
+                  children: [
+                    Checkbox(
+                      checkColor: Colors.white,
+                      activeColor: colorPrincipal,
+                      side: const BorderSide(color: Colors.blue),
+                      value: isChecked,
+                      onChanged: (bool? value) {
+                        setState(() {
+                          isChecked = value!;
+                        });
+                      },
+                    ),
+                    const Text('Acepto términos y condiciones'),
+                  ],
                 ),
                 BotonLogin(
-                  onPressed: () {
-                    if (_formkey.currentState!.validate()) {
-                      setState(() {
-                        email = _email.text;
-                        password = _password.text;
-                      });
-                      userController.registerUser(email, password);
-                      /*
-                      Navigator.pushNamedAndRemoveUntil(
-                        context,
-                        '/refugio',
-                        (route) => false,
-                      );*/
-                      Navigator.pushReplacement(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => SplashScreen(
-                            mensaje: 'Cargando página principal...',
-                            nextRoute: '/refugio',
-                            mainScreen: false,
-                          ),
-                        ),
-                      );
-                    }
-                    //registroUsuario();
-                  },
+                  onPressed: _register,
                   texto: 'Registrar',
                   color: Colors.white,
                   colorB: colorPrincipal,
@@ -157,23 +174,3 @@ class _RegisterUserState extends State<RegisterUser> {
     );
   }
 }
-
-// prueba crear usuario
-/*
-void userRegister(String email, password) async {
-  const url = 'http://localhost:5000/register';
-  final UserController userController = UserController();
-  final uri = Uri.parse(url);
-
-  try {
-    await http.post(
-      uri,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'password': password, 'email': email}),
-    );
-    await userController.iniciarSesion(email, password);
-    print("Usuario enviado correctamente");
-  } catch (e) {
-    print('Excepción de Flutter/Dart: $e');
-  }
-}*/
