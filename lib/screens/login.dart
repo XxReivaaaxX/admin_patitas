@@ -167,7 +167,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: TextButton(
                   onPressed: () {
                     Navigator.pushNamed(context, '/dashboardAnimals');
-                    log('Navegar a Olvidó Contraseña', name: 'Navigation');
                   },
                   child: const Text(
                     '¿Olvidó la contraseña?',
@@ -316,7 +315,6 @@ class _LoginScreenState extends State<LoginScreen> {
     return OutlinedButton(
       onPressed: () {
         Navigator.pushNamed(context, '/register');
-        log('Navegar a Registro', name: 'Navigation');
       },
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 15),
