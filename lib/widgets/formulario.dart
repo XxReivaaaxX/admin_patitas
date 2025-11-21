@@ -6,6 +6,7 @@ class Formulario extends StatelessWidget {
   final bool textOcul;
   final Color colorBorder, colorBorderFocus, colorTextForm, colorText;
   final double sizeM, sizeP;
+  final String? passwordToCompare; // Nuevo parámetro para contraseña
 
   const Formulario({
     super.key,
@@ -18,6 +19,7 @@ class Formulario extends StatelessWidget {
     required this.colorText,
     required this.sizeM,
     required this.sizeP,
+    this.passwordToCompare, // 
   });
 
   @override
@@ -41,9 +43,15 @@ class Formulario extends StatelessWidget {
             }
           }
 
-          if (text.toLowerCase().contains('contraseña')) {
+          if (text.toLowerCase().contains('contraseña') && !text.toLowerCase().contains('validar')) {
             if (value.length < 6) {
               return 'La contraseña debe tener al menos 6 caracteres';
+            }
+          }
+
+          if (text.toLowerCase().contains('validar') && passwordToCompare != null) {
+            if (value != passwordToCompare) {
+              return 'Las contraseñas no coinciden';
             }
           }
 

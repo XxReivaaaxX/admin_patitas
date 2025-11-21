@@ -6,8 +6,8 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserController {
-  /// Inicia sesión en la API y guarda token en SharedPreferences
-  Future<bool> iniciarSesion(String email, String password) async {
+  /// Inicia sesión en la API y devuelve códigos específicos
+  Future<String> iniciarSesion(String email, String password) async {
     final uri = Uri.parse('${UrlApi.url}login');
 
     try {
@@ -28,14 +28,20 @@ class UserController {
         }
 
         log('Sesión iniciada correctamente');
-        return true;
+        return "success";
+      } else if (response.statusCode == 404) {
+        log('Usuario no encontrado');
+        return "user_not_found";
+      } else if (response.statusCode == 401) {
+        log('Credenciales incorrectas');
+        return "invalid_credentials";
       } else {
         log('Error al iniciar sesión: ${response.body}');
-        return false;
+        return "error";
       }
     } catch (e) {
       log('Excepción en iniciarSesion: $e');
-      return false;
+      return "error";
     }
   }
 
