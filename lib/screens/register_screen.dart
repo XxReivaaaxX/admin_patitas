@@ -37,10 +37,10 @@ class _RegisterUserState extends State<RegisterUser> {
 
   void _verTerminos() {
     if (kIsWeb) {
-      // ✅ En Web: abrir PDF en nueva pestaña
+      // En Web: abrir PDF en nueva pestaña
       html.window.open('assets/terminosycondiciones.pdf', '_blank');
     } else {
-      // ✅ En Mobile: mostrar PDF dentro de la app
+      // En celular: mostrar PDF dentro de la app
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -180,7 +180,7 @@ class _RegisterUserState extends State<RegisterUser> {
                                 isChecked = value!;
                               });
                             }
-                          : null, // ✅ Deshabilitado si no abrió el PDF
+                          : null, // Deshabilitado si no abrió el PDF
                     ),
                     const Text('Acepto términos y condiciones'),
                     TextButton(
