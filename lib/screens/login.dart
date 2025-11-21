@@ -1,5 +1,6 @@
 import 'package:admin_patitas/services/user_service.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:developer';
 import 'pantalla_carga.dart';
 
@@ -18,7 +19,10 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _isLoading = false;
   bool _isPasswordVisible = false;
 
-  final UserController userController = UserController();
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   void dispose() {
@@ -27,24 +31,32 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
+  String? _getErrorMessage(String code) {
+    switch (code) {
+      case 'invalid-email':
+        return 'El formato del correo electrónico no es válido.';
+      case 'user-not-found':
+        return 'No existe un usuario con este correo electrónico.';
+      case 'missing-password':
+        return 'El campo de contraseña está vacío.';
+      case 'invalid-credential':
+        return 'El correo o contraseña están incorrectos.';
+      case 'email-already-in-use':
+        return 'Este correo electrónico ya está registrado.';
+      case 'weak-password':
+        return 'La contraseña es demasiado débil (debe tener al menos 6 caracteres).';
+      default:
+        return 'Ocurrió un error de autenticación: $code';
+    }
+  }
+
   Future<void> _signIn() async {
-    final email = _emailController.text.trim();
-    final password = _passwordController.text.trim();
-
-    // Validaciones antes de llamar al servicio
-    if (email.isEmpty || password.isEmpty) {
-      setState(() => _errorMessage = 'Por favor, ingrese su correo y contraseña.');
-      return;
-    }
-
-    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    if (!emailRegex.hasMatch(email)) {
-      setState(() => _errorMessage = 'El correo no es válido.');
-      return;
-    }
-
-    if (password.length < 6) {
-      setState(() => _errorMessage = 'La contraseña debe tener al menos 6 caracteres.');
+    if (_emailController.text.trim().isEmpty ||
+        _passwordController.text.trim().isEmpty) {
+      setState(() {
+        _errorMessage = 'Por favor, ingrese su correo y contraseña.';
+        _isLoading = false;
+      });
       return;
     }
 
@@ -53,29 +65,43 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = null;
     });
 
-    String result = await userController.iniciarSesion(email, password);
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
 
-    setState(() {
-      _isLoading = false;
-      if (result == "success") {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => SplashScreen(
-              mensaje: 'Cargando página principal...',
-              nextRoute: '/refugio',
-              mainScreen: false,
-            ),
+      log("¡Inicio de sesión exitoso!", name: 'Auth');
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SplashScreen(
+            mensaje: 'Cargando página principal...',
+            nextRoute: '/refugio',
+            mainScreen: false,
           ),
+        ),
+      );
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        _errorMessage = _getErrorMessage(e.code);
+        log(
+          'Error de autenticación Firebase: ${e.code}',
+          error: e,
+          name: 'AuthError',
         );
-      } else if (result == "user_not_found") {
-        _errorMessage = 'Usuario no encontrado. ¡Regístrate ahora!';
-      } else if (result == "invalid_credentials") {
-        _errorMessage = 'Correo o contraseña incorrectos.';
-      } else {
-        _errorMessage = 'Ocurrió un error. Inténtelo de nuevo.';
-      }
-    });
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = "Ocurrió un error inesperado. Inténtelo de nuevo.";
+        log('Error inesperado en _signIn: $e', error: e, name: 'GeneralError');
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -167,6 +193,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: TextButton(
                   onPressed: () {
                     Navigator.pushNamed(context, '/dashboardAnimals');
+                    log('Navegar a Olvidó Contraseña', name: 'Navigation');
                   },
                   child: const Text(
                     '¿Olvidó la contraseña?',
@@ -180,32 +207,14 @@ class _LoginScreenState extends State<LoginScreen> {
               _buildRegisterButton(),
               const SizedBox(height: 20.0),
               if (_errorMessage != null)
-                Column(
-                  children: [
-                    Text(
-                      _errorMessage!,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        color: Colors.redAccent,
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (_errorMessage!.contains('Regístrate'))
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/register');
-                        },
-                        child: const Text(
-                          'Ir a Registro',
-                          style: TextStyle(
-                            color: Color(0xFF4FC3F7),
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                  ],
+                Text(
+                  _errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.redAccent,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
             ],
           ),
@@ -254,23 +263,23 @@ class _LoginScreenState extends State<LoginScreen> {
         prefixIcon: Icon(icon, color: Colors.grey.shade700),
         suffixIcon: showCheckmark
             ? (controller.text.isNotEmpty
-                ? const Icon(Icons.check, color: Colors.green)
-                : null)
+                  ? const Icon(Icons.check, color: Colors.green)
+                  : null)
             : (showVisibilityIcon
-                ? IconButton(
-                    icon: Icon(
-                      _isPasswordVisible
-                          ? Icons.visibility
-                          : Icons.visibility_off,
-                      color: Colors.grey.shade700,
-                    ),
-                    onPressed: () {
-                      setState(() {
-                        _isPasswordVisible = !_isPasswordVisible;
-                      });
-                    },
-                  )
-                : null),
+                  ? IconButton(
+                      icon: Icon(
+                        _isPasswordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                        color: Colors.grey.shade700,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isPasswordVisible = !_isPasswordVisible;
+                        });
+                      },
+                    )
+                  : null),
       ),
       onChanged: (text) {
         if (showCheckmark) {
@@ -314,7 +323,10 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildRegisterButton() {
     return OutlinedButton(
       onPressed: () {
+        // Implementación de ejemplo para navegación
         Navigator.pushNamed(context, '/register');
+
+        log('Navegar a Registro', name: 'Navigation');
       },
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 15),
