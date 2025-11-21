@@ -27,7 +27,7 @@ class _RegisterUserState extends State<RegisterUser> {
   final TextEditingController _validePassword = TextEditingController();
 
   bool isChecked = false;
-  bool pdfOpened = false; // Nueva variable
+  bool pdfOpened = false;
 
   @override
   void initState() {
@@ -37,10 +37,8 @@ class _RegisterUserState extends State<RegisterUser> {
 
   void _verTerminos() {
     if (kIsWeb) {
-      // En Web: abrir PDF en nueva pestaña
       html.window.open('assets/terminosycondiciones.pdf', '_blank');
     } else {
-      // En celular: mostrar PDF dentro de la app
       Navigator.push(
         context,
         MaterialPageRoute(
@@ -53,7 +51,7 @@ class _RegisterUserState extends State<RegisterUser> {
     }
 
     setState(() {
-      pdfOpened = true; // Marcar que el PDF fue abierto
+      pdfOpened = true;
     });
   }
 
@@ -77,6 +75,23 @@ class _RegisterUserState extends State<RegisterUser> {
         email = _email.text.trim();
         password = _password.text.trim();
       });
+
+      // Validación para correo
+      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+      if (!emailRegex.hasMatch(email)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('El correo no es válido')),
+        );
+        return;
+      }
+
+      // Validación para contraseña mínima
+      if (password.length < 6) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('La contraseña debe tener al menos 6 caracteres')),
+        );
+        return;
+      }
 
       bool success = await userController.registerUser(email, password);
 
@@ -180,7 +195,7 @@ class _RegisterUserState extends State<RegisterUser> {
                                 isChecked = value!;
                               });
                             }
-                          : null, // Deshabilitado si no abrió el PDF
+                          : null,
                     ),
                     const Text('Acepto términos y condiciones'),
                     TextButton(
@@ -190,7 +205,7 @@ class _RegisterUserState extends State<RegisterUser> {
                   ],
                 ),
                 BotonLogin(
-                  onPressed: (pdfOpened && isChecked) ? _register : null, // Botón deshabilitado
+                  onPressed: (pdfOpened && isChecked) ? _register : null,
                   texto: 'Registrar',
                   color: Colors.white,
                   colorB: (pdfOpened && isChecked) ? colorPrincipal : Colors.grey,
