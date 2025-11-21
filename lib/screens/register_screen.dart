@@ -79,7 +79,7 @@ class _RegisterUserState extends State<RegisterUser> {
       MaterialPageRoute(
         builder: (context) => Scaffold(
           appBar: AppBar(title: const Text('Términos y Condiciones')),
-          body: SfPdfViewer.asset('assets/Términos_y_Condiciones_de_Uso_del_Sistema.pdf'),
+          body: SfPdfViewer.asset('assets/terminosycondiciones.pdf'),
         ),
       ),
     );
