@@ -6,6 +6,8 @@ import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:html' as html; // Solo para Web
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class RegisterUser extends StatefulWidget {
@@ -23,12 +25,36 @@ class _RegisterUserState extends State<RegisterUser> {
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _validePassword = TextEditingController();
+
   bool isChecked = false;
+  bool pdfOpened = false; // Nueva variable
 
   @override
   void initState() {
     userController = UserController();
     super.initState();
+  }
+
+  void _verTerminos() {
+    if (kIsWeb) {
+      // ✅ En Web: abrir PDF en nueva pestaña
+      html.window.open('assets/terminosycondiciones.pdf', '_blank');
+    } else {
+      // ✅ En Mobile: mostrar PDF dentro de la app
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => Scaffold(
+            appBar: AppBar(title: const Text('Términos y Condiciones')),
+            body: SfPdfViewer.asset('assets/terminosycondiciones.pdf'),
+          ),
+        ),
+      );
+    }
+
+    setState(() {
+      pdfOpened = true; // Marcar que el PDF fue abierto
+    });
   }
 
   void _register() async {
@@ -73,21 +99,10 @@ class _RegisterUserState extends State<RegisterUser> {
     }
   }
 
-  void _verTerminos() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => Scaffold(
-          appBar: AppBar(title: const Text('Términos y Condiciones')),
-          body: SfPdfViewer.asset('assets/terminosycondiciones.pdf'),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
@@ -159,11 +174,13 @@ class _RegisterUserState extends State<RegisterUser> {
                       activeColor: colorPrincipal,
                       side: const BorderSide(color: Colors.blue),
                       value: isChecked,
-                      onChanged: (bool? value) {
-                        setState(() {
-                          isChecked = value!;
-                        });
-                      },
+                      onChanged: pdfOpened
+                          ? (bool? value) {
+                              setState(() {
+                                isChecked = value!;
+                              });
+                            }
+                          : null, // ✅ Deshabilitado si no abrió el PDF
                     ),
                     const Text('Acepto términos y condiciones'),
                     TextButton(
@@ -173,10 +190,10 @@ class _RegisterUserState extends State<RegisterUser> {
                   ],
                 ),
                 BotonLogin(
-                  onPressed: _register,
+                  onPressed: (pdfOpened && isChecked) ? _register : null, // Botón deshabilitado
                   texto: 'Registrar',
                   color: Colors.white,
-                  colorB: colorPrincipal,
+                  colorB: (pdfOpened && isChecked) ? colorPrincipal : Colors.grey,
                   size: 15,
                   negrita: FontWeight.normal,
                 ),
