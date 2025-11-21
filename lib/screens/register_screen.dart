@@ -6,6 +6,7 @@ import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
@@ -32,7 +33,6 @@ class _RegisterUserState extends State<RegisterUser> {
 
   void _register() async {
     if (_formkey.currentState!.validate()) {
-      // Validar contraseñas iguales
       if (_password.text != _validePassword.text) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Las contraseñas no coinciden')),
@@ -40,10 +40,9 @@ class _RegisterUserState extends State<RegisterUser> {
         return;
       }
 
-      // Validar checkbox
       if (!isChecked) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Debes aceptar los términos y condiciones')),
+          const SnackBar(content: Text('Debes aceptar nuestros términos y condiciones')),
         );
         return;
       }
@@ -53,7 +52,6 @@ class _RegisterUserState extends State<RegisterUser> {
         password = _password.text.trim();
       });
 
-      // Llamar al método de registro
       bool success = await userController.registerUser(email, password);
 
       if (success) {
@@ -62,7 +60,7 @@ class _RegisterUserState extends State<RegisterUser> {
           MaterialPageRoute(
             builder: (context) => SplashScreen(
               mensaje: 'Cargando página principal...',
-              nextRoute: '/refugio',
+              nextRoute: '/login',
               mainScreen: false,
             ),
           ),
@@ -73,6 +71,18 @@ class _RegisterUserState extends State<RegisterUser> {
         );
       }
     }
+  }
+
+  void _verTerminos() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          appBar: AppBar(title: const Text('Términos y Condiciones')),
+          body: SfPdfViewer.asset('assets/terminos.pdf'),
+        ),
+      ),
+    );
   }
 
   @override
@@ -156,6 +166,10 @@ class _RegisterUserState extends State<RegisterUser> {
                       },
                     ),
                     const Text('Acepto términos y condiciones'),
+                    TextButton(
+                      onPressed: _verTerminos,
+                      child: const Text('Ver'),
+                    ),
                   ],
                 ),
                 BotonLogin(
