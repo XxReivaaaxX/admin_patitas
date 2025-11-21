@@ -36,14 +36,14 @@ class UserController {
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Inicia sesión automáticamente después del registro
         await iniciarSesion(email, password);
-        print("Usuario registrado y sesión iniciada correctamente");
+        print("Usuario registrado");
         return true;
       } else {
         print("Error al registrar usuario: ${response.body}");
         return false;
       }
     } catch (e) {
-      print('⚠ Excepción en registerUser: $e');
+      print('Excepción en registerUser: $e');
       return false;
     }
   }
