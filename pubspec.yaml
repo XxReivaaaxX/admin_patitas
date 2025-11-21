@@ -32,4 +32,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/img/
-    - assets/pdf/Términos y Condiciones de Uso del Sistema.pdf
+    - assets/Términos_y_Condiciones_de_Uso_del_Sistema.pdf
