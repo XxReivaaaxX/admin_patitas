@@ -59,7 +59,7 @@ class _RegisterUserState extends State<RegisterUser> {
           context,
           MaterialPageRoute(
             builder: (context) => SplashScreen(
-              mensaje: 'Cargando página principal...',
+              mensaje: 'Cargando página para iniciar sesión...',
               nextRoute: '/login',
               mainScreen: false,
             ),
