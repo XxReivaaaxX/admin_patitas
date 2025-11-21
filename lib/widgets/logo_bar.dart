@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class LogoBar extends StatelessWidget {
   final Color colorIzq, colorDer;
   final double sizeText;
-  final sizeImg;
+  final double sizeImg;
 
   const LogoBar({
     super.key,

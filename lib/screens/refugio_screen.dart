@@ -26,15 +26,15 @@ class RefugioScreen extends StatefulWidget {
 }
 
 class _RefugioScreenState extends State<RefugioScreen> {
-  late final User? user;
+  late final User user;
   late Future<List<Refugio>> _futureRefugios;
 
   @override
   void initState() {
     // TODO: implement initState
-    user = FirebaseAuth.instance.currentUser;
+    user = FirebaseAuth.instance.currentUser!;
 
-    _futureRefugios = RefugioController().getRefugios(user!.uid);
+    _futureRefugios = RefugioController().getRefugios(user.uid);
 
     super.initState();
   }
@@ -72,7 +72,7 @@ class _RefugioScreenState extends State<RefugioScreen> {
                         sizeImg: 60,
                         sizeText: 10,
                         nombre: snapshot.data![index].nombre,
-                        correo: user?.email,
+                        correo: user.email,
                       );
                       //return Text(snapshot.data![index].nombre);
                     },
@@ -96,7 +96,7 @@ class _RefugioScreenState extends State<RefugioScreen> {
             },
           );
           setState(() {
-            _futureRefugios = RefugioController().getRefugios(user!.uid);
+            _futureRefugios = RefugioController().getRefugios(user.uid);
           });
         },
 
@@ -138,7 +138,7 @@ class _RefugioScreenState extends State<RefugioScreen> {
                         sizeImg: 60,
                         sizeText: 10,
                         nombre: snapshot.data![index].nombre,
-                        correo: user?.email,
+                        correo: user.email,
                       );
                       //return Text(snapshot.data![index].nombre);
                     },
@@ -162,7 +162,7 @@ class _RefugioScreenState extends State<RefugioScreen> {
             },
           );
           setState(() {
-            _futureRefugios = RefugioController().getRefugios(user!.uid);
+            _futureRefugios = RefugioController().getRefugios(user.uid);
           });
         },
 
