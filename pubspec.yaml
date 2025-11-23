@@ -41,7 +41,6 @@ flutter:
 
   
   assets:     
-       
      - assets/img/Backgound_image_1.png
      - assets/img/gatos_principal.jpg
      - assets/img/gatos_principal7.jpg
