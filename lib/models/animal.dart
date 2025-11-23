@@ -8,6 +8,7 @@ class Animal {
   final String nombre;
   final String genero;
   final String estadoAdopcion;
+  final String imageUrl;
   //final String imagenUrl; // NUEVO
 
   Animal({
@@ -20,6 +21,7 @@ class Animal {
     required this.nombre,
     required this.genero,
     this.estadoAdopcion = 'No Disponible',
+    this.imageUrl = '',
   });
 
   factory Animal.fromJson(String id, Map<String, dynamic> json) {
@@ -34,6 +36,7 @@ class Animal {
       genero: json["sexo"],
       //imagenUrl: json['imagenUrl'] ?? '',
       estadoAdopcion: json["estado_adopcion"] ?? 'No Disponible',
+      imageUrl: json["imagenUrl"] ?? '',
     );
   }
   /*

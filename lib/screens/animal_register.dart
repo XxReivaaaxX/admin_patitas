@@ -1,17 +1,14 @@
-import 'dart:io';
+import 'dart:typed_data';
+import 'dart:convert';
 
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/item_form_selection.dart';
-// import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-// import 'package:tflite_flutter/tflite_flutter.dart'; // Comentado hasta que se implemente completamente
 
 class AnimalRegister extends StatefulWidget {
   final String idRefugio;
@@ -24,41 +21,22 @@ class AnimalRegister extends StatefulWidget {
 class _AnimalRegisterState extends State<AnimalRegister> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nombre = TextEditingController();
-  final TextEditingController _estadoSalud = TextEditingController();
   final TextEditingController _raza = TextEditingController();
   String? _especie;
   String? _sexo;
   String? _estadoAdopcion;
   DateTime? _fechaIngreso;
   XFile? _imagen;
-
-  // Interpreter? _interpreter; // Comentado por ahora
+  bool _isLoading = false;
 
   final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
-
-  @override
-  void initState() {
-    super.initState();
-    // cargarModelo(); // Comentado por ahora
-  }
-
-  /*
-  Future<void> cargarModelo() async {
-    try {
-      _interpreter = await Interpreter.fromAsset('model.tflite');
-    } catch (e) {
-      print("Error cargando modelo: $e");
-    }
-  }
-  */
 
   Future<void> seleccionarImagen() async {
     final picker = ImagePicker();
     try {
-      final img = await picker.pickImage(source: ImageSource.camera);
+      final img = await picker.pickImage(source: ImageSource.gallery);
       if (img != null) {
         setState(() => _imagen = img);
-        // await detectarAnimal(File(img.path)); // Comentado hasta tener helpers
       }
     } catch (e) {
       print('Error seleccionando imagen: $e');
@@ -80,58 +58,68 @@ class _AnimalRegisterState extends State<AnimalRegister> {
 
     if (_imagen == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor tome una foto del animal')),
+        const SnackBar(
+          content: Text('Por favor seleccione una foto del animal'),
+        ),
       );
       return;
     }
 
-    try {
-      // 1. Subir imagen a Firebase Storage
-      final ref = FirebaseStorage.instance.ref().child(
-        'animales/${DateTime.now().millisecondsSinceEpoch}.jpg',
+    if (_fechaIngreso == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor seleccione la fecha de ingreso'),
+        ),
       );
-      await ref.putFile(File(_imagen!.path));
-      final imageUrl = await ref.getDownloadURL();
+      return;
+    }
 
-      // 2. Guardar en Firestore (Opcional, si se usa para analíticas o backup)
-      await FirebaseFirestore.instance.collection('animales').add({
-        'nombre': _nombre.text,
-        'especie': _especie,
-        'raza': _raza.text,
-        'sexo': _sexo,
-        'estadoSalud': _estadoSalud.text,
-        'fechaIngreso': _fechaIngreso?.toIso8601String(),
-        'imagenUrl': imageUrl,
-        'idRefugio': widget.idRefugio,
-      });
+    setState(() => _isLoading = true);
 
-      // 3. Guardar en Realtime Database (Principal para la App)
+    try {
+      print('Iniciando registro de animal...');
+
+      // 1. Convertir imagen a Base64 para guardar en Realtime Database
+      print('Convirtiendo imagen a Base64...');
+      final bytes = await _imagen!.readAsBytes();
+      final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+      print('Imagen convertida exitosamente');
+
+      // 2. Guardar en Realtime Database
+      print('Creando objeto Animal...');
       final Animal animal = Animal(
         nombre: _nombre.text,
         especie: _especie!,
         raza: _raza.text,
         genero: _sexo!,
-        estadoSalud: _estadoSalud.text,
+        estadoSalud: '',
         fechaIngreso: _fechaIngreso?.toIso8601String() ?? '',
         id: '',
         historialMedicoId: '',
         estadoAdopcion: _estadoAdopcion ?? 'No Disponible',
+        imageUrl: base64Image,
       );
 
-      // Nota: Si el modelo Animal no tiene campo de imagen, se perderá la URL en Realtime DB
-      // a menos que actualices el modelo Animal y el servicio.
-
+      print('Guardando en Realtime Database...');
       await AnimalsService().registerAnimals(widget.idRefugio, animal);
+      print('Animal registrado exitosamente');
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Animal registrado exitosamente')),
-      );
-      Navigator.pop(context);
-    } catch (e) {
-      print('Error: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error al registrar: $e')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Animal registrado exitosamente')),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e, stackTrace) {
+      print('Error al registrar animal: $e');
+      print('Stack trace: $stackTrace');
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error al registrar: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -201,17 +189,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 text: 'Estado Adopción',
               ),
               SizedBox(height: 20),
-              Formulario(
-                controller: _estadoSalud,
-                text: 'Estado de salud',
-                textOcul: false,
-                colorBorder: Colors.black,
-                colorBorderFocus: colorPrincipal,
-                colorTextForm: Colors.grey,
-                colorText: Colors.black,
-                sizeM: 30,
-                sizeP: 10,
-              ),
+
               Formulario(
                 controller: _raza,
                 text: 'Raza',
@@ -225,24 +203,32 @@ class _AnimalRegisterState extends State<AnimalRegister> {
               ),
               const SizedBox(height: 16),
 
-              // Botón para tomar foto
+              // Botón para seleccionar foto
               ElevatedButton.icon(
-                icon: const Icon(Icons.camera_alt),
-                label: const Text('Tomar Foto'),
+                icon: const Icon(Icons.photo_library),
+                label: const Text('Seleccionar Foto'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
                   padding: const EdgeInsets.all(15),
                 ),
-                onPressed: seleccionarImagen,
+                onPressed: _isLoading ? null : seleccionarImagen,
               ),
               if (_imagen != null)
                 Padding(
                   padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: Image.file(
-                    File(_imagen!.path),
-                    height: 150,
-                    fit: BoxFit.cover,
+                  child: FutureBuilder<Uint8List>(
+                    future: _imagen!.readAsBytes(),
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return Image.memory(
+                          snapshot.data!,
+                          height: 150,
+                          fit: BoxFit.cover,
+                        );
+                      }
+                      return const CircularProgressIndicator();
+                    },
                   ),
                 ),
               const SizedBox(height: 16),
@@ -282,14 +268,16 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 ),
               ),
               const SizedBox(height: 24),
-              BotonLogin(
-                onPressed: registrarAnimal,
-                texto: 'Registrar Animal',
-                color: Colors.white,
-                colorB: colorPrincipal,
-                size: 15,
-                negrita: FontWeight.normal,
-              ),
+              _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : BotonLogin(
+                      onPressed: registrarAnimal,
+                      texto: 'Registrar Animal',
+                      color: Colors.white,
+                      colorB: colorPrincipal,
+                      size: 15,
+                      negrita: FontWeight.normal,
+                    ),
             ],
           ),
         ),

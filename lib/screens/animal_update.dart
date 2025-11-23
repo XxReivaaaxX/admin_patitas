@@ -24,7 +24,6 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
   final _formKey = GlobalKey<FormState>();
 
   TextEditingController _nombre = TextEditingController();
-  TextEditingController _estadoSalud = TextEditingController();
   TextEditingController _raza = TextEditingController();
   String? _especie;
   String? _sexo;
@@ -48,7 +47,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
         especie: _especie!,
         raza: _raza.text,
         genero: _sexo!,
-        estadoSalud: _estadoSalud.text,
+        estadoSalud: '', // Removed from form
         fechaIngreso: _fechaIngreso?.toIso8601String() ?? '',
         id: widget.animal.id,
         historialMedicoId: widget.animal.historialMedicoId,
@@ -70,7 +69,6 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
 
   void getValues() {
     _nombre.text = widget.animal.nombre;
-    _estadoSalud.text = widget.animal.estadoSalud;
     _raza.text = widget.animal.raza;
     _especie = widget.animal.especie;
     _sexo = widget.animal.genero;
@@ -121,6 +119,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
                   children: [
                     Expanded(
                       child: ItemFormSelection(
+                        initialValue: _especie,
                         onChanged: (value) => _especie = value,
                         validator: (value) =>
                             value == null ? 'Seleccione una especie' : null,
@@ -131,6 +130,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
                     SizedBox(width: 10),
                     Expanded(
                       child: ItemFormSelection(
+                        initialValue: _sexo,
                         onChanged: (value) => _sexo = value,
                         validator: (value) =>
                             value == null ? 'Seleccione el Sexo' : null,
@@ -143,6 +143,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
                 SizedBox(height: 20),
 
                 ItemFormSelection(
+                  initialValue: _estadoAdopcion,
                   onChanged: (value) => _estadoAdopcion = value,
                   validator: (value) =>
                       value == null ? 'Seleccione estado de adopción' : null,
@@ -151,17 +152,6 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
                 ),
                 SizedBox(height: 20),
 
-                Formulario(
-                  controller: _estadoSalud,
-                  text: 'Estado de salud',
-                  textOcul: false,
-                  colorBorder: Colors.black,
-                  colorBorderFocus: colorPrincipal,
-                  colorTextForm: Colors.grey,
-                  colorText: Colors.black,
-                  sizeM: 30,
-                  sizeP: 10,
-                ),
                 Formulario(
                   controller: _raza,
                   text: 'Raza',
