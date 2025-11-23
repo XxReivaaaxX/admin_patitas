@@ -28,6 +28,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
   TextEditingController _raza = TextEditingController();
   String? _especie;
   String? _sexo;
+  String? _estadoAdopcion;
   DateTime? _fechaIngreso;
 
   Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
@@ -51,6 +52,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
         fechaIngreso: _fechaIngreso?.toIso8601String() ?? '',
         id: widget.animal.id,
         historialMedicoId: widget.animal.historialMedicoId,
+        estadoAdopcion: _estadoAdopcion ?? 'No Disponible',
       );
       await AnimalsService().updateAnimals(widget.id_refugio!, animal);
 
@@ -72,6 +74,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
     _raza.text = widget.animal.raza;
     _especie = widget.animal.especie;
     _sexo = widget.animal.genero;
+    _estadoAdopcion = widget.animal.estadoAdopcion;
     _fechaIngreso = DateTime.parse(widget.animal.fechaIngreso);
   }
 
@@ -136,6 +139,15 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
                       ),
                     ),
                   ],
+                ),
+                SizedBox(height: 20),
+
+                ItemFormSelection(
+                  onChanged: (value) => _estadoAdopcion = value,
+                  validator: (value) =>
+                      value == null ? 'Seleccione estado de adopción' : null,
+                  items: ['Disponible', 'No Disponible'],
+                  text: 'Estado Adopción',
                 ),
                 SizedBox(height: 20),
 

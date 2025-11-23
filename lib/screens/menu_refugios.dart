@@ -1,3 +1,4 @@
+import 'package:admin_patitas/screens/adopciones_screen.dart';
 import 'package:admin_patitas/screens/register_refugio.dart';
 import 'package:flutter/material.dart';
 
@@ -40,26 +41,6 @@ class MenuRefugios extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.black,
-
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 20,
-                ),
-
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-
-                  side: const BorderSide(color: Colors.grey, width: 2),
-                ),
-              ),
-              icon: const Icon(Icons.person_search),
-              label: const Text('Entrar como colaborador'),
-              onPressed: () => (),
-            ),
-            ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 20,
                   vertical: 20,
@@ -71,7 +52,14 @@ class MenuRefugios extends StatelessWidget {
               ),
               icon: const Icon(Icons.pets),
               label: const Text('Adopciones'),
-              onPressed: () => (),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AdopcionesScreen(),
+                  ),
+                );
+              },
             ),
           ],
         ),

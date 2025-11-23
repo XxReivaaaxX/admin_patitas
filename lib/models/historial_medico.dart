@@ -1,5 +1,3 @@
-import 'package:admin_patitas/models/vacunas.dart';
-
 class HistorialMedico {
   final String id;
   final String castrado;

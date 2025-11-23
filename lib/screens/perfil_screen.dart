@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:admin_patitas/services/role_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'pantalla_carga.dart';
 
 class PerfilScreen extends StatefulWidget {
@@ -9,26 +12,191 @@ class PerfilScreen extends StatefulWidget {
 }
 
 class _PerfilScreenState extends State<PerfilScreen> {
+  String? _role;
+  String? _refugioId;
+  bool _isLoading = true;
+  User? _currentUser;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    _currentUser = FirebaseAuth.instance.currentUser;
+    RoleService roleService = RoleService();
+    String? role = await roleService.getCurrentRole();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? refugioId = prefs.getString('refugio');
+
+    setState(() {
+      _role = role;
+      _refugioId = refugioId;
+      _isLoading = false;
+    });
+  }
+
+  Future<void> _signOut() async {
+    await FirebaseAuth.instance.signOut();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    if (!mounted) return;
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SplashScreen(
+          mensaje: 'Cerrando sesión...',
+          nextRoute: '/login',
+          mainScreen: false,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    bool isAdmin = _role == 'admin';
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Perfil')),
-      body: Center(
-        child: ElevatedButton(
-          child: Text('Cerrar sesion'),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => SplashScreen(
-                  mensaje: 'Cerrando sesión...',
-                  nextRoute: '/login',
-                  mainScreen: false,
+      appBar: AppBar(
+        title: const Text('Perfil'),
+        backgroundColor: const Color(0xFF4FC3F7),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          // User Info Card
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  const CircleAvatar(
+                    radius: 40,
+                    backgroundColor: Color(0xFF4FC3F7),
+                    child: Icon(Icons.person, size: 50, color: Colors.white),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _currentUser?.email ?? 'Usuario',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isAdmin ? Colors.orange : Colors.blue,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      isAdmin ? 'Administrador' : 'Colaborador',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Options
+          if (isAdmin) ...[
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+              child: Text(
+                'Opciones de Administrador',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
                 ),
               ),
-            );
-          },
-        ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.settings, color: Color(0xFF4FC3F7)),
+              title: const Text('Configurar Refugio'),
+              subtitle: const Text('Editar información del refugio'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.pushNamed(context, '/refugio_settings');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.group, color: Color(0xFF4FC3F7)),
+              title: const Text('Gestionar Colaboradores'),
+              subtitle: const Text('Agregar o eliminar colaboradores'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.pushNamed(context, '/manage_collaborators');
+              },
+            ),
+            const Divider(),
+          ],
+
+          // Common options
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+            child: Text(
+              'General',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey,
+              ),
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.how_to_reg, color: Color(0xFF4FC3F7)),
+            title: const Text('Registrarme como Colaborador'),
+            subtitle: const Text('Permitir que me agreguen como colaborador'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              Navigator.pushNamed(context, '/register_existing_users');
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.info, color: Color(0xFF4FC3F7)),
+            title: const Text('Acerca de'),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+            onTap: () {
+              showAboutDialog(
+                context: context,
+                applicationName: 'AdminPatitas',
+                applicationVersion: '1.0.0',
+                applicationIcon: const Icon(
+                  Icons.pets,
+                  size: 50,
+                  color: Color(0xFF4FC3F7),
+                ),
+                children: [
+                  const Text('Sistema de gestión para refugios de animales.'),
+                ],
+              );
+            },
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.exit_to_app, color: Colors.red),
+            title: const Text('Cerrar Sesión'),
+            onTap: _signOut,
+          ),
+        ],
       ),
     );
   }

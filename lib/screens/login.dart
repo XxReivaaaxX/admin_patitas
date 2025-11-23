@@ -1,4 +1,5 @@
 import 'package:admin_patitas/services/user_service.dart';
+import 'package:admin_patitas/services/refugio_management_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:developer';
@@ -66,12 +67,26 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      UserCredential userCredential = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
 
       log("¡Inicio de sesión exitoso!", name: 'Auth');
+
+      // Register user email in database for collaborator management
+      if (userCredential.user != null) {
+        RefugioManagementService().registerUserEmail(
+          userCredential.user!.uid,
+          userCredential.user!.email!,
+        );
+      }
+
+      // Note: Role will be determined when user selects a refugio in RefugioScreen
+      // This allows users to have different roles in different refugios
+
+      if (!mounted) return;
 
       Navigator.pushReplacement(
         context,

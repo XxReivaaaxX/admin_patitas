@@ -7,6 +7,7 @@ class Animal {
   final String fechaIngreso;
   final String nombre;
   final String genero;
+  final String estadoAdopcion;
 
   Animal({
     required this.id,
@@ -17,6 +18,7 @@ class Animal {
     required this.historialMedicoId,
     required this.nombre,
     required this.genero,
+    this.estadoAdopcion = 'No Disponible',
   });
 
   factory Animal.fromJson(String id, Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class Animal {
       fechaIngreso: json["fecha_ingreso"],
       nombre: json["nombre"],
       genero: json["sexo"],
+      estadoAdopcion: json["estado_adopcion"] ?? 'No Disponible',
     );
   }
 }

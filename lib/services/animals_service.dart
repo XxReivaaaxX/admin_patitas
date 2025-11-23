@@ -1,114 +1,96 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:admin_patitas/models/animal.dart';
-import 'package:admin_patitas/services/historial_medico_service.dart';
-import 'package:admin_patitas/utils/url_api.dart';
-import 'package:http/http.dart' as http;
+import 'package:firebase_database/firebase_database.dart';
 
 class AnimalsService {
+  final DatabaseReference _database = FirebaseDatabase.instance.ref();
+
   Future<void> registerAnimals(String id_refugio, Animal animal) async {
     try {
-      final uri = Uri.parse(UrlApi.url + "registro-animal");
+      final newAnimalRef = _database.child('animales').child(id_refugio).push();
 
-      await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'id_refugio': id_refugio,
-          'nombre': animal.nombre,
-          'especie': animal.especie,
-          'raza': animal.raza,
-          'sexo': animal.genero,
-          'historial_medico_id': animal.historialMedicoId,
-          'estado_salud': animal.estadoSalud,
-          'fecha_ingreso': animal.fechaIngreso,
-        }),
-      );
+      await newAnimalRef.set({
+        'nombre': animal.nombre,
+        'especie': animal.especie,
+        'raza': animal.raza,
+        'sexo': animal.genero,
+        'historial_medico_id': animal.historialMedicoId,
+        'estado_salud': animal.estadoSalud,
+        'fecha_ingreso': animal.fechaIngreso,
+        'estado_adopcion': animal.estadoAdopcion,
+      });
 
-      log("Animal enviado correctamente, historial medico");
+      log("Animal registrado correctamente en Firebase: ${newAnimalRef.key}");
     } catch (e) {
-      log('error al enviar los datos de animales $e');
+      log('Error al registrar animal en Firebase: $e');
     }
   }
 
   Future<List<Animal>> getAnimals(String refugio) async {
     try {
-      final uri = Uri.parse(UrlApi.url + "animales/" + refugio);
-      final response = await http.get(uri);
-      final Map<String, dynamic> _animal = jsonDecode(response.body);
+      final snapshot = await _database.child('animales').child(refugio).get();
 
-      if (response.statusCode == 200) {
-        log('datos obtenidos:  ${response.body}');
+      if (snapshot.exists) {
+        final data = snapshot.value as Map<dynamic, dynamic>;
+        final List<Animal> animals = [];
 
-        final List<Animal> animals = _animal.entries.map((entry) {
-          final id = entry.key;
-          final value = entry.value as Map<String, dynamic>;
-          return Animal.fromJson(id, value);
-        }).toList();
+        data.forEach((key, value) {
+          final animalData = Map<String, dynamic>.from(value as Map);
+          animals.add(Animal.fromJson(key, animalData));
+        });
 
         return animals;
       } else {
-        log('error al obtener los datos de animales');
+        log('No se encontraron animales para el refugio: $refugio');
         return [];
       }
     } catch (e) {
-      log('error al obtener en la funcion par aobtener datos de animales $e');
-
+      log('Error al obtener animales de Firebase: $e');
       return [];
     }
   }
 
   Future<void> updateAnimals(String refugio, Animal animal) async {
     try {
-      final uri = Uri.parse(UrlApi.url + "update-animal");
-
-      if (animal.historialMedicoId != '') {
-        await http.post(
-          uri,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'id_refugio': refugio,
-            'id_animal': animal.id,
-            'nombre': animal.nombre,
-            'especie': animal.especie,
-            'raza': animal.raza,
-            'sexo': animal.genero,
-            'historial_medico_id': animal.historialMedicoId,
-            'estado_salud': animal.estadoSalud,
-            'fecha_ingreso': animal.fechaIngreso,
-          }),
-        );
-      } else {
-        log('faltan datos de historial medico para actualizar el animal');
+      if (animal.id.isEmpty) {
+        log('Error: ID del animal vacío, no se puede actualizar');
+        return;
       }
 
-      log("Animal actualizado correctamente");
+      await _database.child('animales').child(refugio).child(animal.id).update({
+        'nombre': animal.nombre,
+        'especie': animal.especie,
+        'raza': animal.raza,
+        'sexo': animal.genero,
+        'historial_medico_id': animal.historialMedicoId,
+        'estado_salud': animal.estadoSalud,
+        'fecha_ingreso': animal.fechaIngreso,
+        'estado_adopcion': animal.estadoAdopcion,
+      });
+
+      log("Animal actualizado correctamente en Firebase: ${animal.id}");
     } catch (e) {
-      log('error al actualizar los datos de animales $e');
+      log('Error al actualizar animal en Firebase: $e');
     }
   }
 
   Future<void> deleteAnimals(String refugio, Animal animal) async {
     try {
-      final uri = Uri.parse(UrlApi.url + "delete-animal");
-
-      if (animal.id != '') {
-        await http.post(
-          uri,
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({
-            'id_refugio': refugio,
-            'id_animal': animal.id,
-            'historial_medico_id': animal.historialMedicoId,
-          }),
-        );
-        log("Animal eliminado correctamente");
-      } else {
-        log('faltan datos de animal para eliminar el animal');
+      if (animal.id.isEmpty) {
+        log('Error: ID del animal vacío, no se puede eliminar');
+        return;
       }
+
+      await _database
+          .child('animales')
+          .child(refugio)
+          .child(animal.id)
+          .remove();
+
+      log("Animal eliminado correctamente de Firebase: ${animal.id}");
     } catch (e) {
-      log('error al actualizar los datos de animales $e');
+      log('Error al eliminar animal de Firebase: $e');
     }
   }
 }

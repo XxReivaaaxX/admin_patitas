@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
@@ -8,7 +6,6 @@ import 'package:admin_patitas/widgets/item_form_selection.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class AnimalRegister extends StatefulWidget {
   final String? id_refugio;
@@ -26,6 +23,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
   TextEditingController _raza = TextEditingController();
   String? _especie;
   String? _sexo;
+  String? _estadoAdopcion;
   DateTime? _fechaIngreso;
 
   Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
@@ -48,6 +46,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
         fechaIngreso: _fechaIngreso?.toIso8601String() ?? '',
         id: '',
         historialMedicoId: '',
+        estadoAdopcion: _estadoAdopcion ?? 'No Disponible',
       );
       await AnimalsService().registerAnimals(widget.id_refugio!, animal);
 
@@ -129,6 +128,15 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                       ),
                     ),
                   ],
+                ),
+                SizedBox(height: 20),
+
+                ItemFormSelection(
+                  onChanged: (value) => _estadoAdopcion = value,
+                  validator: (value) =>
+                      value == null ? 'Seleccione estado de adopción' : null,
+                  items: ['Disponible', 'No Disponible'],
+                  text: 'Estado Adopción',
                 ),
                 SizedBox(height: 20),
 
