@@ -1,3 +1,4 @@
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/screens/refugio_screen.dart';
 import 'package:admin_patitas/screens/sin_refugio.dart';
@@ -32,7 +33,14 @@ class AdminPatitasApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.teal),
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor:
+              AppColors.principalBackgroud, // Reemplaza el rosa por defecto
+        ),
+
+        useMaterial3: true,
+      ),
 
       title: 'Refugio de Animales - AdminPatitas',
 

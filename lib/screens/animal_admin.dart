@@ -35,7 +35,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
+      backgroundColor: const Color.fromARGB(255, 235, 235, 235),
       body: Center(
         //recorrer lista obtenida
         child: FutureBuilder<List<Animal>>(
