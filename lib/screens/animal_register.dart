@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -312,5 +311,6 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     );
   }
 }
+
 
 

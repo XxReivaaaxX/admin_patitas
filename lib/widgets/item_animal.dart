@@ -1,11 +1,15 @@
-import 'dart:convert';
-import 'package:flutter/material.dart';
+import 'dart:math';
+
 import 'package:admin_patitas/widgets/text_form_register.dart';
+import 'package:flutter/material.dart';
 
 class ItemAnimal extends StatelessWidget {
-  final void Function()? onTap, onpressedModificar, onpressedEliminar, onPressedAdopcion;
-  final String nombre, edad, estado, estadoAdopcion, imageUrl;
-  final double sizeImg;
+  final void Function()? onTap,
+      onpressedModificar,
+      onpressedEliminar,
+      onPressedAdopcion;
+  final String nombre, edad, estado, estadoAdopcion;
+  final sizeImg;
 
   const ItemAnimal({
     Key? key,
@@ -18,107 +22,129 @@ class ItemAnimal extends StatelessWidget {
     required this.onpressedModificar,
     required this.onpressedEliminar,
     required this.onPressedAdopcion,
-    required this.imageUrl,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.all(20),
-      color: Colors.white,
-      shadowColor: Colors.grey,
-      elevation: 8,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: InkWell(
-        onTap: onTap,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch, // Igual altura para todos
-          children: [
-            /// Imagen dinámica con botón fullscreen
-            Expanded(
-              flex: 1,
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.only(
+    return Container(
+      // Removed fixed height, letting content define it
+      child: Card(
+        margin: EdgeInsets.all(20),
+        color: Colors.white,
+        shadowColor: Colors.grey,
+        elevation: 8,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: InkWell(
+          onTap: onTap,
+          child: IntrinsicHeight(
+            // Ensures all children in Row stretch to the tallest one
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: ClipRRect(
+                    borderRadius: BorderRadiusGeometry.only(
                       topLeft: Radius.circular(12),
                       bottomLeft: Radius.circular(12),
                     ),
-                    child: imageUrl.isNotEmpty
-                        ? Image.memory(
-                            base64Decode(imageUrl.split(',').last),
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: double.infinity,
-                          )
-                        : Image.asset('assets/img/gatos_principal.jpg', fit: BoxFit.cover),
-                  ),
-                  Positioned(
-                    bottom: 8,
-                    right: 8,
-                    child: IconButton(
-                      icon: const Icon(Icons.fullscreen, color: Colors.white),
-                      tooltip: 'Ver imagen completa',
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return Dialog(
-                              insetPadding: const EdgeInsets.all(10),
-                              child: InteractiveViewer(
-                                child: imageUrl.isNotEmpty
-                                    ? Image.memory(base64Decode(imageUrl.split(',').last))
-                                    : Image.asset('assets/img/gatos_principal.jpg'),
-                              ),
-                            );
-                          },
-                        );
-                      },
+                    child: Image.asset(
+                      'assets/img/gatos_principal.jpg',
+                      fit: BoxFit.cover,
                     ),
                   ),
-                ],
-              ),
-            ),
-
-            /// Información del animal
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextForm(lines: 2, texto: nombre, color: Colors.black, size: 20, aling: TextAlign.left, negrita: FontWeight.bold),
-                    const SizedBox(height: 8),
-                    TextForm(lines: 2, texto: edad, color: Colors.black, size: 15, aling: TextAlign.left, negrita: FontWeight.normal),
-                    TextForm(lines: 2, texto: estado, color: Colors.black, size: 15, aling: TextAlign.left, negrita: FontWeight.normal),
-                  ],
                 ),
-              ),
-            ),
-
-            /// Botones de acción
-            Expanded(
-              flex: 1,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  IconButton(onPressed: onpressedModificar, icon: const Icon(Icons.edit, color: Colors.greenAccent)),
-                  IconButton(onPressed: onpressedEliminar, icon: const Icon(Icons.delete, color: Colors.red)),
-                  IconButton(
-                    onPressed: onPressedAdopcion,
-                    icon: Icon(Icons.pets, color: (estadoAdopcion == 'Disponible') ? Colors.blue : Colors.grey),
-                    tooltip: 'Estado Adopción: $estadoAdopcion',
+                Expanded(
+                  flex: 2,
+                  child: Container(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            padding: EdgeInsets.all(10),
+                            child: TextForm(
+                              lines: 2,
+                              texto: nombre,
+                              color: Colors.black,
+                              size: 20,
+                              aling: TextAlign.center,
+                              negrita: FontWeight.bold,
+                            ),
+                          ),
+                          Container(
+                            alignment: Alignment.centerLeft,
+                            padding: EdgeInsets.only(left: 25),
+                            child: Column(
+                              children: [
+                                TextForm(
+                                  lines: 2,
+                                  texto: edad,
+                                  color: Colors.black,
+                                  size: 15,
+                                  aling: TextAlign.left,
+                                  negrita: FontWeight.normal,
+                                ),
+                                TextForm(
+                                  lines: 2,
+                                  texto: estado,
+                                  color: Colors.black,
+                                  size: 15,
+                                  aling: TextAlign.left,
+                                  negrita: FontWeight.normal,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ],
-              ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: SingleChildScrollView(
+                    child: Container(
+                      margin: EdgeInsets.all(5),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          IconButton(
+                            onPressed: onpressedModificar,
+                            icon: Icon(Icons.edit, color: Colors.greenAccent),
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                          ),
+                          SizedBox(height: 10),
+                          IconButton(
+                            onPressed: onpressedEliminar,
+                            icon: Icon(Icons.delete, color: Colors.red),
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                          ),
+                          SizedBox(height: 10),
+                          IconButton(
+                            onPressed: onPressedAdopcion,
+                            icon: Icon(
+                              Icons.pets,
+                              color: (estadoAdopcion == 'Disponible')
+                                  ? Colors.blue
+                                  : Colors.grey,
+                            ),
+                            tooltip: 'Estado Adopción: $estadoAdopcion',
+                            padding: EdgeInsets.zero,
+                            constraints: BoxConstraints(),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
-
-

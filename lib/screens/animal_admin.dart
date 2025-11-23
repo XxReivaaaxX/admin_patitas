@@ -1,11 +1,12 @@
 import 'dart:developer';
-import 'package:flutter/material.dart';
-import 'package:admin_patitas/models/animal.dart';
-import 'package:admin_patitas/services/animals_service.dart';
-import 'package:admin_patitas/screens/animal_register.dart';
+
 import 'package:admin_patitas/screens/animal_update.dart';
+import 'package:admin_patitas/services/animals_service.dart';
+import 'package:admin_patitas/models/animal.dart';
+import 'package:admin_patitas/screens/animal_register.dart';
 import 'package:admin_patitas/screens/animal_view.dart';
 import 'package:admin_patitas/widgets/item_animal.dart';
+import 'package:flutter/material.dart';
 
 class AnimalAdmin extends StatefulWidget {
   final String? refugio;
@@ -20,7 +21,14 @@ class _AnimalAdminState extends State<AnimalAdmin> {
 
   @override
   void initState() {
+    log(
+      'datos obtenidos en vista:  ${AnimalsService().getAnimals(widget.refugio!)}',
+    );
+    //obtener lista de animales del refugio
     _futureAnimals = AnimalsService().getAnimals(widget.refugio!);
+
+    log('refugio obtenido en vista de animales:  ${widget.refugio!}');
+
     super.initState();
   }
 
@@ -29,126 +37,159 @@ class _AnimalAdminState extends State<AnimalAdmin> {
     return Scaffold(
       backgroundColor: Colors.grey[200],
       body: Center(
+        //recorrer lista obtenida
         child: FutureBuilder<List<Animal>>(
           future: _futureAnimals,
           builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const CircularProgressIndicator();
-            }
+            if (snapshot.hasData) {
+              return ListView.builder(
+                itemCount: snapshot.data!.length,
+                itemBuilder: (context, index) {
+                  return ItemAnimal(
+                    sizeImg: 70,
+                    nombre: snapshot.data![index].nombre,
+                    edad: snapshot.data![index].especie,
+                    estado: snapshot.data![index].estadoSalud,
+                    estadoAdopcion: snapshot.data![index].estadoAdopcion,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AnimalView(animal: snapshot.data![index]),
+                        ),
+                      );
+                    },
+                    onpressedEliminar: () async {
+                      final dialog = await showDialog<String>(
+                        context: context,
+                        builder: (BuildContext context) => AlertDialog(
+                          title: Text(
+                            'Eliminar a ' + snapshot.data![index].nombre,
+                          ),
+                          content: const Text(
+                            'Desea eliminar este animal se borraran todos sus datos',
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              onPressed: () => Navigator.pop(context, 'Cancel'),
+                              child: const Text('Cancelar'),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                await AnimalsService().deleteAnimals(
+                                  widget.refugio!,
+                                  snapshot.data![index],
+                                );
 
-            if (snapshot.hasError) {
-              return const Text('Error al cargar animales');
-            }
-
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Icon(Icons.pets, size: 80, color: Colors.grey),
-                  const SizedBox(height: 16),
-                  const Text('No hay animales registrados', style: TextStyle(fontSize: 18, color: Colors.grey)),
-                  const SizedBox(height: 8),
-                  ElevatedButton.icon(
-                    onPressed: () async {
+                                Navigator.pop(context, 'OK');
+                              },
+                              child: const Text('Aceptar'),
+                            ),
+                          ],
+                        ),
+                      );
+                      if (dialog == 'OK') {
+                        setState(() {
+                          _futureAnimals = AnimalsService().getAnimals(
+                            widget.refugio!,
+                          );
+                        });
+                      }
+                    },
+                    onpressedModificar: () async {
                       await Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => AnimalRegister(idRefugio: widget.refugio!)),
+                        MaterialPageRoute(
+                          builder: (context) => AnimalUpdate(
+                            id_refugio: widget.refugio,
+                            animal: snapshot.data![index],
+                          ),
+                        ),
                       );
+                      //recargar la lista cuando se cierra la ventana anterior
                       setState(() {
-                        _futureAnimals = AnimalsService().getAnimals(widget.refugio!);
+                        _futureAnimals = AnimalsService().getAnimals(
+                          widget.refugio!,
+                        );
                       });
                     },
-                    icon: const Icon(Icons.add),
-                    label: const Text('Registrar Animal'),
-                  ),
-                ],
+                    onPressedAdopcion: () async {
+                      Animal currentAnimal = snapshot.data![index];
+                      String newStatus =
+                          currentAnimal.estadoAdopcion == 'Disponible'
+                          ? 'No Disponible'
+                          : 'Disponible';
+
+                      log(
+                        'Cambiando estado de adopción de ${currentAnimal.nombre} a $newStatus',
+                      );
+
+                      Animal updatedAnimal = Animal(
+                        id: currentAnimal.id,
+                        raza: currentAnimal.raza,
+                        especie: currentAnimal.especie,
+                        estadoSalud: currentAnimal.estadoSalud,
+                        fechaIngreso: currentAnimal.fechaIngreso,
+                        historialMedicoId: currentAnimal.historialMedicoId,
+                        nombre: currentAnimal.nombre,
+                        genero: currentAnimal.genero,
+                        estadoAdopcion: newStatus,
+                      );
+
+                      await AnimalsService().updateAnimals(
+                        widget.refugio!,
+                        updatedAnimal,
+                      );
+
+                      // Small delay to ensure backend processes the update
+                      await Future.delayed(const Duration(milliseconds: 300));
+
+                      setState(() {
+                        _futureAnimals = AnimalsService().getAnimals(
+                          widget.refugio!,
+                        );
+                      });
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Estado de adopción actualizado a: $newStatus',
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                  //return Text(snapshot.data![index].nombre);
+                },
               );
+            } else if (snapshot.hasError) {
+              return Text('No tienes animales asignados');
             }
 
-            return ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) {
-                final animal = snapshot.data![index];
-                return ItemAnimal(
-                  sizeImg: 70,
-                  nombre: animal.nombre,
-                  edad: 'Especie: ${animal.especie}',
-                  estado: 'Estado: ${animal.estadoSalud}',
-                  estadoAdopcion: animal.estadoAdopcion,
-                  imageUrl: animal.imageUrl, // ahora se pasa la imagen
-                  onTap: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => AnimalView(animal: animal)));
-                  },
-                  onpressedEliminar: () async {
-                    final confirm = await showDialog<String>(
-                      context: context,
-                      builder: (context) => AlertDialog(
-                        title: Text('Eliminar a ${animal.nombre}'),
-                        content: const Text('¿Desea eliminar este animal? Se borrarán todos sus datos.'),
-                        actions: [
-                          TextButton(onPressed: () => Navigator.pop(context, 'Cancel'), child: const Text('Cancelar')),
-                          TextButton(
-                            onPressed: () async {
-                              await AnimalsService().deleteAnimals(widget.refugio!, animal);
-                              Navigator.pop(context, 'OK');
-                            },
-                            child: const Text('Aceptar'),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (confirm == 'OK') {
-                      setState(() {
-                        _futureAnimals = AnimalsService().getAnimals(widget.refugio!);
-                      });
-                    }
-                  },
-                  onpressedModificar: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => AnimalUpdate(id_refugio: widget.refugio, animal: animal)),
-                    );
-                    setState(() {
-                      _futureAnimals = AnimalsService().getAnimals(widget.refugio!);
-                    });
-                  },
-                  onPressedAdopcion: () async {
-                    final nuevoEstado = animal.estadoAdopcion == 'Disponible' ? 'No Disponible' : 'Disponible';
-                    final actualizado = Animal(
-                      id: animal.id,
-                      nombre: animal.nombre,
-                      especie: animal.especie,
-                      raza: animal.raza,
-                      genero: animal.genero,
-                      estadoSalud: animal.estadoSalud,
-                      fechaIngreso: animal.fechaIngreso,
-                      historialMedicoId: animal.historialMedicoId,
-                      estadoAdopcion: nuevoEstado,
-                      imageUrl: animal.imageUrl,
-                    );
-                    await AnimalsService().updateAnimals(widget.refugio!, actualizado);
-                    setState(() {
-                      _futureAnimals = AnimalsService().getAnimals(widget.refugio!);
-                    });
-                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Estado actualizado a: $nuevoEstado')));
-                  },
-                );
-              },
-            );
+            return const CircularProgressIndicator();
           },
         ),
       ),
+
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
+
         onPressed: () async {
-          await Navigator.push(context, MaterialPageRoute(builder: (context) => AnimalRegister(idRefugio: widget.refugio!)));
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AnimalRegister(idRefugio: widget.refugio!),
+            ),
+          );
+          //recargar la lista cuando se cierra la ventana anterior
           setState(() {
             _futureAnimals = AnimalsService().getAnimals(widget.refugio!);
           });
         },
+
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );
   }
 }
-

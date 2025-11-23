@@ -37,8 +37,8 @@ class AdminPatitasApp extends StatelessWidget {
       title: 'Refugio de Animales - AdminPatitas',
 
       initialRoute: '/',
+
       routes: {
-        //'/': (context) => const StreamScreen(),
         '/': (context) => SplashScreen(
           mensaje: "Cargando Aplicación",
           nextRoute: '/login',
@@ -54,6 +54,8 @@ class AdminPatitasApp extends StatelessWidget {
         '/manage_collaborators': (context) => const ManageCollaborators(),
         '/register_existing_users': (context) =>
             const RegisterExistingUsersScreen(),
+        //'/lista_animales': (context) =>
+          //  ListaAnimalesPage(idRefugio: 'ID_DEL_REFUGIO'),
       },
     );
   }
