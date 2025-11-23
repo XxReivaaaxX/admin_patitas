@@ -1,14 +1,17 @@
-import 'dart:typed_data';
 import 'dart:convert';
-
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/item_form_selection.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
-import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
+import 'dart:html' as html; // Solo para Web
 
 class AnimalRegister extends StatefulWidget {
   final String idRefugio;
@@ -31,45 +34,88 @@ class _AnimalRegisterState extends State<AnimalRegister> {
 
   final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
 
+  /// Selección entre cámara y galería
   Future<void> seleccionarImagen() async {
     final picker = ImagePicker();
+
+    showModalBottomSheet(
+      context: context,
+      builder: (context) {
+        return Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: const Text('Tomar foto'),
+              onTap: () async {
+                Navigator.pop(context);
+                final imgFile = await picker.pickImage(source: ImageSource.camera);
+                if (imgFile != null) setState(() => _imagen = imgFile);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_library),
+              title: const Text('Seleccionar de galería'),
+              onTap: () async {
+                Navigator.pop(context);
+                final imgFile = await picker.pickImage(source: ImageSource.gallery);
+                if (imgFile != null) setState(() => _imagen = imgFile);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Descargar imagen con indicador de progreso
+  Future<void> descargarImagen() async {
+    if (_imagen == null) return;
+    setState(() => _isLoading = true);
+
     try {
-      final img = await picker.pickImage(source: ImageSource.gallery);
-      if (img != null) {
-        setState(() => _imagen = img);
+      final bytes = await _imagen!.readAsBytes();
+
+      if (kIsWeb) {
+        final blob = html.Blob([bytes]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute("download", "animal.jpg")
+          ..click();
+        html.Url.revokeObjectUrl(url);
+      } else {
+        final directory = await getApplicationDocumentsDirectory();
+        final filePath =
+            '${directory.path}/animal_${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final file = File(filePath);
+        await file.writeAsBytes(bytes);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Imagen guardada en: $filePath')),
+        );
       }
     } catch (e) {
-      print('Error seleccionando imagen: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al descargar imagen: $e')),
+      );
+    } finally {
+      setState(() => _isLoading = false);
     }
   }
 
-  /*
-  Future<void> detectarAnimal(File imagen) async {
-    // Falta implementar preprocessImage, reshape y getLabel
-    // var input = preprocessImage(imagen);
-    // var output = List.filled(1 * 120, 0).reshape([1, 120]);
-    // _interpreter!.run(input, output);
-    // ...
-  }
-  */
-
+  /// Registro del animal con imagen en Base64
   Future<void> registrarAnimal() async {
     if (!_formKey.currentState!.validate()) return;
 
     if (_imagen == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor seleccione una foto del animal'),
-        ),
+        const SnackBar(content: Text('Por favor seleccione una foto del animal')),
       );
       return;
     }
 
     if (_fechaIngreso == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor seleccione la fecha de ingreso'),
-        ),
+        const SnackBar(content: Text('Por favor seleccione la fecha de ingreso')),
       );
       return;
     }
@@ -77,32 +123,23 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     setState(() => _isLoading = true);
 
     try {
-      print('Iniciando registro de animal...');
-
-      // 1. Convertir imagen a Base64 para guardar en Realtime Database
-      print('Convirtiendo imagen a Base64...');
       final bytes = await _imagen!.readAsBytes();
       final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
-      print('Imagen convertida exitosamente');
 
-      // 2. Guardar en Realtime Database
-      print('Creando objeto Animal...');
       final Animal animal = Animal(
         nombre: _nombre.text,
         especie: _especie!,
         raza: _raza.text,
         genero: _sexo!,
         estadoSalud: '',
-        fechaIngreso: _fechaIngreso?.toIso8601String() ?? '',
+        fechaIngreso: _fechaIngreso!.toIso8601String(),
         id: '',
         historialMedicoId: '',
         estadoAdopcion: _estadoAdopcion ?? 'No Disponible',
         imageUrl: base64Image,
       );
 
-      print('Guardando en Realtime Database...');
       await AnimalsService().registerAnimals(widget.idRefugio, animal);
-      print('Animal registrado exitosamente');
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -110,14 +147,10 @@ class _AnimalRegisterState extends State<AnimalRegister> {
         );
         Navigator.pop(context);
       }
-    } catch (e, stackTrace) {
-      print('Error al registrar animal: $e');
-      print('Stack trace: $stackTrace');
-      if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error al registrar: $e')));
-      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al registrar: $e')),
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -146,138 +179,131 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 negrita: FontWeight.bold,
               ),
               const SizedBox(height: 20),
-              Formulario(
-                controller: _nombre,
-                text: 'Nombre',
-                textOcul: false,
-                colorBorder: Colors.black,
-                colorBorderFocus: colorPrincipal,
-                colorTextForm: Colors.grey,
-                colorText: Colors.black,
-                sizeM: 30,
-                sizeP: 10,
-              ),
+              Formulario(controller: _nombre, text: 'Nombre', textOcul: false, colorBorder: Colors.black, colorBorderFocus: colorPrincipal, colorTextForm: Colors.grey, colorText: Colors.black, sizeM: 30, sizeP: 10),
               Row(
                 children: [
                   Expanded(
                     child: ItemFormSelection(
                       onChanged: (value) => _especie = value,
-                      validator: (value) =>
-                          value == null ? 'Seleccione una especie' : null,
+                      validator: (value) => value == null ? 'Seleccione una especie' : null,
                       items: ['Perro', 'Gato', 'Otro'],
                       text: 'Especie',
                     ),
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: ItemFormSelection(
                       onChanged: (value) => _sexo = value,
-                      validator: (value) =>
-                          value == null ? 'Seleccione el Sexo' : null,
+                      validator: (value) => value == null ? 'Seleccione el Sexo' : null,
                       items: ['Macho', 'Hembra'],
                       text: 'Sexo',
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ItemFormSelection(
                 onChanged: (value) => _estadoAdopcion = value,
-                validator: (value) =>
-                    value == null ? 'Seleccione estado de adopción' : null,
+                validator: (value) => value == null ? 'Seleccione estado de adopción' : null,
                 items: ['Disponible', 'No Disponible'],
                 text: 'Estado Adopción',
               ),
-              SizedBox(height: 20),
-
-              Formulario(
-                controller: _raza,
-                text: 'Raza',
-                textOcul: false,
-                colorBorder: Colors.black,
-                colorBorderFocus: colorPrincipal,
-                colorTextForm: Colors.grey,
-                colorText: Colors.black,
-                sizeM: 30,
-                sizeP: 10,
-              ),
+              const SizedBox(height: 20),
+              Formulario(controller: _raza, text: 'Raza', textOcul: false, colorBorder: Colors.black, colorBorderFocus: colorPrincipal, colorTextForm: Colors.grey, colorText: Colors.black, sizeM: 30, sizeP: 10),
               const SizedBox(height: 16),
 
-              // Botón para seleccionar foto
               ElevatedButton.icon(
                 icon: const Icon(Icons.photo_library),
-                label: const Text('Seleccionar Foto'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.all(15),
-                ),
+                label: const Text('Seleccionar Imagen'),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.black, padding: const EdgeInsets.all(15)),
                 onPressed: _isLoading ? null : seleccionarImagen,
               ),
-              if (_imagen != null)
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
-                  child: FutureBuilder<Uint8List>(
-                    future: _imagen!.readAsBytes(),
-                    builder: (context, snapshot) {
-                      if (snapshot.hasData) {
-                        return Image.memory(
-                          snapshot.data!,
-                          height: 150,
-                          fit: BoxFit.cover,
-                        );
-                      }
-                      return const CircularProgressIndicator();
-                    },
-                  ),
-                ),
-              const SizedBox(height: 16),
 
+              if (_imagen != null)
+                Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    ClipOval(
+                      child: GestureDetector(
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return Dialog(
+                                insetPadding: const EdgeInsets.all(10),
+                                child: InteractiveViewer(
+                                  child: kIsWeb
+                                      ? Image.network(_imagen!.path)
+                                      : Image.file(File(_imagen!.path)),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                        child: kIsWeb
+                            ? Image.network(_imagen!.path, height: 150, width: 150, fit: BoxFit.cover)
+                            : Image.file(File(_imagen!.path), height: 150, width: 150, fit: BoxFit.cover),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton.icon(
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: const Text('Confirmar eliminación'),
+                                  content: const Text('¿Desea eliminar la imagen seleccionada?'),
+                                  actions: [
+                                    TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+                                    ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Eliminar')),
+                                  ],
+                                );
+                              },
+                            );
+                            if (confirm == true) setState(() => _imagen = null);
+                          },
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          label: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+                        ),
+                        const SizedBox(width: 20),
+                        TextButton.icon(
+                          onPressed: seleccionarImagen,
+                          icon: const Icon(Icons.change_circle, color: Colors.blue),
+                          label: const Text('Cambiar', style: TextStyle(color: Colors.blue)),
+                        ),
+                        const SizedBox(width: 20),
+                        TextButton.icon(
+                          onPressed: descargarImagen,
+                          icon: const Icon(Icons.download, color: Colors.green),
+                          label: const Text('Descargar', style: TextStyle(color: Colors.green)),
+                        ),
+                      ],
+                    ),
+                    if (_isLoading)
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(),
+                      ),
+                  ],
+                ),
+
+              const SizedBox(height: 16),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 20,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: const BorderSide(color: Colors.grey, width: 2),
-                  ),
-                ),
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: const BorderSide(color: Colors.grey, width: 2))),
                 onPressed: () async {
-                  final pickedDate = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime.now(),
-                  );
-                  if (pickedDate != null) {
-                    setState(() {
-                      _fechaIngreso = pickedDate;
-                    });
-                  }
+                  final pickedDate = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2020), lastDate: DateTime.now());
+                  if (pickedDate != null) setState(() => _fechaIngreso = pickedDate);
                 },
-                child: Text(
-                  _fechaIngreso == null
-                      ? 'Seleccionar fecha de ingreso'
-                      : 'Fecha: ${_fechaIngreso!.day.toString().padLeft(2, '0')}/'
-                            '${_fechaIngreso!.month.toString().padLeft(2, '0')}/'
-                            '${_fechaIngreso!.year}',
-                ),
+                child: Text(_fechaIngreso == null ? 'Seleccionar fecha de ingreso' : 'Fecha: ${_fechaIngreso!.day.toString().padLeft(2, '0')}/${_fechaIngreso!.month.toString().padLeft(2, '0')}/${_fechaIngreso!.year}'),
               ),
               const SizedBox(height: 24),
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : BotonLogin(
-                      onPressed: registrarAnimal,
-                      texto: 'Registrar Animal',
-                      color: Colors.white,
-                      colorB: colorPrincipal,
-                      size: 15,
-                      negrita: FontWeight.normal,
-                    ),
+                  : BotonLogin(onPressed: registrarAnimal, texto: 'Registrar Animal', color: Colors.white, colorB: colorPrincipal, size: 15, negrita: FontWeight.normal),
             ],
           ),
         ),
@@ -285,3 +311,6 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     );
   }
 }
+
+
+
