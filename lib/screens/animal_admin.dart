@@ -61,8 +61,8 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                         ),
                       );
                     },
-                    onpressedEliminar: () {
-                      showDialog<String>(
+                    onpressedEliminar: () async {
+                      final dialog = await showDialog<String>(
                         context: context,
                         builder: (BuildContext context) => AlertDialog(
                           title: Text(
@@ -77,11 +77,12 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               child: const Text('Cancelar'),
                             ),
                             TextButton(
-                              onPressed: () {
-                                AnimalsService().deleteAnimals(
+                              onPressed: () async {
+                                await AnimalsService().deleteAnimals(
                                   widget.refugio!,
                                   snapshot.data![index],
                                 );
+
                                 Navigator.pop(context, 'OK');
                               },
                               child: const Text('Aceptar'),
@@ -89,6 +90,13 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                           ],
                         ),
                       );
+                      if (dialog == 'OK') {
+                        setState(() {
+                          _futureAnimals = AnimalsService().getAnimals(
+                            widget.refugio!,
+                          );
+                        });
+                      }
                     },
                     onpressedModificar: () async {
                       await Navigator.push(

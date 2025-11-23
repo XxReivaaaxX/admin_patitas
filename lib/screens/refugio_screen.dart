@@ -26,20 +26,77 @@ class RefugioScreen extends StatefulWidget {
 }
 
 class _RefugioScreenState extends State<RefugioScreen> {
-  late final User user;
-  late Future<List<Refugio>> _futureRefugios;
+  late User user;
+  List<Refugio> _futureRefugios = [];
 
   @override
-  void initState() {
+  initState() {
     // TODO: implement initState
-    user = FirebaseAuth.instance.currentUser!;
-
-    _futureRefugios = RefugioController().getRefugios(user.uid);
-
     super.initState();
+    user = FirebaseAuth.instance.currentUser!;
+    log('usuario encontrado dentro de ventana refugios:  ${user}');
+    carga(user);
+  }
+
+  Future<void> carga(User user) async {
+    _futureRefugios = await RefugioController().getRefugios(user.uid);
+    log('refugios encontrados:  ${_futureRefugios}');
+    setState(() {});
   }
 
   // visualisacion para pantallas pequeñas
+  Widget getMovil() {
+    return Scaffold(
+      body: _futureRefugios.isEmpty
+          ? Center(child: CircularProgressIndicator())
+          : SizedBox(
+              height: 150,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _futureRefugios.length,
+                itemBuilder: (context, index) {
+                  return CardRefugios(
+                    onTap: () {
+                      PreferencesController.preferences.setString(
+                        'refugio',
+                        _futureRefugios[index].id,
+                      );
+
+                      Navigator.pushNamedAndRemoveUntil(
+                        context,
+                        '/principal',
+                        (route) => false,
+                      );
+                    },
+                    colorDer: Colors.black,
+                    colorIzq: Colors.white,
+                    sizeImg: 60,
+                    sizeText: 10,
+                    nombre: _futureRefugios[index].nombre,
+                    correo: user.email,
+                  );
+                  //return Text(snapshot.data![index].nombre);
+                },
+              ),
+            ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          await showModalBottomSheet<void>(
+            context: context,
+            builder: (BuildContext context) {
+              return MenuRefugios();
+            },
+          );
+          setState(() {
+            carga(user);
+          });
+        },
+
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+  /*
   Widget getMovil() {
     return Scaffold(
       body: ListView(
@@ -103,13 +160,14 @@ class _RefugioScreenState extends State<RefugioScreen> {
         child: const Icon(Icons.add),
       ),
     );
-  }
+  }*/
 
   // visualisacion para pantallas grandes
   Widget getWeb() {
     return Scaffold(
       body: ListView(
         children: [
+          /*
           FutureBuilder<List<Refugio>>(
             future: _futureRefugios,
             builder: (context, snapshot) {
@@ -150,7 +208,7 @@ class _RefugioScreenState extends State<RefugioScreen> {
 
               return const CircularProgressIndicator();
             },
-          ),
+          ),*/
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -162,7 +220,7 @@ class _RefugioScreenState extends State<RefugioScreen> {
             },
           );
           setState(() {
-            _futureRefugios = RefugioController().getRefugios(user.uid);
+            carga(user);
           });
         },
 
