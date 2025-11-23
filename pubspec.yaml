@@ -21,13 +21,15 @@ dependencies:
   google_fonts: ^6.3.2
   shared_preferences: ^2.5.3
   flutter_pdfview: ^1.3.1
+  syncfusion_flutter_pdfviewer: ^24.2.8
 
   #syncfusion_flutter_pdfviewer: ^24.1.41
 
-  tflite_flutter: ^0.10.0
   firebase_storage: ^13.0.4
 
-
+  # IA y procesamiento de imágenes
+  tflite_flutter: ^0.12.1
+  image: ^4.0.0
 
 dev_dependencies:
   flutter_test:
@@ -47,4 +49,4 @@ flutter:
      - assets/img/perros_principal.png
      - assets/img/perros_principal7.png
      - assets/terminosycondiciones.pdf
-
+     - assets/model.tflite

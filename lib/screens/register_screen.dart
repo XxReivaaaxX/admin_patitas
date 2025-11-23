@@ -6,6 +6,9 @@ import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:html' as html; // Solo para Web
 
 class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
@@ -31,26 +34,52 @@ class _RegisterUserState extends State<RegisterUser> {
     userController = UserController();
     super.initState();
   }
-  /*
+
   void _verTerminos() {
     if (kIsWeb) {
       html.window.open('assets/terminosycondiciones.pdf', '_blank');
+      setState(() {
+        pdfOpened = true;
+      });
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => Scaffold(
-            appBar: AppBar(title: const Text('Términos y Condiciones')),
-            body: SfPdfViewer.asset('assets/terminosycondiciones.pdf'),
+      showDialog(
+        context: context,
+        builder: (context) => Dialog(
+          insetPadding: const EdgeInsets.all(10),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.95,
+            height: MediaQuery.of(context).size.height * 0.85,
+            child: Column(
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(8.0),
+                  child: Text(
+                    'Términos y Condiciones',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                ),
+                Expanded(
+                  child: SfPdfViewer.asset('assets/terminosycondiciones.pdf'),
+                ),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      setState(() {
+                        pdfOpened = true;
+                      });
+                    },
+                    child: const Text('Cerrar'),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       );
     }
-
-    setState(() {
-      pdfOpened = true;
-    });
-  }*/
+  }
 
   void _register() async {
     if (_formkey.currentState!.validate()) {
