@@ -171,7 +171,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AnimalRegister(id_refugio: widget.refugio),
+              builder: (context) => AnimalRegister(idRefugio: widget.refugio!),
             ),
           );
           //recargar la lista cuando se cierra la ventana anterior
