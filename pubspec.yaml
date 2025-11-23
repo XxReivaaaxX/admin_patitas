@@ -15,7 +15,7 @@ dependencies:
   firebase_auth: ^6.1.1
   firebase_database: ^12.1.0
   cloud_firestore: ^6.0.3
-  image_picker: ^1.2.0
+  image_picker: ^1.2.1
   flutter_screenshot_detect: ^0.1.7
   http: ^1.5.0
   google_fonts: ^6.3.2
@@ -30,6 +30,7 @@ dependencies:
   # IA y procesamiento de imágenes
   tflite_flutter: ^0.12.1
   image: ^4.0.0
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
