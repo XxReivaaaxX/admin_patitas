@@ -3,12 +3,10 @@ import 'package:admin_patitas/services/user_service.dart';
 import 'package:admin_patitas/screens/pantalla_carga.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
-import 'package:admin_patitas/widgets/logo_bar.dart';
-import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:html' as html; // Solo para Web
+import 'package:url_launcher/url_launcher.dart'; // NUEVO
 
 class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
@@ -35,10 +33,20 @@ class _RegisterUserState extends State<RegisterUser> {
     super.initState();
   }
 
-  void _verTerminos() {
+  /// Abrir términos y condiciones
+  void _verTerminos() async {
+    const pdfPath = 'assets/terminosycondiciones.pdf';
+
     if (kIsWeb) {
-      html.window.open('assets/terminosycondiciones.pdf', '_blank');
+      // Para Web: abrir en nueva pestaña
+      final Uri pdfUri = Uri.parse(pdfPath);
+      if (!await launchUrl(pdfUri, mode: LaunchMode.externalApplication)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No se pudo abrir el PDF')),
+        );
+      }
     } else {
+      // Para móvil: mostrar visor PDF
       showDialog(
         context: context,
         builder: (context) => Dialog(
@@ -56,7 +64,7 @@ class _RegisterUserState extends State<RegisterUser> {
                   ),
                 ),
                 Expanded(
-                  child: SfPdfViewer.asset('assets/terminosycondiciones.pdf'),
+                  child: SfPdfViewer.asset(pdfPath),
                 ),
                 Align(
                   alignment: Alignment.centerRight,
@@ -73,7 +81,7 @@ class _RegisterUserState extends State<RegisterUser> {
     }
 
     setState(() {
-      pdfOpened = true; // Se habilita el checkbox después de abrir el PDF
+      pdfOpened = true; // habilita el checkbox
     });
   }
 
@@ -134,10 +142,7 @@ class _RegisterUserState extends State<RegisterUser> {
               child: Container(
                 alignment: Alignment.center,
                 color: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 40,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
                 child: Form(
                   key: _formKey,
                   child: Column(
@@ -199,7 +204,7 @@ class _RegisterUserState extends State<RegisterUser> {
                                       isChecked = value!;
                                     });
                                   }
-                                : null, // Deshabilitado si no se abrió el PDF
+                                : null,
                           ),
                           const Text('Acepto términos y condiciones'),
                           TextButton(
@@ -226,3 +231,4 @@ class _RegisterUserState extends State<RegisterUser> {
     );
   }
 }
+
