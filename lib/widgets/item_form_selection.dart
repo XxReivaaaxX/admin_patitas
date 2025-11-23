@@ -5,6 +5,7 @@ class ItemFormSelection extends StatelessWidget {
   final FormFieldValidator<String>? validator;
   final List<String> items; // lista de opciones
   final String text;
+  final String? initialValue;
 
   const ItemFormSelection({
     super.key,
@@ -13,11 +14,13 @@ class ItemFormSelection extends StatelessWidget {
     required this.validator,
     required this.items,
     required this.text,
+    this.initialValue,
   });
 
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
+      value: initialValue,
       decoration: InputDecoration(
         labelText: text,
         border: const OutlineInputBorder(

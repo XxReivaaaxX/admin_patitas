@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/models/historial_medico.dart';
+import 'package:admin_patitas/screens/animal_update.dart';
 import 'package:admin_patitas/screens/historial_register.dart';
 import 'package:admin_patitas/services/historial_medico_service.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
@@ -46,6 +47,7 @@ class _AnimalViewState extends State<AnimalView> {
       'Raza': widget.animal.raza,
       'Genero': widget.animal.genero,
       'Especie': widget.animal.especie,
+      'Estado de Adopción': widget.animal.estadoAdopcion,
       'Fecha': fechaIngreso != null
           ? '${fechaIngreso!.day}/${fechaIngreso!.month}/${fechaIngreso!.year}'
           : 'sin datos',
@@ -114,7 +116,18 @@ class _AnimalViewState extends State<AnimalView> {
                               Icons.settings,
                               color: Colors.greenAccent,
                             ),
-                            onPressed: () async {},
+                            onPressed: () async {
+                              await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => AnimalUpdate(
+                                    id_refugio: id_refugio,
+                                    animal: widget.animal,
+                                  ),
+                                ),
+                              );
+                              setState(() {});
+                            },
                           ),
                         ),
                         Expanded(child: CardInfoAnimal(datos: infoAnimal)),

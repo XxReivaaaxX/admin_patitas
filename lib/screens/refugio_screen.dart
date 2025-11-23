@@ -1,5 +1,6 @@
 import 'package:admin_patitas/models/user_role.dart';
 import 'package:admin_patitas/services/role_service.dart';
+import 'package:admin_patitas/services/adopcion_service.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/screens/menu_refugios.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -13,22 +14,40 @@ class RefugioScreen extends StatefulWidget {
   State<RefugioScreen> createState() => _RefugioScreenState();
 }
 
-class _RefugioScreenState extends State<RefugioScreen> {
+class _RefugioScreenState extends State<RefugioScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
   late Future<List<Map<String, dynamic>>> _futureRefugios;
   List<Map<String, dynamic>> _allRefugios = [];
   List<Map<String, dynamic>> _filteredRefugios = [];
   final TextEditingController _searchController = TextEditingController();
   final User user = FirebaseAuth.instance.currentUser!;
 
+  // Variables para adopciones guardadas
+  List<Map<String, dynamic>> _savedAnimals = [];
+  bool _isLoadingSaved = false;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     _loadRefugios();
+    _loadSavedAnimals();
+
+    _tabController.addListener(() {
+      if (_tabController.indexIsChanging) {
+        setState(() {}); // Rebuild to update FAB visibility immediately
+      }
+      if (_tabController.index == 1 && !_tabController.indexIsChanging) {
+        _loadSavedAnimals();
+      }
+    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _tabController.dispose();
     super.dispose();
   }
 
@@ -38,6 +57,34 @@ class _RefugioScreenState extends State<RefugioScreen> {
     setState(() {
       _filteredRefugios = _allRefugios;
     });
+  }
+
+  Future<void> _loadSavedAnimals() async {
+    setState(() => _isLoadingSaved = true);
+    try {
+      final animals = await AdopcionService().getSavedAnimals(user.uid);
+      setState(() {
+        _savedAnimals = animals;
+      });
+    } catch (e) {
+      log('Error loading saved animals: $e');
+    } finally {
+      setState(() => _isLoadingSaved = false);
+    }
+  }
+
+  Future<void> _removeSavedAnimal(String animalId) async {
+    try {
+      await AdopcionService().removeAnimal(user.uid, animalId);
+      _loadSavedAnimals(); // Recargar lista
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Animal eliminado de guardados')),
+        );
+      }
+    } catch (e) {
+      log('Error removing animal: $e');
+    }
   }
 
   void _filterRefugios(String query) {
@@ -81,7 +128,7 @@ class _RefugioScreenState extends State<RefugioScreen> {
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
         title: const Text(
-          'Mis Refugios',
+          'Panel de Usuario',
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -90,6 +137,16 @@ class _RefugioScreenState extends State<RefugioScreen> {
         ),
         backgroundColor: const Color.fromRGBO(55, 148, 194, 1),
         elevation: 0,
+        bottom: TabBar(
+          controller: _tabController,
+          indicatorColor: Colors.white,
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white70,
+          tabs: const [
+            Tab(icon: Icon(Icons.home_work), text: 'Mis Refugios'),
+            Tab(icon: Icon(Icons.bookmark), text: 'Mis Guardados'),
+          ],
+        ),
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.person, color: Colors.white),
@@ -120,278 +177,368 @@ class _RefugioScreenState extends State<RefugioScreen> {
           ),
         ],
       ),
-      body: Column(
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          // Search bar
-          Container(
-            padding: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: const Color.fromRGBO(55, 148, 194, 1),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
-                  blurRadius: 4,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: TextField(
-              controller: _searchController,
-              onChanged: _filterRefugios,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'Buscar refugio...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-                prefixIcon: const Icon(Icons.search, color: Colors.white),
-                suffixIcon: _searchController.text.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear, color: Colors.white),
-                        onPressed: () {
-                          _searchController.clear();
-                          _filterRefugios('');
-                        },
-                      )
-                    : null,
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.2),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 16,
-                ),
+          // Tab 1: Mis Refugios
+          _buildRefugiosTab(),
+          // Tab 2: Mis Guardados
+          _buildSavedTab(),
+        ],
+      ),
+      floatingActionButton: _tabController.index == 0
+          ? FloatingActionButton.extended(
+              onPressed: () async {
+                await showModalBottomSheet<void>(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return const MenuRefugios();
+                  },
+                );
+                _loadRefugios();
+              },
+              icon: const Icon(Icons.add),
+              label: const Text('Menú de Acciones'),
+              backgroundColor: const Color.fromRGBO(55, 148, 194, 1),
+            )
+          : null,
+    );
+  }
+
+  Widget _buildRefugiosTab() {
+    return Column(
+      children: [
+        // Search bar
+        Container(
+          padding: const EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            color: const Color.fromRGBO(55, 148, 194, 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: TextField(
+            controller: _searchController,
+            onChanged: _filterRefugios,
+            style: const TextStyle(color: Colors.white),
+            decoration: InputDecoration(
+              hintText: 'Buscar refugio...',
+              hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+              prefixIcon: const Icon(Icons.search, color: Colors.white),
+              suffixIcon: _searchController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear, color: Colors.white),
+                      onPressed: () {
+                        _searchController.clear();
+                        _filterRefugios('');
+                      },
+                    )
+                  : null,
+              filled: true,
+              fillColor: Colors.white.withOpacity(0.2),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(30),
+                borderSide: BorderSide.none,
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 20,
+                vertical: 16,
               ),
             ),
           ),
+        ),
 
-          // Refugios list
-          Expanded(
-            child: FutureBuilder<List<Map<String, dynamic>>>(
-              future: _futureRefugios,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+        // Refugios list
+        Expanded(
+          child: FutureBuilder<List<Map<String, dynamic>>>(
+            future: _futureRefugios,
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(
-                          Icons.error_outline,
-                          size: 64,
-                          color: Colors.red,
-                        ),
-                        const SizedBox(height: 16),
-                        Text('Error: ${snapshot.error}'),
-                      ],
-                    ),
-                  );
-                }
-
-                if (!snapshot.hasData || _filteredRefugios.isEmpty) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.home_work_outlined,
-                          size: 80,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          _searchController.text.isEmpty
-                              ? 'No tienes refugios'
-                              : 'No se encontraron refugios',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          _searchController.text.isEmpty
-                              ? 'Crea tu primer refugio'
-                              : 'Intenta con otra búsqueda',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[500],
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-
-                return GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: MediaQuery.of(context).size.width > 600
-                        ? 3
-                        : 2,
-                    childAspectRatio: 0.85,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: _filteredRefugios.length,
-                  itemBuilder: (context, index) {
-                    var refugioData = _filteredRefugios[index];
-                    String refugioId = refugioData['id'];
-                    Map<dynamic, dynamic> data = refugioData['data'];
-                    String role = refugioData['role'];
-                    String nombre = data['nombre'] ?? 'Sin nombre';
-                    String direccion = data['direccion'] ?? 'Sin dirección';
-
-                    return Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+              if (snapshot.hasError) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(
+                        Icons.error_outline,
+                        size: 64,
+                        color: Colors.red,
                       ),
-                      child: InkWell(
-                        onTap: () => _selectRefugio(refugioId, role),
-                        borderRadius: BorderRadius.circular(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // Image header
-                            Container(
-                              height: 120,
-                              decoration: BoxDecoration(
-                                borderRadius: const BorderRadius.only(
-                                  topLeft: Radius.circular(16),
-                                  topRight: Radius.circular(16),
-                                ),
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    const Color.fromRGBO(55, 148, 194, 1),
-                                    const Color.fromRGBO(55, 148, 194, 0.7),
-                                  ],
-                                ),
+                      const SizedBox(height: 16),
+                      Text('Error: ${snapshot.error}'),
+                    ],
+                  ),
+                );
+              }
+
+              if (!snapshot.hasData || _filteredRefugios.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.home_work_outlined,
+                        size: 80,
+                        color: Colors.grey[400],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        _searchController.text.isEmpty
+                            ? 'No tienes refugios'
+                            : 'No se encontraron refugios',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _searchController.text.isEmpty
+                            ? 'Crea tu primer refugio'
+                            : 'Intenta con otra búsqueda',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              return GridView.builder(
+                padding: const EdgeInsets.all(16),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: MediaQuery.of(context).size.width > 600
+                      ? 3
+                      : 2,
+                  childAspectRatio: 0.85,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: _filteredRefugios.length,
+                itemBuilder: (context, index) {
+                  var refugioData = _filteredRefugios[index];
+                  String refugioId = refugioData['id'];
+                  Map<dynamic, dynamic> data = refugioData['data'];
+                  String role = refugioData['role'];
+                  String nombre = data['nombre'] ?? 'Sin nombre';
+                  String direccion = data['direccion'] ?? 'Sin dirección';
+
+                  return Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: InkWell(
+                      onTap: () => _selectRefugio(refugioId, role),
+                      borderRadius: BorderRadius.circular(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Image header
+                          Container(
+                            height: 120,
+                            decoration: BoxDecoration(
+                              borderRadius: const BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16),
                               ),
-                              child: Stack(
-                                children: [
-                                  Center(
-                                    child: Icon(
-                                      Icons.home_work,
-                                      size: 60,
-                                      color: Colors.white.withOpacity(0.9),
-                                    ),
-                                  ),
-                                  if (role == 'admin')
-                                    Positioned(
-                                      top: 8,
-                                      right: 8,
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.orange,
-                                          borderRadius: BorderRadius.circular(
-                                            12,
-                                          ),
-                                        ),
-                                        child: const Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Icon(
-                                              Icons.admin_panel_settings,
-                                              size: 14,
-                                              color: Colors.white,
-                                            ),
-                                            SizedBox(width: 4),
-                                            Text(
-                                              'Admin',
-                                              style: TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  const Color.fromRGBO(55, 148, 194, 1),
+                                  const Color.fromRGBO(55, 148, 194, 0.7),
                                 ],
                               ),
                             ),
-
-                            // Content
-                            Expanded(
-                              child: Padding(
-                                padding: const EdgeInsets.all(12.0),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      nombre,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black87,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Row(
-                                      children: [
-                                        Icon(
-                                          Icons.location_on,
-                                          size: 14,
-                                          color: Colors.grey[600],
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Expanded(
-                                          child: Text(
-                                            direccion,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey[600],
-                                            ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                            child: Stack(
+                              children: [
+                                Center(
+                                  child: Icon(
+                                    Icons.home_work,
+                                    size: 60,
+                                    color: Colors.white.withOpacity(0.9),
+                                  ),
                                 ),
+                                if (role == 'admin')
+                                  Positioned(
+                                    top: 8,
+                                    right: 8,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.orange,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.admin_panel_settings,
+                                            size: 14,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'Admin',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+
+                          // Content
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    nombre,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black87,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.location_on,
+                                        size: 14,
+                                        color: Colors.grey[600],
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          direccion,
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                    );
-                  },
-                );
-              },
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSavedTab() {
+    if (_isLoadingSaved) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_savedAnimals.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.bookmark_border, size: 80, color: Colors.grey[400]),
+            const SizedBox(height: 16),
+            Text(
+              'No tienes animales guardados',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Ve a "Adopciones" para guardar tus favoritos',
+              style: TextStyle(fontSize: 14, color: Colors.grey[500]),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _savedAnimals.length,
+      itemBuilder: (context, index) {
+        final animal = _savedAnimals[index];
+        return Card(
+          margin: const EdgeInsets.only(bottom: 16),
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(12),
+            leading: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Container(
+                width: 60,
+                height: 60,
+                color: Colors.grey[200],
+                child: Icon(
+                  animal['especie'] == 'Gato' ? Icons.pets : Icons.pets,
+                  color: Colors.grey[400],
+                ),
+              ),
+            ),
+            title: Text(
+              animal['nombre'],
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 4),
+                Text('${animal['especie']} • ${animal['raza']}'),
+                const SizedBox(height: 4),
+                Text(
+                  'Salud: ${animal['estadoSalud']}',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+              ],
+            ),
+            trailing: IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              onPressed: () => _removeSavedAnimal(animal['animalId']),
             ),
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          await showModalBottomSheet<void>(
-            context: context,
-            builder: (BuildContext context) {
-              return const MenuRefugios();
-            },
-          );
-          _loadRefugios();
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Menú de Acciones'),
-        backgroundColor: const Color.fromRGBO(55, 148, 194, 1),
-      ),
+        );
+      },
     );
   }
 }

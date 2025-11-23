@@ -19,6 +19,7 @@ class AnimalsService {
         'estado_salud': animal.estadoSalud,
         'fecha_ingreso': animal.fechaIngreso,
         'estado_adopcion': animal.estadoAdopcion,
+        'imagenUrl': animal.imageUrl,
       });
 
       log("Animal registrado correctamente en Firebase: ${newAnimalRef.key}");
@@ -67,6 +68,7 @@ class AnimalsService {
         'estado_salud': animal.estadoSalud,
         'fecha_ingreso': animal.fechaIngreso,
         'estado_adopcion': animal.estadoAdopcion,
+        'imagenUrl': animal.imageUrl,
       });
 
       log("Animal actualizado correctamente en Firebase: ${animal.id}");
