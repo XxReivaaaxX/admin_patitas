@@ -1,12 +1,10 @@
 import 'dart:developer';
 
-import 'package:admin_patitas/models/historial_medico.dart';
 import 'package:admin_patitas/screens/animal_update.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/screens/animal_register.dart';
 import 'package:admin_patitas/screens/animal_view.dart';
-import 'package:admin_patitas/services/historial_medico_service.dart';
 import 'package:admin_patitas/widgets/item_animal.dart';
 import 'package:flutter/material.dart';
 
@@ -52,6 +50,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                     nombre: snapshot.data![index].nombre,
                     edad: snapshot.data![index].especie,
                     estado: snapshot.data![index].estadoSalud,
+                    estadoAdopcion: snapshot.data![index].estadoAdopcion,
                     onTap: () {
                       Navigator.push(
                         context,
@@ -115,6 +114,51 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                         );
                       });
                     },
+                    onPressedAdopcion: () async {
+                      Animal currentAnimal = snapshot.data![index];
+                      String newStatus =
+                          currentAnimal.estadoAdopcion == 'Disponible'
+                          ? 'No Disponible'
+                          : 'Disponible';
+
+                      log(
+                        'Cambiando estado de adopción de ${currentAnimal.nombre} a $newStatus',
+                      );
+
+                      Animal updatedAnimal = Animal(
+                        id: currentAnimal.id,
+                        raza: currentAnimal.raza,
+                        especie: currentAnimal.especie,
+                        estadoSalud: currentAnimal.estadoSalud,
+                        fechaIngreso: currentAnimal.fechaIngreso,
+                        historialMedicoId: currentAnimal.historialMedicoId,
+                        nombre: currentAnimal.nombre,
+                        genero: currentAnimal.genero,
+                        estadoAdopcion: newStatus,
+                      );
+
+                      await AnimalsService().updateAnimals(
+                        widget.refugio!,
+                        updatedAnimal,
+                      );
+
+                      // Small delay to ensure backend processes the update
+                      await Future.delayed(const Duration(milliseconds: 300));
+
+                      setState(() {
+                        _futureAnimals = AnimalsService().getAnimals(
+                          widget.refugio!,
+                        );
+                      });
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                            'Estado de adopción actualizado a: $newStatus',
+                          ),
+                        ),
+                      );
+                    },
                   );
                   //return Text(snapshot.data![index].nombre);
                 },
@@ -135,7 +179,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AnimalRegister(id_refugio: widget.refugio),
+              builder: (context) => AnimalRegister(idRefugio: widget.refugio!),
             ),
           );
           //recargar la lista cuando se cierra la ventana anterior

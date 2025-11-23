@@ -1,12 +1,8 @@
 import 'package:admin_patitas/utils/preferences_service.dart';
-import 'package:admin_patitas/services/user_service.dart';
 import 'package:admin_patitas/screens/refugio_screen.dart';
 import 'package:admin_patitas/screens/sin_refugio.dart';
-import 'package:admin_patitas/screens/stream_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 //import 'package:http/http.dart' as http;
 import 'package:admin_patitas/screens/principal_screen.dart';
@@ -15,6 +11,9 @@ import 'package:admin_patitas/screens/register_screen.dart';
 import 'package:admin_patitas/screens/panel_animales.dart';
 import 'package:admin_patitas/screens/login.dart';
 import 'package:admin_patitas/screens/pantalla_carga.dart';
+import 'package:admin_patitas/screens/refugio_settings.dart';
+import 'package:admin_patitas/screens/manage_collaborators.dart';
+import 'package:admin_patitas/screens/register_existing_users.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,6 +50,10 @@ class AdminPatitasApp extends StatelessWidget {
         '/register': (context) => const RegisterUser(),
         '/refugio': (context) => const RefugioScreen(),
         '/sinRefugio': (context) => const SinRefugio(),
+        '/refugio_settings': (context) => const RefugioSettings(),
+        '/manage_collaborators': (context) => const ManageCollaborators(),
+        '/register_existing_users': (context) =>
+            const RegisterExistingUsersScreen(),
       },
     );
   }
