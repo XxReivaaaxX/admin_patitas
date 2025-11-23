@@ -8,6 +8,7 @@ class Animal {
   final String nombre;
   final String genero;
   final String estadoAdopcion;
+  //final String imagenUrl; // NUEVO
 
   Animal({
     required this.id,
@@ -31,7 +32,20 @@ class Animal {
       fechaIngreso: json["fecha_ingreso"],
       nombre: json["nombre"],
       genero: json["sexo"],
+      //imagenUrl: json['imagenUrl'] ?? '',
       estadoAdopcion: json["estado_adopcion"] ?? 'No Disponible',
     );
   }
+  /*
+    Map<String, dynamic> toJson() => {
+    'nombre': nombre,
+    'especie': especie,
+    'raza': raza,
+    'sexo': genero,
+    'estado_salud': estadoSalud,
+    'fecha_ingreso': fechaIngreso,
+    'id': id,
+    'historial_medico_id': historialMedicoId,
+    'imagenUrl': imagenUrl,
+  };*/
 }
