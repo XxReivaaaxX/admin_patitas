@@ -43,6 +43,16 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     }
   }
 
+  /*
+  Future<void> detectarAnimal(File imagen) async {
+    // Falta implementar preprocessImage, reshape y getLabel
+    // var input = preprocessImage(imagen);
+    // var output = List.filled(1 * 120, 0).reshape([1, 120]);
+    // _interpreter!.run(input, output);
+    // ...
+  }
+  */
+
   Future<void> registrarAnimal() async {
     if (!_formKey.currentState!.validate()) return;
 

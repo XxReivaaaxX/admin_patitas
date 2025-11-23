@@ -6,7 +6,7 @@ class CardRefugios extends StatelessWidget {
   final double sizeText;
   final String nombre;
   final String? correo;
-  final sizeImg;
+  final double? sizeImg;
 
   const CardRefugios({
     Key? key,

@@ -6,9 +6,6 @@ import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'dart:html' as html; // Solo para Web
-import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class RegisterUser extends StatefulWidget {
   const RegisterUser({super.key});
@@ -34,7 +31,7 @@ class _RegisterUserState extends State<RegisterUser> {
     userController = UserController();
     super.initState();
   }
-
+  /*
   void _verTerminos() {
     if (kIsWeb) {
       html.window.open('assets/terminosycondiciones.pdf', '_blank');
@@ -53,7 +50,7 @@ class _RegisterUserState extends State<RegisterUser> {
     setState(() {
       pdfOpened = true;
     });
-  }
+  }*/
 
   void _register() async {
     if (_formkey.currentState!.validate()) {
@@ -66,7 +63,9 @@ class _RegisterUserState extends State<RegisterUser> {
 
       if (!isChecked) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Debes aceptar nuestros términos y condiciones')),
+          const SnackBar(
+            content: Text('Debes aceptar nuestros términos y condiciones'),
+          ),
         );
         return;
       }
@@ -79,16 +78,18 @@ class _RegisterUserState extends State<RegisterUser> {
       // Validación para correo
       final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
       if (!emailRegex.hasMatch(email)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('El correo no es válido')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('El correo no es válido')));
         return;
       }
 
       // Validación para contraseña mínima
       if (password.length < 6) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('La contraseña debe tener al menos 6 caracteres')),
+          const SnackBar(
+            content: Text('La contraseña debe tener al menos 6 caracteres'),
+          ),
         );
         return;
       }
@@ -198,17 +199,16 @@ class _RegisterUserState extends State<RegisterUser> {
                           : null,
                     ),
                     const Text('Acepto términos y condiciones'),
-                    TextButton(
-                      onPressed: _verTerminos,
-                      child: const Text('Ver'),
-                    ),
+                    TextButton(onPressed: () {}, child: const Text('Ver')),
                   ],
                 ),
                 BotonLogin(
                   onPressed: (pdfOpened && isChecked) ? _register : null,
                   texto: 'Registrar',
                   color: Colors.white,
-                  colorB: (pdfOpened && isChecked) ? colorPrincipal : Colors.grey,
+                  colorB: (pdfOpened && isChecked)
+                      ? colorPrincipal
+                      : Colors.grey,
                   size: 15,
                   negrita: FontWeight.normal,
                 ),
