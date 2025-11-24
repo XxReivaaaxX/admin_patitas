@@ -32,7 +32,6 @@ class _RegisterUserState extends State<RegisterUser> {
     super.initState();
   }
 
-  /// Abrir términos y condiciones
   Future<void> _verTerminos() async {
     const pdfPath = 'assets/terminosycondiciones.pdf';
 

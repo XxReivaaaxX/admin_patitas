@@ -3,7 +3,7 @@ import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/screens/refugio_screen.dart';
 import 'package:admin_patitas/screens/sin_refugio.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart'; 
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:admin_patitas/screens/principal_screen.dart';
@@ -55,10 +55,10 @@ class AdminPatitasApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => SplashScreen(
-              mensaje: "Cargando Aplicación",
-              nextRoute: '/login',
-              mainScreen: false,
-            ),
+          mensaje: "Cargando Aplicación",
+          nextRoute: '/login',
+          mainScreen: false,
+        ),
         '/login': (context) => const LoginScreen(),
         '/animales': (context) => const AnimalScreen(),
         '/principal': (context) => const PrincipalScreen(),
@@ -67,9 +67,9 @@ class AdminPatitasApp extends StatelessWidget {
         '/sinRefugio': (context) => const SinRefugio(),
         '/refugio_settings': (context) => const RefugioSettings(),
         '/manage_collaborators': (context) => const ManageCollaborators(),
-        '/register_existing_users': (context) => const RegisterExistingUsersScreen(),
+        '/register_existing_users': (context) =>
+            const RegisterExistingUsersScreen(),
       },
     );
   }
 }
-
