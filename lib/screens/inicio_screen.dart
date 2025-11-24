@@ -1,6 +1,7 @@
 import 'package:admin_patitas/screens/filtered_animals_screen.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/services/role_service.dart';
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -101,6 +102,7 @@ class _InicioScreenState extends State<InicioScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: AppColors.principalBackgroud,
         title: Text(_refugioNombre),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -113,34 +115,82 @@ class _InicioScreenState extends State<InicioScreen> {
           },
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          _buildCard(
-            imagePath: 'assets/img/perros_principal.png',
-            title: 'Perros',
-            subtitle: 'Amigos fieles, Amorosos y Protectores',
-            count: _countPerros,
-            onTap: () => _navigateToFiltered('Perros'),
-          ),
-          const SizedBox(height: 16),
-          _buildCard(
-            imagePath: 'assets/img/gatos_principal.jpg',
-            title: 'Gatos',
-            subtitle: 'Independientes, Curiosos y Extrovertidos',
-            count: _countGatos,
-            onTap: () => _navigateToFiltered('Gatos'),
-          ),
-          const SizedBox(height: 16),
-          _buildCard(
-            imagePath: 'assets/img/otros_principal.jpg',
-            title: 'Otros',
-            subtitle: 'Conejos, Tortugas y más amigos',
-            count: _countOtros,
-            onTap: () => _navigateToFiltered('Otros'),
-            isPlaceholder: true,
-          ),
-        ],
+      body: Container(
+        color: AppColors.principalBackgroud,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            if (constraints.maxWidth < 1400) {
+              return ListView(
+                padding: const EdgeInsets.all(16.0),
+                children: [
+                  _buildCard(
+                    imagePath: 'assets/img/perros_principal.png',
+                    title: 'Perros',
+                    subtitle: 'Amigos fieles, Amorosos y Protectores',
+                    count: _countPerros,
+                    onTap: () => _navigateToFiltered('Perros'),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildCard(
+                    imagePath: 'assets/img/gatos_principal.jpg',
+                    title: 'Gatos',
+                    subtitle: 'Independientes, Curiosos y Extrovertidos',
+                    count: _countGatos,
+                    onTap: () => _navigateToFiltered('Gatos'),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildCard(
+                    imagePath: 'assets/img/otros_principal.jpg',
+                    title: 'Otros',
+                    subtitle: 'Conejos, Tortugas y más amigos',
+                    count: _countOtros,
+                    onTap: () => _navigateToFiltered('Otros'),
+                    isPlaceholder: true,
+                  ),
+                ],
+              );
+            } else {
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: 50, vertical: 20),
+                child: GridView(
+                  padding: const EdgeInsets.all(16.0),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: constraints.maxWidth < 600 ? 0.85 : 2.5,
+                    crossAxisSpacing: 2,
+                    mainAxisSpacing: 16,
+                  ),
+                  children: [
+                    _buildCard(
+                      imagePath: 'assets/img/perros_principal.png',
+                      title: 'Perros',
+                      subtitle: 'Amigos fieles, Amorosos y Protectores',
+                      count: _countPerros,
+                      onTap: () => _navigateToFiltered('Perros'),
+                    ),
+
+                    _buildCard(
+                      imagePath: 'assets/img/gatos_principal.jpg',
+                      title: 'Gatos',
+                      subtitle: 'Independientes, Curiosos y Extrovertidos',
+                      count: _countGatos,
+                      onTap: () => _navigateToFiltered('Gatos'),
+                    ),
+
+                    _buildCard(
+                      imagePath: 'assets/img/otros_principal.jpg',
+                      title: 'Otros',
+                      subtitle: 'Conejos, Tortugas y más amigos',
+                      count: _countOtros,
+                      onTap: () => _navigateToFiltered('Otros'),
+                      isPlaceholder: true,
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
+        ),
       ),
     );
   }
@@ -163,7 +213,9 @@ class _InicioScreenState extends State<InicioScreen> {
     bool isPlaceholder = false,
   }) {
     return Card(
+      color: Colors.white,
       elevation: 4,
+
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: InkWell(
         onTap: onTap,
@@ -181,11 +233,11 @@ class _InicioScreenState extends State<InicioScreen> {
                       ? Container(
                           height: 180,
                           width: double.infinity,
-                          color: Colors.orange.shade100,
+                          color: AppColors.secondary,
                           child: Icon(
                             Icons.pets,
                             size: 80,
-                            color: Colors.orange.shade300,
+                            color: const Color.fromARGB(255, 95, 194, 161),
                           ),
                         )
                       : Image.asset(

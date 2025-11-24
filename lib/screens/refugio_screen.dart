@@ -9,6 +9,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer';
 
+import 'package:flutter/rendering.dart';
+
 class RefugioScreen extends StatefulWidget {
   const RefugioScreen({super.key});
 
@@ -137,16 +139,7 @@ class _RefugioScreenState extends State<RefugioScreen>
         ),
         backgroundColor: Colors.black,
         elevation: 0,
-        bottom: TabBar(
-          controller: _tabController,
-          indicatorColor: AppColors.primary,
-          labelColor: AppColors.primary,
-          unselectedLabelColor: Colors.white70,
-          tabs: const [
-            Tab(icon: Icon(Icons.home_work), text: 'Mis Refugios'),
-            Tab(icon: Icon(Icons.bookmark), text: 'Mis Guardados'),
-          ],
-        ),
+
         actions: [
           PopupMenuButton<String>(
             icon: const Icon(Icons.person, color: Colors.white),
@@ -177,14 +170,14 @@ class _RefugioScreenState extends State<RefugioScreen>
           ),
         ],
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          // Tab 1: Mis Refugios
-          _buildRefugiosTab(),
-          // Tab 2: Mis Guardados
-          _buildSavedTab(),
-        ],
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < 600) {
+            return menuMovil();
+          } else {
+            return menuWeb();
+          }
+        },
       ),
       floatingActionButton: _tabController.index == 0
           ? FloatingActionButton.extended(
@@ -197,282 +190,367 @@ class _RefugioScreenState extends State<RefugioScreen>
                 );
                 _loadRefugios();
               },
-              icon: const Icon(Icons.add),
-              label: const Text('Menú de Acciones'),
-              backgroundColor: const Color.fromRGBO(55, 148, 194, 1),
+              icon: const Icon(Icons.add, color: Colors.white),
+              label: const Text(
+                'Menú de Acciones',
+                style: TextStyle(color: Colors.white),
+              ),
+              backgroundColor: AppColors.primary,
             )
           : null,
     );
   }
 
-  Widget _buildRefugiosTab() {
+  Widget menuMovil() {
     return Column(
       children: [
-        // Search bar
         Container(
-          padding: const EdgeInsets.all(16.0),
-          decoration: BoxDecoration(
-            color: AppColors.principalBackgroud,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
+          color: Colors.black,
+          child: TabBar(
+            controller: _tabController,
+            indicatorColor: AppColors.primary,
+            labelColor: AppColors.primary,
+            unselectedLabelColor: Colors.grey,
+            tabs: const [
+              Tab(text: 'Mis Refugios'),
+              Tab(text: 'Mis Guardados'),
             ],
           ),
-          child: TextField(
-            controller: _searchController,
-            onChanged: _filterRefugios,
-            style: const TextStyle(color: Colors.black),
-            decoration: InputDecoration(
-              hintText: 'Buscar refugio...',
-              hintStyle: TextStyle(
-                color: const Color.fromARGB(255, 19, 18, 18).withOpacity(0.7),
-              ),
-              prefixIcon: const Icon(Icons.search, color: Colors.black),
-              suffixIcon: _searchController.text.isNotEmpty
-                  ? IconButton(
-                      icon: const Icon(Icons.clear, color: Colors.white),
-                      onPressed: () {
-                        _searchController.clear();
-                        _filterRefugios('');
-                      },
-                    )
-                  : null,
-              filled: true,
-              fillColor: AppColors.secondary.withOpacity(0.2),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(30),
-                borderSide: BorderSide.none,
-              ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 16,
-              ),
-            ),
+        ),
+        Expanded(
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              // Tab 1: Mis Refugios
+              _buildRefugiosTab(false),
+              // Tab 2: Mis Guardados
+              _buildSavedTab(),
+            ],
           ),
         ),
+      ],
+    );
+  }
 
-        // Refugios list
+  Widget menuWeb() {
+    return Row(
+      children: [
+        // Menú Lateral (NavigationRail)
+        NavigationRail(
+          backgroundColor: Colors.white,
+          selectedIndex: _tabController.index,
+          indicatorColor: AppColors.primary,
+          selectedIconTheme: IconThemeData(color: Colors.white),
+          unselectedIconTheme: IconThemeData(color: Colors.black),
+          onDestinationSelected: (index) {
+            setState(() {
+              _tabController.index = index;
+            });
+          },
+          labelType: NavigationRailLabelType.selected,
+          destinations: const [
+            NavigationRailDestination(
+              icon: Icon(Icons.home_work),
+              label: Text('Mis Refugios'),
+            ),
+            NavigationRailDestination(
+              icon: Icon(Icons.bookmark),
+              label: Text('Mis Guardados'),
+            ),
+          ],
+        ),
+        const VerticalDivider(thickness: 1, width: 1),
+        // Contenido de la pestaña (toma el resto del espacio)
         Expanded(
-          child: FutureBuilder<List<Map<String, dynamic>>>(
-            future: _futureRefugios,
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
-              }
+          child: TabBarView(
+            controller: _tabController,
+            children: [
+              // Tab 1: Mis Refugios
+              _buildRefugiosTab(true),
+              // Tab 2: Mis Guardados
+              _buildSavedTab(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
-              if (snapshot.hasError) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.error_outline,
-                        size: 64,
-                        color: Colors.red,
-                      ),
-                      const SizedBox(height: 16),
-                      Text('Error: ${snapshot.error}'),
-                    ],
+  Widget _buildRefugiosTab(bool pantalla) {
+    return Container(
+      color: AppColors.principalBackgroud,
+      child: Container(
+        margin: pantalla == true ? EdgeInsets.all(50) : EdgeInsets.all(0),
+        child: Column(
+          children: [
+            // Search bar
+            Container(
+              padding: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(color: AppColors.principalBackgroud),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _filterRefugios,
+                style: const TextStyle(color: Colors.black),
+                decoration: InputDecoration(
+                  hintText: 'Buscar refugio...',
+                  hintStyle: TextStyle(
+                    color: const Color.fromARGB(
+                      255,
+                      19,
+                      18,
+                      18,
+                    ).withOpacity(0.7),
                   ),
-                );
-              }
-
-              if (!snapshot.hasData || _filteredRefugios.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.home_work_outlined,
-                        size: 80,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        _searchController.text.isEmpty
-                            ? 'No tienes refugios'
-                            : 'No se encontraron refugios',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.grey[600],
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _searchController.text.isEmpty
-                            ? 'Crea tu primer refugio'
-                            : 'Intenta con otra búsqueda',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[500]),
-                      ),
-                    ],
+                  prefixIcon: const Icon(Icons.search, color: Colors.black),
+                  suffixIcon: _searchController.text.isNotEmpty
+                      ? IconButton(
+                          icon: const Icon(Icons.clear, color: Colors.white),
+                          onPressed: () {
+                            _searchController.clear();
+                            _filterRefugios('');
+                          },
+                        )
+                      : null,
+                  filled: true,
+                  fillColor: AppColors.secondary.withOpacity(0.2),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                    borderSide: BorderSide.none,
                   ),
-                );
-              }
-
-              return GridView.builder(
-                padding: const EdgeInsets.all(16),
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: MediaQuery.of(context).size.width > 600
-                      ? 3
-                      : 2,
-                  childAspectRatio: 0.85,
-                  crossAxisSpacing: 16,
-                  mainAxisSpacing: 16,
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 16,
+                  ),
                 ),
-                itemCount: _filteredRefugios.length,
-                itemBuilder: (context, index) {
-                  var refugioData = _filteredRefugios[index];
-                  String refugioId = refugioData['id'];
-                  Map<dynamic, dynamic> data = refugioData['data'];
-                  String role = refugioData['role'];
-                  String nombre = data['nombre'] ?? 'Sin nombre';
-                  String direccion = data['direccion'] ?? 'Sin dirección';
+              ),
+            ),
 
-                  return Card(
-                    elevation: 2,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: InkWell(
-                      onTap: () => _selectRefugio(refugioId, role),
-                      borderRadius: BorderRadius.circular(16),
+            // Refugios list
+            Expanded(
+              child: FutureBuilder<List<Map<String, dynamic>>>(
+                future: _futureRefugios,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Image header
-                          Container(
-                            height: 120,
-                            decoration: BoxDecoration(
-                              borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(16),
-                                topRight: Radius.circular(16),
-                              ),
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  const Color.fromRGBO(55, 148, 194, 1),
-                                  const Color.fromRGBO(55, 148, 194, 0.7),
-                                ],
-                              ),
-                            ),
-                            child: Stack(
-                              children: [
-                                Stack(
-                                  children: [
-                                    Center(
-                                      child: Icon(
-                                        Icons.home_work,
-                                        size: 60,
-                                        color: Colors.white.withOpacity(0.9),
-                                      ),
-                                    ),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withOpacity(0.4),
-                                        borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(15),
-                                          topRight: Radius.circular(15),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (role == 'admin')
-                                  Positioned(
-                                    top: 8,
-                                    right: 8,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.secondary,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.admin_panel_settings,
-                                            size: 14,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            'Admin',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 10,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                              ],
+                          const Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Colors.red,
+                          ),
+                          const SizedBox(height: 16),
+                          Text('Error: ${snapshot.error}'),
+                        ],
+                      ),
+                    );
+                  }
+
+                  if (!snapshot.hasData || _filteredRefugios.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.home_work_outlined,
+                            size: 80,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            _searchController.text.isEmpty
+                                ? 'No tienes refugios'
+                                : 'No se encontraron refugios',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
+                          const SizedBox(height: 8),
+                          Text(
+                            _searchController.text.isEmpty
+                                ? 'Crea tu primer refugio'
+                                : 'Intenta con otra búsqueda',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[500],
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
 
-                          // Content
-                          Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.all(12.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    nombre,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black87,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(height: 8),
-                                  Row(
-                                    children: [
-                                      Icon(
-                                        Icons.location_on,
-                                        size: 14,
-                                        color: Colors.grey[600],
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Expanded(
-                                        child: Text(
-                                          direccion,
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                          ),
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      if (constraints.maxWidth > 700) {
+                        return createGrid(
+                          SliverGridDelegateWithMaxCrossAxisExtent(
+                            maxCrossAxisExtent: 350,
+                            childAspectRatio: 0.85,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
+                        );
+                      } else {
+                        return createGrid(
+                          SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount:
+                                MediaQuery.of(context).size.width > 600 ? 3 : 2,
+                            childAspectRatio: 0.85,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
+                        );
+                      }
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget createGrid(SliverGridDelegate gridDelegate) {
+    return GridView.builder(
+      padding: const EdgeInsets.all(16),
+      gridDelegate: gridDelegate,
+      itemCount: _filteredRefugios.length,
+      itemBuilder: (context, index) {
+        var refugioData = _filteredRefugios[index];
+        String refugioId = refugioData['id'];
+        Map<dynamic, dynamic> data = refugioData['data'];
+        String role = refugioData['role'];
+        String nombre = data['nombre'] ?? 'Sin nombre';
+        String direccion = data['direccion'] ?? 'Sin dirección';
+
+        return Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: InkWell(
+            onTap: () => _selectRefugio(refugioId, role),
+            borderRadius: BorderRadius.circular(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Image header
+                Container(
+                  height: 120,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
+                    color: AppColors.primary,
+                  ),
+                  child: Stack(
+                    children: [
+                      Stack(
+                        children: [
+                          Center(
+                            child: Icon(
+                              Icons.home_work,
+                              size: 60,
+                              color: Colors.white.withOpacity(0.9),
+                            ),
+                          ),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.black.withOpacity(0.4),
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(15),
+                                topRight: Radius.circular(15),
                               ),
                             ),
                           ),
                         ],
                       ),
+                      if (role == 'admin')
+                        Positioned(
+                          top: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.secondary,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Admin',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+
+                // Content
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          nombre,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.location_on,
+                              size: 14,
+                              color: Colors.grey[600],
+                            ),
+                            const SizedBox(width: 4),
+                            Expanded(
+                              child: Text(
+                                direccion,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
-                  );
-                },
-              );
-            },
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 

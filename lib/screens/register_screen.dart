@@ -33,7 +33,7 @@ class _RegisterUserState extends State<RegisterUser> {
   }
 
   /// Abrir términos y condiciones
-  void _verTerminos() async {
+  Future<void> _verTerminos() async {
     const pdfPath = 'assets/terminosycondiciones.pdf';
 
     if (kIsWeb) {
@@ -135,95 +135,100 @@ class _RegisterUserState extends State<RegisterUser> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Container(
-                alignment: Alignment.center,
-                color: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 40,
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    children: [
-                      Text(
-                        '¡REGÍSTRATE AHORA!',
-                        style: TextStyle(
-                          color: colorPrincipal,
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 30),
-                      Formulario(
-                        controller: _email,
-                        text: 'Correo',
-                        textOcul: false,
-                        colorBorder: Colors.black,
-                        colorBorderFocus: colorPrincipal,
-                        colorTextForm: Colors.grey,
-                        colorText: Colors.black,
-                        sizeM: 20,
-                        sizeP: 10,
-                      ),
-                      Formulario(
-                        controller: _password,
-                        text: 'Contraseña',
-                        textOcul: true,
-                        colorBorder: Colors.black,
-                        colorBorderFocus: colorPrincipal,
-                        colorTextForm: Colors.grey,
-                        colorText: Colors.black,
-                        sizeM: 20,
-                        sizeP: 10,
-                      ),
-                      Formulario(
-                        controller: _validePassword,
-                        text: 'Validar Contraseña',
-                        textOcul: true,
-                        colorBorder: Colors.black,
-                        colorBorderFocus: colorPrincipal,
-                        colorTextForm: Colors.grey,
-                        colorText: Colors.black,
-                        sizeM: 20,
-                        sizeP: 10,
-                        passwordToCompare: _password.text,
-                      ),
-                      Row(
+          : Container(
+              color: Colors.white,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(maxWidth: 700),
+                  child: Padding(
+                    padding: EdgeInsetsGeometry.symmetric(horizontal: 30),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+
                         children: [
-                          Checkbox(
-                            checkColor: Colors.white,
-                            activeColor: colorPrincipal,
-                            side: const BorderSide(color: Colors.blue),
-                            value: isChecked,
-                            onChanged: pdfOpened
-                                ? (bool? value) {
-                                    setState(() {
-                                      isChecked = value!;
-                                    });
-                                  }
-                                : null,
+                          Text(
+                            '¡REGÍSTRATE AHORA!',
+                            style: TextStyle(
+                              color: colorPrincipal,
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          const Text('Acepto términos y condiciones'),
-                          TextButton(
-                            onPressed: _verTerminos,
-                            child: const Text('Ver'),
+                          const SizedBox(height: 30),
+                          Formulario(
+                            controller: _email,
+                            text: 'Correo',
+                            textOcul: false,
+                            colorBorder: Colors.black,
+                            colorBorderFocus: colorPrincipal,
+                            colorTextForm: Colors.grey,
+                            colorText: Colors.black,
+                            sizeM: 20,
+                            sizeP: 10,
+                          ),
+                          Formulario(
+                            controller: _password,
+                            text: 'Contraseña',
+                            textOcul: true,
+                            colorBorder: Colors.black,
+                            colorBorderFocus: colorPrincipal,
+                            colorTextForm: Colors.grey,
+                            colorText: Colors.black,
+                            sizeM: 20,
+                            sizeP: 10,
+                          ),
+                          Formulario(
+                            controller: _validePassword,
+                            text: 'Validar Contraseña',
+                            textOcul: true,
+                            colorBorder: Colors.black,
+                            colorBorderFocus: colorPrincipal,
+                            colorTextForm: Colors.grey,
+                            colorText: Colors.black,
+                            sizeM: 20,
+                            sizeP: 10,
+                            passwordToCompare: _password.text,
+                          ),
+                          Row(
+                            children: [
+                              Checkbox(
+                                checkColor: Colors.white,
+                                activeColor: colorPrincipal,
+                                side: const BorderSide(color: Colors.blue),
+                                value: isChecked,
+                                onChanged: pdfOpened
+                                    ? (bool? value) {
+                                        setState(() {
+                                          isChecked = value!;
+                                        });
+                                      }
+                                    : null, // Deshabilitado si no se abrió el PDF
+                              ),
+                              const Text('Acepto términos y condiciones'),
+                              TextButton(
+                                onPressed: _verTerminos,
+                                child: const Text('Ver'),
+                              ),
+                            ],
+                          ),
+                          BotonLogin(
+                            onPressed: (pdfOpened && isChecked)
+                                ? _register
+                                : null,
+                            texto: 'Registrar',
+                            color: Colors.white,
+                            colorB: (pdfOpened && isChecked)
+                                ? colorPrincipal
+                                : Colors.grey,
+                            size: 16,
+                            negrita: FontWeight.bold,
                           ),
                         ],
                       ),
-                      BotonLogin(
-                        onPressed: (pdfOpened && isChecked) ? _register : null,
-                        texto: 'Registrar',
-                        color: Colors.white,
-                        colorB: (pdfOpened && isChecked)
-                            ? colorPrincipal
-                            : Colors.grey,
-                        size: 16,
-                        negrita: FontWeight.bold,
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),

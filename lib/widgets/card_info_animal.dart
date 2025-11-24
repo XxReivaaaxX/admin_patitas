@@ -7,19 +7,23 @@ class CardInfoAnimal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(20),
+    return SingleChildScrollView(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        //crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
-        children: datos.entries.map((entry) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
 
-            children: [
-              Text(entry.key, style: TextStyle(color: Colors.blue)),
-              Text(entry.value),
-            ],
+        children: datos.entries.map((entry) {
+          return Container(
+            padding: EdgeInsets.only(bottom: 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
+              children: [
+                Text(entry.key, style: TextStyle(color: Colors.blue)),
+                Text(entry.value),
+              ],
+            ),
           );
         }).toList(),
       ),

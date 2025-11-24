@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:admin_patitas/models/historial_medico.dart';
 import 'package:admin_patitas/screens/historial_update.dart';
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/card_info_animal.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
@@ -42,8 +43,8 @@ class _CardInfoHistorialState extends State<CardInfoHistorial> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            child: IconButton(
-              icon: Icon(Icons.settings, color: Colors.greenAccent),
+            child: TextButton.icon(
+              icon: Icon(Icons.settings, color: AppColors.secondary),
               onPressed: () async {
                 final respuesta = await Navigator.push(
                   context,
@@ -72,6 +73,7 @@ class _CardInfoHistorialState extends State<CardInfoHistorial> {
                   });
                 }
               },
+              label: Text('Actualizar Historial'),
             ),
           ),
           CardInfoAnimal(

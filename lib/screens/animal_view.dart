@@ -139,28 +139,43 @@ class _AnimalViewState extends State<AnimalView> {
                     // Primera tab: Datos generales
                     Column(
                       children: [
-                        SizedBox(
-                          height: 50,
-                          child: IconButton(
-                            icon: Icon(
-                              Icons.settings,
-                              color: Colors.greenAccent,
-                            ),
-                            onPressed: () async {
-                              await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => AnimalUpdate(
-                                    id_refugio: idRefugio,
-                                    animal: widget.animal,
+                        Expanded(
+                          flex: 1,
+                          child: Container(
+                            height: 50,
+                            alignment: Alignment.center,
+                            child: IconButton(
+                              icon: Icon(
+                                Icons.settings,
+                                color: Colors.greenAccent,
+                              ),
+                              onPressed: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AnimalUpdate(
+                                      id_refugio: idRefugio,
+                                      animal: widget.animal,
+                                    ),
                                   ),
-                                ),
-                              );
-                              setState(() {});
-                            },
+                                );
+                                setState(() {});
+                              },
+                            ),
                           ),
                         ),
-                        Expanded(child: CardInfoAnimal(datos: infoAnimal)),
+                        Expanded(
+                          flex: 5,
+                          child: Center(
+                            child: Container(
+                              padding: EdgeInsets.symmetric(
+                                vertical: 20,
+                                horizontal: 50,
+                              ),
+                              child: CardInfoAnimal(datos: infoAnimal),
+                            ),
+                          ),
+                        ),
                       ],
                     ),
 
@@ -379,7 +394,143 @@ class _AnimalViewState extends State<AnimalView> {
 
   // visualisacion para pantallas grandes
   Widget getWeb() {
-    return Center(child: Text("falta version web"));
+    return Container(
+      color: Colors.grey[100],
+      padding: EdgeInsets.symmetric(horizontal: 50),
+
+      child: ListView(
+        children: [
+          //datos generales
+          Container(
+            height: 400,
+            margin: EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+            child: Card(
+              color: Colors.white,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    flex: 1,
+                    child: SizedBox(
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(14),
+                        ),
+                        child: Image.asset(
+                          'assets/img/gatos_principal.jpg',
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 100,
+                        vertical: 20,
+                      ),
+                      child: Column(
+                        children: [
+                          Container(
+                            alignment: Alignment.centerRight,
+                            margin: EdgeInsets.symmetric(vertical: 20),
+                            child: TextButton.icon(
+                              icon: Icon(
+                                Icons.settings,
+                                color: Colors.greenAccent,
+                              ),
+                              onPressed: () async {
+                                await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => AnimalUpdate(
+                                      id_refugio: idRefugio,
+                                      animal: widget.animal,
+                                    ),
+                                  ),
+                                );
+                                setState(() {});
+                              },
+                              label: Text('Actualizar Datos'),
+                            ),
+                          ),
+                          Expanded(child: CardInfoAnimal(datos: infoAnimal)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          //historial medico
+          if (widget.animal.historialMedicoId == '') ...[
+            //historial vacio
+            Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.all(16.0),
+                  child: ElevatedButton.icon(
+                    icon: const Icon(Icons.add),
+
+                    label: const Text('Crear historial medico'),
+                    onPressed: () async {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => HistorialRegister(
+                            nombre: widget.animal.nombre,
+                            id_animal: widget.animal.id,
+                            id_refugio: idRefugio,
+                          ),
+                        ),
+                      );
+                      //recargar la lista cuando se cierra la ventana anterior
+                      setState(() {});
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+                ),
+                Text('No hay historial medico selecciona + para crear uno'),
+              ],
+            ),
+          ] else ...[
+            //historial lleno
+            Card(
+              margin: EdgeInsets.symmetric(vertical: 20, horizontal: 100),
+              color: Colors.white,
+              child: FutureBuilder<HistorialMedico>(
+                future: historialMedico,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return SingleChildScrollView(
+                      child: CardInfoHistorial(
+                        historialMedico: snapshot.requireData,
+                        nombre: widget.animal.nombre,
+                      ),
+                    );
+                  } else if (snapshot.hasError) {
+                    log(
+                      'error de historial detectado por el future builder: ${snapshot.error}',
+                    );
+                    return Text(
+                      'error de historial detectado por el future builder: ${snapshot.error}',
+                    );
+                  }
+
+                  return const CircularProgressIndicator();
+                },
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   Future<void> getHistorial(String idHistorial) async {
@@ -412,7 +563,7 @@ class _AnimalViewState extends State<AnimalView> {
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          if (constraints.maxWidth < 600) {
+          if (constraints.maxWidth < 1000) {
             return getMovil();
           } else {
             return getWeb();
