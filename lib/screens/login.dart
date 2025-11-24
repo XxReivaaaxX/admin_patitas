@@ -74,7 +74,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       log("¡Inicio de sesión exitoso!", name: 'Auth');
 
-      // Register user email in database for collaborator management
       if (userCredential.user != null) {
         RefugioManagementService().registerUserEmail(
           userCredential.user!.uid,
@@ -285,78 +284,87 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget _buildContent(BuildContext context) {
     return SafeArea(
       child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 40.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Center(
-                child: Image.asset(
-                  'assets/img/Logo_AdminPatitas.png',
-                  height: 100,
-                ),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(maxWidth: 700),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24.0,
+                vertical: 40.0,
               ),
-              const SizedBox(height: 50),
-              const Text(
-                'Facilitamos la gestión para que\nmejores el cuidado animal',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                '¡REGÍSTRATE AHORA!',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Color(0xFF4FC3F7),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 120),
-              _buildTextField(
-                _emailController,
-                'Correo',
-                Icons.email,
-                keyboardType: TextInputType.emailAddress,
-                showCheckmark: true,
-              ),
-              const SizedBox(height: 20.0),
-              _buildTextField(
-                _passwordController,
-                'Contraseña',
-                Icons.lock,
-                showVisibilityIcon: true,
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton(
-                  onPressed: _resetPassword,
-                  child: const Text(
-                    '¿Olvidó la contraseña?',
-                    style: TextStyle(color: Color(0xFF4FC3F7)),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Center(
+                    child: Image.asset(
+                      'assets/img/Logo_AdminPatitas.png',
+                      height: 100,
+                    ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 20.0),
-              _buildSignInButton(context),
-              const SizedBox(height: 15.0),
-              _buildRegisterButton(),
-              const SizedBox(height: 20.0),
-              if (_errorMessage != null)
-                Text(
-                  _errorMessage!,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: Colors.redAccent,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+                  const SizedBox(height: 50),
+                  const Text(
+                    'Facilitamos la gestión para que\nmejores el cuidado animal',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
-                ),
-            ],
+                  const SizedBox(height: 10),
+                  const Text(
+                    '¡REGÍSTRATE AHORA!',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF4FC3F7),
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 120),
+                  _buildTextField(
+                    _emailController,
+                    'Correo',
+                    Icons.email,
+                    keyboardType: TextInputType.emailAddress,
+                    showCheckmark: true,
+                  ),
+                  const SizedBox(height: 20.0),
+                  _buildTextField(
+                    _passwordController,
+                    'Contraseña',
+                    Icons.lock,
+                    showVisibilityIcon: true,
+                  ),
+                  const SizedBox(height: 8.0),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: TextButton(
+                      onPressed: _resetPassword,
+                      child: const Text(
+                        '¿Olvidó la contraseña?',
+                        style: TextStyle(color: Color(0xFF4FC3F7)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20.0),
+                  _buildSignInButton(context),
+                  const SizedBox(height: 15.0),
+                  _buildRegisterButton(),
+                  const SizedBox(height: 20.0),
+                  if (_errorMessage != null)
+                    Text(
+                      _errorMessage!,
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: Colors.redAccent,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

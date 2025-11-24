@@ -1,3 +1,4 @@
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:admin_patitas/services/refugio_management_service.dart';
@@ -148,8 +149,11 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gestionar Colaboradores'),
-        backgroundColor: const Color(0xFF4FC3F7),
+        title: const Text(
+          'Gestionar Colaboradores',
+          style: TextStyle(color: AppColors.primary),
+        ),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -158,7 +162,7 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
                 // Formulario para agregar colaborador
                 Container(
                   padding: const EdgeInsets.all(16.0),
-                  color: Colors.grey[100],
+                  color: Colors.white,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
@@ -166,7 +170,7 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
                         'Agregar Colaborador',
                         style: TextStyle(
                           fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.normal,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -182,9 +186,17 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
                                 prefixIcon: const Icon(Icons.email),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(
+                                    color: AppColors.primary,
+                                  ),
                                 ),
+                                focusColor: AppColors.primary,
+
                                 filled: true,
                                 fillColor: Colors.white,
+                                floatingLabelStyle: TextStyle(
+                                  color: AppColors.primary,
+                                ),
                               ),
                             ),
                           ),
@@ -192,7 +204,7 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
                           ElevatedButton(
                             onPressed: _addCollaborator,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4FC3F7),
+                              backgroundColor: AppColors.primary,
                               padding: const EdgeInsets.all(16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),

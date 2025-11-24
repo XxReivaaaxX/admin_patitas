@@ -6,7 +6,8 @@ class Formulario extends StatelessWidget {
   final bool textOcul;
   final Color colorBorder, colorBorderFocus, colorTextForm, colorText;
   final double sizeM, sizeP;
-  final String? passwordToCompare; // Nuevo parámetro para contraseña
+  final String? passwordToCompare; // Para validar contraseña
+  final String? Function(String?)? customValidator; // Para validaciones extra
 
   const Formulario({
     super.key,
@@ -19,7 +20,8 @@ class Formulario extends StatelessWidget {
     required this.colorText,
     required this.sizeM,
     required this.sizeP,
-    this.passwordToCompare, // 
+    this.passwordToCompare,
+    this.customValidator,
   });
 
   @override
@@ -32,10 +34,17 @@ class Formulario extends StatelessWidget {
         obscureText: textOcul,
         controller: controller,
         validator: (value) {
+          // Validación personalizada si se pasa
+          if (customValidator != null) {
+            return customValidator!(value);
+          }
+
+          // Validación por defecto
           if (value == null || value.isEmpty) {
             return 'Por favor ingrese el dato solicitado';
           }
 
+          // Validación para correo
           if (text.toLowerCase() == 'correo') {
             final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
             if (!emailRegex.hasMatch(value)) {
@@ -43,12 +52,15 @@ class Formulario extends StatelessWidget {
             }
           }
 
-          if (text.toLowerCase().contains('contraseña') && !text.toLowerCase().contains('validar')) {
+          // Validación para contraseña
+          if (text.toLowerCase().contains('contraseña') &&
+              !text.toLowerCase().contains('validar')) {
             if (value.length < 6) {
               return 'La contraseña debe tener al menos 6 caracteres';
             }
           }
 
+          // Validación para confirmar contraseña
           if (text.toLowerCase().contains('validar') && passwordToCompare != null) {
             if (value != passwordToCompare) {
               return 'Las contraseñas no coinciden';

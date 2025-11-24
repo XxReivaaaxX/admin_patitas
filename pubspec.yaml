@@ -15,7 +15,7 @@ dependencies:
   firebase_auth: ^6.1.1
   firebase_database: ^12.1.0
   cloud_firestore: ^6.0.3
-  image_picker: ^1.2.0
+  image_picker: ^1.2.1
   flutter_screenshot_detect: ^0.1.7
   http: ^1.5.0
   google_fonts: ^6.3.2
@@ -25,11 +25,17 @@ dependencies:
   # syncfusion_flutter_pdfviewer: ^24.1.41
   printing: ^5.13.0
   intl: ^0.19.0
+  flutter_pdfview: ^1.3.1
+  syncfusion_flutter_pdfviewer: ^24.2.8
 
-  tflite_flutter: ^0.10.0
+  #syncfusion_flutter_pdfviewer: ^24.1.41
+
   firebase_storage: ^13.0.4
 
-
+  # IA y procesamiento de imágenes
+  tflite_flutter: ^0.12.1
+  image: ^4.0.0
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
@@ -42,7 +48,6 @@ flutter:
 
   
   assets:     
-       
      - assets/img/Backgound_image_1.png
      - assets/img/gatos_principal.jpg
      - assets/img/gatos_principal7.jpg
@@ -50,6 +55,7 @@ flutter:
      - assets/img/perros_principal.png
      - assets/img/perros_principal7.png
      - assets/terminosycondiciones.pdf
+     - assets/model.tflite
 
 flutter_launcher_icons:
   android: true

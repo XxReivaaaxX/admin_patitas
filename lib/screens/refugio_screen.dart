@@ -1,8 +1,10 @@
 import 'package:admin_patitas/models/user_role.dart';
 import 'package:admin_patitas/services/role_service.dart';
 import 'package:admin_patitas/services/adopcion_service.dart';
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/screens/menu_refugios.dart';
+import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer';
@@ -127,20 +129,18 @@ class _RefugioScreenState extends State<RefugioScreen>
     return Scaffold(
       backgroundColor: Colors.grey[50],
       appBar: AppBar(
-        title: const Text(
-          'Panel de Usuario',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
+        title: LogoBar(
+          sizeImg: 25,
+          colorIzq: AppColors.primary,
+          colorDer: Colors.white,
+          sizeText: 15,
         ),
-        backgroundColor: const Color.fromRGBO(55, 148, 194, 1),
+        backgroundColor: Colors.black,
         elevation: 0,
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: Colors.white,
-          labelColor: Colors.white,
+          indicatorColor: AppColors.primary,
+          labelColor: AppColors.primary,
           unselectedLabelColor: Colors.white70,
           tabs: const [
             Tab(icon: Icon(Icons.home_work), text: 'Mis Refugios'),
@@ -212,7 +212,7 @@ class _RefugioScreenState extends State<RefugioScreen>
         Container(
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            color: const Color.fromRGBO(55, 148, 194, 1),
+            color: AppColors.principalBackgroud,
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.1),
@@ -224,11 +224,13 @@ class _RefugioScreenState extends State<RefugioScreen>
           child: TextField(
             controller: _searchController,
             onChanged: _filterRefugios,
-            style: const TextStyle(color: Colors.white),
+            style: const TextStyle(color: Colors.black),
             decoration: InputDecoration(
               hintText: 'Buscar refugio...',
-              hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
-              prefixIcon: const Icon(Icons.search, color: Colors.white),
+              hintStyle: TextStyle(
+                color: const Color.fromARGB(255, 19, 18, 18).withOpacity(0.7),
+              ),
+              prefixIcon: const Icon(Icons.search, color: Colors.black),
               suffixIcon: _searchController.text.isNotEmpty
                   ? IconButton(
                       icon: const Icon(Icons.clear, color: Colors.white),
@@ -239,7 +241,7 @@ class _RefugioScreenState extends State<RefugioScreen>
                     )
                   : null,
               filled: true,
-              fillColor: Colors.white.withOpacity(0.2),
+              fillColor: AppColors.secondary.withOpacity(0.2),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(30),
                 borderSide: BorderSide.none,
@@ -360,12 +362,25 @@ class _RefugioScreenState extends State<RefugioScreen>
                             ),
                             child: Stack(
                               children: [
-                                Center(
-                                  child: Icon(
-                                    Icons.home_work,
-                                    size: 60,
-                                    color: Colors.white.withOpacity(0.9),
-                                  ),
+                                Stack(
+                                  children: [
+                                    Center(
+                                      child: Icon(
+                                        Icons.home_work,
+                                        size: 60,
+                                        color: Colors.white.withOpacity(0.9),
+                                      ),
+                                    ),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withOpacity(0.4),
+                                        borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(15),
+                                          topRight: Radius.circular(15),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                                 if (role == 'admin')
                                   Positioned(
@@ -377,7 +392,7 @@ class _RefugioScreenState extends State<RefugioScreen>
                                         vertical: 4,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: Colors.orange,
+                                        color: AppColors.secondary,
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: const Row(
