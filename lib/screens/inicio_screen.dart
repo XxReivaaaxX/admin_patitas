@@ -1,4 +1,3 @@
-import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/screens/filtered_animals_screen.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/services/role_service.dart';

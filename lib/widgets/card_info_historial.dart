@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/models/historial_medico.dart';
 import 'package:admin_patitas/screens/historial_update.dart';
 import 'package:admin_patitas/widgets/card_info_animal.dart';
@@ -60,6 +59,16 @@ class _CardInfoHistorialState extends State<CardInfoHistorial> {
                 if (respuesta != null) {
                   setState(() {
                     historialMedico = respuesta;
+                    // Actualizar también la fecha de revisión
+                    if (historialMedico.fechaRevision.isNotEmpty) {
+                      try {
+                        fechaRevision = DateTime.parse(
+                          historialMedico.fechaRevision,
+                        );
+                      } catch (e) {
+                        print('Error parsing updated date: $e');
+                      }
+                    }
                   });
                 }
               },
@@ -67,11 +76,11 @@ class _CardInfoHistorialState extends State<CardInfoHistorial> {
           ),
           CardInfoAnimal(
             datos: {
-              'fecha de revision': fechaRevision != null
+              'Fecha de Revisión': fechaRevision != null
                   ? '${fechaRevision!.day}/${fechaRevision!.month}/${fechaRevision!.year}'
                   : "sin datos",
-              'peso': widget.historialMedico.peso,
-              'castrado': widget.historialMedico.castrado,
+              'Peso': historialMedico.peso,
+              'Castrado': historialMedico.castrado,
             },
           ),
           Container(
@@ -101,7 +110,7 @@ class _CardInfoHistorialState extends State<CardInfoHistorial> {
                   ),
                   child: TextForm(
                     lines: 10,
-                    texto: widget.historialMedico.enfermedades,
+                    texto: historialMedico.enfermedades,
                     color: Colors.black,
                     size: 15,
                     aling: TextAlign.justify,
@@ -138,7 +147,7 @@ class _CardInfoHistorialState extends State<CardInfoHistorial> {
                   ),
                   child: TextForm(
                     lines: 10,
-                    texto: widget.historialMedico.tratamiento,
+                    texto: historialMedico.tratamiento,
                     color: Colors.black,
                     size: 15,
                     aling: TextAlign.justify,

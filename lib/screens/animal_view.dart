@@ -2,13 +2,17 @@ import 'dart:developer';
 
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/models/historial_medico.dart';
+import 'package:admin_patitas/models/vacuna.dart';
 import 'package:admin_patitas/screens/animal_update.dart';
 import 'package:admin_patitas/screens/historial_register.dart';
+import 'package:admin_patitas/screens/vacuna_register.dart';
 import 'package:admin_patitas/services/historial_medico_service.dart';
+import 'package:admin_patitas/services/vacuna_service.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/widgets/card_info_animal.dart';
 import 'package:admin_patitas/widgets/card_info_historial.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
+import 'package:admin_patitas/widgets/vacuna_card.dart';
 import 'package:flutter/material.dart';
 
 class AnimalView extends StatefulWidget {
@@ -21,8 +25,10 @@ class AnimalView extends StatefulWidget {
 
 class _AnimalViewState extends State<AnimalView> {
   Map<String, String> infoAnimal = {};
-  String? id_refugio = "";
+  String? idRefugio = "";
   late Future<HistorialMedico> historialMedico;
+  List<Vacuna> vacunas = [];
+  bool loadingVacunas = false;
   bool loading = false;
   DateTime? fechaIngreso;
   Color colorPrincipal = Color.fromRGBO(55, 148, 194, 1);
@@ -31,15 +37,15 @@ class _AnimalViewState extends State<AnimalView> {
   void initState() {
     super.initState();
     loading = false;
-    id_refugio = PreferencesController.preferences.getString('refugio');
+    idRefugio = PreferencesController.preferences.getString('refugio');
 
     if (widget.animal.historialMedicoId != '') {
       historialMedico = HistorialMedicoService().getHistorialMedico(
         widget.animal.historialMedicoId,
       );
-      //getHistorial(widget.animal.historialMedicoId);
     }
     fechaIngreso = DateTime.parse(widget.animal.fechaIngreso);
+    loadVacunas();
 
     log('datos obtenidos en vista:  ${widget.animal.genero}');
     infoAnimal = {
@@ -54,11 +60,33 @@ class _AnimalViewState extends State<AnimalView> {
     };
   }
 
+  Future<void> loadVacunas() async {
+    if (!mounted) return;
+    setState(() => loadingVacunas = true);
+    try {
+      final vacunasData = await VacunaService().getVacunas(
+        idRefugio!,
+        widget.animal.id,
+      );
+      if (mounted) {
+        setState(() {
+          vacunas = vacunasData;
+          loadingVacunas = false;
+        });
+      }
+    } catch (e) {
+      debugPrint('Error cargando vacunas: $e');
+      if (mounted) {
+        setState(() => loadingVacunas = false);
+      }
+    }
+  }
+
   Widget getMovil() {
     return Container(
       color: Colors.grey[100],
       child: DefaultTabController(
-        length: 2,
+        length: 3,
         initialIndex: 0,
         child: Column(
           children: [
@@ -87,7 +115,8 @@ class _AnimalViewState extends State<AnimalView> {
                 indicatorPadding: EdgeInsetsGeometry.symmetric(horizontal: 40),
                 tabs: const <Widget>[
                   Tab(text: 'Datos generales'),
-                  Tab(text: 'Historial medico'),
+                  Tab(text: 'Historial médico'),
+                  Tab(text: 'Vacunas'),
                 ],
               ),
             ),
@@ -107,9 +136,10 @@ class _AnimalViewState extends State<AnimalView> {
                 ),
                 child: TabBarView(
                   children: <Widget>[
+                    // Primera tab: Datos generales
                     Column(
                       children: [
-                        Container(
+                        SizedBox(
                           height: 50,
                           child: IconButton(
                             icon: Icon(
@@ -121,7 +151,7 @@ class _AnimalViewState extends State<AnimalView> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => AnimalUpdate(
-                                    id_refugio: id_refugio,
+                                    id_refugio: idRefugio,
                                     animal: widget.animal,
                                   ),
                                 ),
@@ -134,6 +164,7 @@ class _AnimalViewState extends State<AnimalView> {
                       ],
                     ),
 
+                    // Segunda tab: Historial médico
                     if (widget.animal.historialMedicoId == '') ...[
                       Column(
                         children: [
@@ -141,8 +172,7 @@ class _AnimalViewState extends State<AnimalView> {
                             margin: const EdgeInsets.all(16.0),
                             child: ElevatedButton.icon(
                               icon: const Icon(Icons.add),
-
-                              label: const Text('Crear historial medico'),
+                              label: const Text('Crear historial médico'),
                               onPressed: () async {
                                 await Navigator.push(
                                   context,
@@ -150,11 +180,10 @@ class _AnimalViewState extends State<AnimalView> {
                                     builder: (context) => HistorialRegister(
                                       nombre: widget.animal.nombre,
                                       id_animal: widget.animal.id,
-                                      id_refugio: id_refugio,
+                                      id_refugio: idRefugio,
                                     ),
                                   ),
                                 );
-                                //recargar la lista cuando se cierra la ventana anterior
                                 setState(() {});
                               },
                               style: ElevatedButton.styleFrom(
@@ -165,7 +194,7 @@ class _AnimalViewState extends State<AnimalView> {
                           ),
                           Center(
                             child: Text(
-                              'No hay historial medico selecciona + para crear uno',
+                              'No hay historial médico. Selecciona + para crear uno',
                             ),
                           ),
                         ],
@@ -189,11 +218,155 @@ class _AnimalViewState extends State<AnimalView> {
                               'error de historial detectado por el future builder: ${snapshot.error}',
                             );
                           }
-
                           return const CircularProgressIndicator();
                         },
                       ),
                     ],
+
+                    // Tercera tab: Vacunas
+                    Column(
+                      children: [
+                        SizedBox(
+                          height: 50,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  Icons.add_circle,
+                                  color: Colors.greenAccent,
+                                ),
+                                onPressed: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => VacunaRegister(
+                                        refugioId: idRefugio!,
+                                        animalId: widget.animal.id,
+                                        animalNombre: widget.animal.nombre,
+                                        animalEspecie: widget.animal.especie,
+                                      ),
+                                    ),
+                                  );
+                                  if (result == true && mounted) {
+                                    loadVacunas();
+                                  }
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: loadingVacunas
+                              ? const Center(child: CircularProgressIndicator())
+                              : vacunas.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.vaccines,
+                                        size: 80,
+                                        color: Colors.grey[400],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'No hay vacunas registradas',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.grey[600],
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Presiona + para agregar una vacuna',
+                                        style: TextStyle(
+                                          fontSize: 14,
+                                          color: Colors.grey[500],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : ListView.builder(
+                                  padding: const EdgeInsets.all(16),
+                                  itemCount: vacunas.length,
+                                  itemBuilder: (context, index) {
+                                    final vacuna = vacunas[index];
+                                    return VacunaCard(
+                                      vacuna: vacuna,
+                                      onDelete: () async {
+                                        final confirm = await showDialog<bool>(
+                                          context: context,
+                                          builder: (dialogContext) => AlertDialog(
+                                            title: const Text(
+                                              'Confirmar eliminación',
+                                            ),
+                                            content: Text(
+                                              '¿Eliminar vacuna "${vacuna.nombre}"?',
+                                            ),
+                                            actions: [
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(
+                                                  dialogContext,
+                                                  false,
+                                                ),
+                                                child: const Text('Cancelar'),
+                                              ),
+                                              TextButton(
+                                                onPressed: () => Navigator.pop(
+                                                  dialogContext,
+                                                  true,
+                                                ),
+                                                child: const Text(
+                                                  'Eliminar',
+                                                  style: TextStyle(
+                                                    color: Colors.red,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        );
+
+                                        if (confirm == true) {
+                                          try {
+                                            await VacunaService().deleteVacuna(
+                                              idRefugio!,
+                                              widget.animal.id,
+                                              vacuna.id,
+                                            );
+                                            if (mounted) {
+                                              loadVacunas();
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Vacuna eliminada',
+                                                  ),
+                                                ),
+                                              );
+                                            }
+                                          } catch (e) {
+                                            if (mounted) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Error: $e'),
+                                                ),
+                                              );
+                                            }
+                                          }
+                                        }
+                                      },
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
@@ -209,7 +382,7 @@ class _AnimalViewState extends State<AnimalView> {
     return Center(child: Text("falta version web"));
   }
 
-  Future<void> getHistorial(String id_historial) async {
+  Future<void> getHistorial(String idHistorial) async {
     setState(() {
       loading = true;
       log('datos obtenidos del historial medico: }');
@@ -237,7 +410,6 @@ class _AnimalViewState extends State<AnimalView> {
           ),
         ],
       ),
-      // mostrar la pagina principal segun el tamaño de la pantalla
       body: LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth < 600) {

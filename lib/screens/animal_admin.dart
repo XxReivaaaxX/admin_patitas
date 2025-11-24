@@ -51,6 +51,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                     edad: snapshot.data![index].especie,
                     estado: snapshot.data![index].estadoSalud,
                     estadoAdopcion: snapshot.data![index].estadoAdopcion,
+                    imageUrl: snapshot.data![index].imageUrl,
                     onTap: () {
                       Navigator.push(
                         context,

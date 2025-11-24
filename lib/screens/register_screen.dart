@@ -1,10 +1,10 @@
-import 'dart:convert';
 import 'package:admin_patitas/services/user_service.dart';
 import 'package:admin_patitas/screens/pantalla_carga.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
+import 'package:admin_patitas/screens/pdf_viewer_screen.dart';
 import 'package:flutter/material.dart';
 
 class RegisterUser extends StatefulWidget {
@@ -31,6 +31,25 @@ class _RegisterUserState extends State<RegisterUser> {
     userController = UserController();
     super.initState();
   }
+
+  void _showTermsDialog() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PDFViewerScreen(
+          assetPath: 'assets/terminosycondiciones.pdf',
+          title: 'Términos y Condiciones',
+        ),
+      ),
+    );
+
+    if (result == true) {
+      setState(() {
+        pdfOpened = true;
+      });
+    }
+  }
+
   /*
   void _verTerminos() {
     if (kIsWeb) {
@@ -95,6 +114,8 @@ class _RegisterUserState extends State<RegisterUser> {
       }
 
       bool success = await userController.registerUser(email, password);
+
+      if (!mounted) return;
 
       if (success) {
         Navigator.pushReplacement(
@@ -199,7 +220,10 @@ class _RegisterUserState extends State<RegisterUser> {
                           : null,
                     ),
                     const Text('Acepto términos y condiciones'),
-                    TextButton(onPressed: () {}, child: const Text('Ver')),
+                    TextButton(
+                      onPressed: _showTermsDialog,
+                      child: const Text('Ver'),
+                    ),
                   ],
                 ),
                 BotonLogin(

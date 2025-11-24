@@ -1,4 +1,5 @@
 import 'package:admin_patitas/models/animal.dart';
+import 'package:admin_patitas/screens/animal_view.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:flutter/material.dart';
@@ -233,6 +234,16 @@ class _FilteredAnimalsScreenState extends State<FilteredAnimalsScreen> {
                               elevation: 2,
                               child: ListTile(
                                 contentPadding: const EdgeInsets.all(12),
+                                onTap: () {
+                                  // Navegar al detalle del animal
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          AnimalView(animal: animal),
+                                    ),
+                                  );
+                                },
                                 leading: ClipRRect(
                                   borderRadius: BorderRadius.circular(8),
                                   child: Container(
@@ -297,6 +308,11 @@ class _FilteredAnimalsScreenState extends State<FilteredAnimalsScreen> {
                                       ),
                                     ),
                                   ],
+                                ),
+                                trailing: Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 16,
+                                  color: Colors.grey[400],
                                 ),
                               ),
                             );

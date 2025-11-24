@@ -13,8 +13,8 @@ class PerfilScreen extends StatefulWidget {
 
 class _PerfilScreenState extends State<PerfilScreen> {
   String? _role;
-  String? _refugioId;
   bool _isLoading = true;
+  bool _hasRefugios = false;
   User? _currentUser;
 
   @override
@@ -27,14 +27,21 @@ class _PerfilScreenState extends State<PerfilScreen> {
     _currentUser = FirebaseAuth.instance.currentUser;
     RoleService roleService = RoleService();
     String? role = await roleService.getCurrentRole();
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? refugioId = prefs.getString('refugio');
 
-    setState(() {
-      _role = role;
-      _refugioId = refugioId;
-      _isLoading = false;
-    });
+    // Verificar si el usuario tiene refugios
+    if (_currentUser != null) {
+      List<Map<String, dynamic>> refugios = await roleService.getUserRefugios(
+        _currentUser!.uid,
+      );
+      _hasRefugios = refugios.isNotEmpty;
+    }
+
+    if (mounted) {
+      setState(() {
+        _role = role;
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _signOut() async {
@@ -161,15 +168,17 @@ class _PerfilScreenState extends State<PerfilScreen> {
               ),
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.how_to_reg, color: Color(0xFF4FC3F7)),
-            title: const Text('Registrarme como Colaborador'),
-            subtitle: const Text('Permitir que me agreguen como colaborador'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-            onTap: () {
-              Navigator.pushNamed(context, '/register_existing_users');
-            },
-          ),
+          // Solo mostrar si el usuario NO tiene refugios
+          if (!_hasRefugios)
+            ListTile(
+              leading: const Icon(Icons.how_to_reg, color: Color(0xFF4FC3F7)),
+              title: const Text('Registrarme como Colaborador'),
+              subtitle: const Text('Permitir que me agreguen como colaborador'),
+              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+              onTap: () {
+                Navigator.pushNamed(context, '/register_existing_users');
+              },
+            ),
           ListTile(
             leading: const Icon(Icons.info, color: Color(0xFF4FC3F7)),
             title: const Text('Acerca de'),
@@ -179,10 +188,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 context: context,
                 applicationName: 'AdminPatitas',
                 applicationVersion: '1.0.0',
-                applicationIcon: const Icon(
-                  Icons.pets,
-                  size: 50,
-                  color: Color(0xFF4FC3F7),
+                applicationIcon: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.asset(
+                    'assets/img/Logo_AdminPatitas.png',
+                    width: 60,
+                    height: 60,
+                    fit: BoxFit.contain,
+                  ),
                 ),
                 children: [
                   const Text('Sistema de gestión para refugios de animales.'),

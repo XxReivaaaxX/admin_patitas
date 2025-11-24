@@ -1,4 +1,3 @@
-import 'package:admin_patitas/services/user_service.dart';
 import 'package:admin_patitas/services/refugio_management_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -119,6 +118,136 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  Future<void> _resetPassword() async {
+    final TextEditingController emailController = TextEditingController();
+
+    // Mostrar diálogo para ingresar email
+    final String? email = await showDialog<String>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Recuperar Contraseña'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Ingresa tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña.',
+                style: TextStyle(fontSize: 14),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: emailController,
+                keyboardType: TextInputType.emailAddress,
+                decoration: InputDecoration(
+                  labelText: 'Correo electrónico',
+                  prefixIcon: const Icon(Icons.email),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: const Text('Cancelar'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(dialogContext, emailController.text.trim());
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4FC3F7),
+              ),
+              child: const Text('Enviar'),
+            ),
+          ],
+        );
+      },
+    );
+
+    // Si el usuario canceló, no hacer nada
+    if (email == null || email.isEmpty) {
+      return;
+    }
+
+    // Validar formato de email
+    if (!email.contains('@')) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Por favor ingresa un correo electrónico válido'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Mostrar indicador de carga
+    if (mounted) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return const Center(child: CircularProgressIndicator());
+        },
+      );
+    }
+
+    try {
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email);
+
+      if (mounted) {
+        Navigator.pop(context); // Cerrar indicador de carga
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Se ha enviado un correo de recuperación a $email'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } on FirebaseAuthException catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Cerrar indicador de carga
+
+        String errorMessage;
+        switch (e.code) {
+          case 'user-not-found':
+            errorMessage = 'No existe una cuenta con este correo electrónico.';
+            break;
+          case 'invalid-email':
+            errorMessage = 'El formato del correo electrónico no es válido.';
+            break;
+          default:
+            errorMessage = 'Error al enviar el correo: ${e.code}';
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // Cerrar indicador de carga
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ocurrió un error inesperado. Inténtalo de nuevo.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -202,14 +331,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 Icons.lock,
                 showVisibilityIcon: true,
               ),
-              const SizedBox(height: 8.0),
               Align(
                 alignment: Alignment.centerRight,
                 child: TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/dashboardAnimals');
-                    log('Navegar a Olvidó Contraseña', name: 'Navigation');
-                  },
+                  onPressed: _resetPassword,
                   child: const Text(
                     '¿Olvidó la contraseña?',
                     style: TextStyle(color: Color(0xFF4FC3F7)),

@@ -1,11 +1,7 @@
-import 'dart:developer';
-
 import 'package:admin_patitas/screens/salud_admin.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/screens/animal_admin.dart';
-import 'package:admin_patitas/screens/animal_register.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AnimalScreen extends StatefulWidget {
   const AnimalScreen({super.key});

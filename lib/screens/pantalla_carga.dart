@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:admin_patitas/services/user_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -22,15 +21,42 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   StreamSubscription<User?>? _authSubscription;
+
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(seconds: 4), () async {
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        widget.nextRoute,
-        (route) => false,
-      );
+    // Verificar sesión al iniciar
+    sesionActiva();
+  }
+
+  @override
+  void dispose() {
+    // Cancelar la suscripción para evitar fugas de memoria
+    _authSubscription?.cancel();
+    super.dispose();
+  }
+
+  void sesionActiva() {
+    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((
+      User? user,
+    ) async {
+      if (!mounted) return;
+
+      // Pequeño delay para que se vea el logo (opcional, pero estético)
+      await Future.delayed(const Duration(seconds: 2));
+      if (!mounted) return;
+
+      if (user == null) {
+        // No hay usuario, ir a Login
+        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+      } else {
+        // Usuario activo, ir a Refugio (Pantalla Principal)
+        Navigator.pushNamedAndRemoveUntil(
+          context,
+          '/refugio',
+          (route) => false,
+        );
+      }
     });
   }
 
@@ -43,36 +69,17 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset('assets/img/Logo_AdminPatitas.png', width: 150),
-            SizedBox(height: 60),
+            const SizedBox(height: 60),
             Text(
               widget.mensaje,
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-            SizedBox(height: 20),
-            CircularProgressIndicator(),
+            const SizedBox(height: 20),
+            const CircularProgressIndicator(),
           ],
         ),
       ),
     );
   }
-
-  /*
-  sesionActiva() {
-    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((
-      User? user,
-    ) {
-      if (!mounted) return;
-      if (user == null) {
-        //print('User is currently signed out!');
-        Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
-      } else {
-        Navigator.pushNamedAndRemoveUntil(
-          context,
-          '/sinRefugio',
-          (route) => false,
-        );
-      }
-    });
-  }*/
 }

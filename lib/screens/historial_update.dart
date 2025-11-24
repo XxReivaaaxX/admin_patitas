@@ -1,16 +1,10 @@
-import 'dart:convert';
-
-import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/models/historial_medico.dart';
-import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/services/historial_medico_service.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/item_form_selection.dart';
-import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 class HistorialUpdate extends StatefulWidget {
   final String? id_historial, nombre;
@@ -29,24 +23,32 @@ class HistorialUpdate extends StatefulWidget {
 class _HistorialUpdateState extends State<HistorialUpdate> {
   final _formKey = GlobalKey<FormState>();
 
-  TextEditingController _tratamiento = TextEditingController();
-  TextEditingController _peso = TextEditingController();
-  TextEditingController _enfermedades = TextEditingController();
+  final TextEditingController _tratamiento = TextEditingController();
+  final TextEditingController _peso = TextEditingController();
+  final TextEditingController _enfermedades = TextEditingController();
   String? _castrado;
-  String? _sexo;
   DateTime? _fechaRevision;
 
-  Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
+  final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
 
   @override
   void initState() {
-    // TODO: implement initState
-
     super.initState();
     getValues();
   }
 
   void updateHistorial() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_fechaRevision == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor seleccione la fecha de revisión'),
+        ),
+      );
+      return;
+    }
+
     try {
       final HistorialMedico historialMedico = HistorialMedico(
         id: widget.id_historial!,
@@ -61,121 +63,176 @@ class _HistorialUpdateState extends State<HistorialUpdate> {
         historialMedico,
       );
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Historial registrado exitosamente')),
-      );
-      Navigator.pop(context, historialMedico);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Historial actualizado exitosamente')),
+        );
+        Navigator.pop(context, historialMedico);
+      }
     } catch (e) {
-      print('Excepción de Flutter/Dart: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Excepción: $e')));
+      print('Excepción: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al actualizar historial: $e')),
+        );
+      }
     }
   }
 
   void getValues() {
-    _peso.text = widget.historialMedico.fechaRevision;
+    _peso.text = widget.historialMedico.peso;
     _enfermedades.text = widget.historialMedico.enfermedades;
     _tratamiento.text = widget.historialMedico.tratamiento;
-    _castrado = widget.historialMedico.castrado;
+
+    // Normalizar el valor de castrado para que coincida con los items del dropdown
+    String castradoValue = widget.historialMedico.castrado.toLowerCase().trim();
+    if (castradoValue == 'si' || castradoValue == 'sí') {
+      _castrado = 'Sí';
+    } else if (castradoValue == 'no') {
+      _castrado = 'No';
+    } else {
+      // Si el valor no es válido (ej: "sin datos"), dejar null para que el usuario seleccione
+      _castrado = null;
+    }
+
+    // Parse fecha de revisión
+    if (widget.historialMedico.fechaRevision.isNotEmpty) {
+      try {
+        _fechaRevision = DateTime.parse(widget.historialMedico.fechaRevision);
+      } catch (e) {
+        print('Error parsing date: $e');
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        title: Text('Historial ' + widget.nombre!),
+        backgroundColor: colorPrincipal,
+        title: Text(
+          'Historial Médico - ${widget.nombre}',
+          style: const TextStyle(color: Colors.white),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: Container(
-        alignment: Alignment.center,
         color: Colors.white,
         child: Form(
           key: _formKey,
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 40),
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                Formulario(
-                  controller: _peso,
-                  text: ' Peso',
-                  textOcul: false,
-                  colorBorder: Colors.black,
-                  colorBorderFocus: colorPrincipal,
-                  colorTextForm: Colors.grey,
-                  colorText: Colors.black,
-                  sizeM: 30,
-                  sizeP: 10,
-                ),
+          child: ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 40),
+            children: [
+              TextForm(
+                lines: 2,
+                texto: 'EDICIÓN DE HISTORIAL MÉDICO',
+                color: colorPrincipal,
+                size: 26,
+                aling: TextAlign.center,
+                negrita: FontWeight.bold,
+              ),
+              const SizedBox(height: 30),
 
-                Container(
-                  child: ItemFormSelection(
-                    onChanged: (value) => _castrado = value,
-                    validator: (value) => value == null ? 'Castrado' : null,
-                    items: ['si', 'no'],
-                    text: 'Castrado',
+              // Peso
+              Formulario(
+                controller: _peso,
+                text: 'Peso (kg)',
+                textOcul: false,
+                colorBorder: Colors.black,
+                colorBorderFocus: colorPrincipal,
+                colorTextForm: Colors.grey,
+                colorText: Colors.black,
+                sizeM: 30,
+                sizeP: 10,
+              ),
+              const SizedBox(height: 20),
+
+              // Castrado
+              ItemFormSelection(
+                initialValue: _castrado,
+                onChanged: (value) => _castrado = value,
+                validator: (value) =>
+                    value == null ? 'Seleccione una opción' : null,
+                items: ['Sí', 'No'],
+                text: 'Castrado',
+              ),
+              const SizedBox(height: 20),
+
+              // Enfermedades
+              Formulario(
+                controller: _enfermedades,
+                text: 'Enfermedades',
+                textOcul: false,
+                colorBorder: Colors.black,
+                colorBorderFocus: colorPrincipal,
+                colorTextForm: Colors.grey,
+                colorText: Colors.black,
+                sizeM: 30,
+                sizeP: 10,
+              ),
+              const SizedBox(height: 20),
+
+              // Tratamiento
+              Formulario(
+                controller: _tratamiento,
+                text: 'Tratamiento',
+                textOcul: false,
+                colorBorder: Colors.black,
+                colorBorderFocus: colorPrincipal,
+                colorTextForm: Colors.grey,
+                colorText: Colors.black,
+                sizeM: 30,
+                sizeP: 10,
+              ),
+              const SizedBox(height: 20),
+
+              // Fecha de revisión
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 20,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    side: const BorderSide(color: Colors.grey, width: 2),
                   ),
                 ),
+                onPressed: () async {
+                  final pickedDate = await showDatePicker(
+                    context: context,
+                    initialDate: _fechaRevision ?? DateTime.now(),
+                    firstDate: DateTime(2020),
+                    lastDate: DateTime.now(),
+                  );
+                  if (pickedDate != null) {
+                    setState(() {
+                      _fechaRevision = pickedDate;
+                    });
+                  }
+                },
+                child: Text(
+                  _fechaRevision == null
+                      ? 'Seleccionar fecha de revisión'
+                      : 'Fecha: ${_fechaRevision!.day.toString().padLeft(2, '0')}/'
+                            '${_fechaRevision!.month.toString().padLeft(2, '0')}/'
+                            '${_fechaRevision!.year}',
+                ),
+              ),
+              const SizedBox(height: 30),
 
-                Formulario(
-                  controller: _enfermedades,
-                  text: 'Enfermedades',
-                  textOcul: false,
-                  colorBorder: Colors.black,
-                  colorBorderFocus: colorPrincipal,
-                  colorTextForm: Colors.grey,
-                  colorText: Colors.black,
-                  sizeM: 30,
-                  sizeP: 10,
-                ),
-                Formulario(
-                  controller: _tratamiento,
-                  text: ' Tratamiento',
-                  textOcul: false,
-                  colorBorder: Colors.black,
-                  colorBorderFocus: colorPrincipal,
-                  colorTextForm: Colors.grey,
-                  colorText: Colors.black,
-                  sizeM: 30,
-                  sizeP: 10,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () async {
-                    final pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: DateTime.now(),
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime.now(),
-                    );
-                    if (pickedDate != null) {
-                      setState(() {
-                        _fechaRevision = pickedDate;
-                      });
-                    }
-                  },
-                  child: Text(
-                    _fechaRevision == null
-                        ? 'Seleccionar fecha de ingreso'
-                        : 'Fecha: ${_fechaRevision!.toLocal()}'.split(' ')[0],
-                  ),
-                ),
-                const SizedBox(height: 24),
-                BotonLogin(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      updateHistorial();
-                    }
-                  },
-                  texto: 'Actualizar informacion',
-                  color: Colors.white,
-                  colorB: colorPrincipal,
-                  size: 15,
-                  negrita: FontWeight.normal,
-                ),
-              ],
-            ),
+              // Botón de actualización
+              BotonLogin(
+                onPressed: updateHistorial,
+                texto: 'Actualizar Historial Médico',
+                color: Colors.white,
+                colorB: colorPrincipal,
+                size: 15,
+                negrita: FontWeight.normal,
+              ),
+            ],
           ),
         ),
       ),

@@ -510,10 +510,32 @@ class _RefugioScreenState extends State<RefugioScreen>
                 width: 60,
                 height: 60,
                 color: Colors.grey[200],
-                child: Icon(
-                  animal['especie'] == 'Gato' ? Icons.pets : Icons.pets,
-                  color: Colors.grey[400],
-                ),
+                child:
+                    animal['imageUrl'] != null && animal['imageUrl'].isNotEmpty
+                    ? (animal['imageUrl'].startsWith('data:image')
+                          ? Image.memory(
+                              Uri.parse(
+                                animal['imageUrl'],
+                              ).data!.contentAsBytes(),
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.pets,
+                                  color: Colors.grey[400],
+                                );
+                              },
+                            )
+                          : Image.network(
+                              animal['imageUrl'],
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.pets,
+                                  color: Colors.grey[400],
+                                );
+                              },
+                            ))
+                    : Icon(Icons.pets, color: Colors.grey[400]),
               ),
             ),
             title: Text(

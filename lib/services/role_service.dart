@@ -135,6 +135,52 @@ class RoleService {
     }
   }
 
+  /// Obtiene todos los refugios registrados en el sistema (sin filtrar por usuario)
+  Future<List<Map<String, dynamic>>> getAllRefugios() async {
+    try {
+      List<Map<String, dynamic>> refugios = [];
+
+      log('Obteniendo todos los refugios del sistema', name: 'RoleService');
+
+      DatabaseReference refugiosRef = _database.child('refugios');
+      DataSnapshot snapshot = await refugiosRef.get();
+
+      if (!snapshot.exists) {
+        log('No hay refugios en la base de datos', name: 'RoleService');
+        return [];
+      }
+
+      Map<dynamic, dynamic> allRefugios =
+          snapshot.value as Map<dynamic, dynamic>;
+
+      allRefugios.forEach((key, value) {
+        Map<dynamic, dynamic> refugioData = value as Map<dynamic, dynamic>;
+        String refugioId = key as String;
+
+        // Agregar el refugio a la lista
+        refugios.add({
+          'id': refugioId,
+          'data': refugioData,
+          // No asignamos rol específico ya que es una vista pública
+          'role': 'public',
+        });
+      });
+
+      log(
+        'Total refugios encontrados en el sistema: ${refugios.length}',
+        name: 'RoleService',
+      );
+      return refugios;
+    } catch (e) {
+      log(
+        'Error al obtener todos los refugios: $e',
+        error: e,
+        name: 'RoleService',
+      );
+      return [];
+    }
+  }
+
   /// Guarda el rol actual en SharedPreferences
   Future<void> saveCurrentRole(UserRole userRole) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();

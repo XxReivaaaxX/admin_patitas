@@ -8,7 +8,7 @@ class ItemAnimal extends StatelessWidget {
       onpressedModificar,
       onpressedEliminar,
       onPressedAdopcion;
-  final String nombre, edad, estado, estadoAdopcion;
+  final String nombre, edad, estado, estadoAdopcion, imageUrl;
   final sizeImg;
 
   const ItemAnimal({
@@ -18,6 +18,7 @@ class ItemAnimal extends StatelessWidget {
     required this.edad,
     required this.estado,
     required this.estadoAdopcion,
+    required this.imageUrl,
     required this.onTap,
     required this.onpressedModificar,
     required this.onpressedEliminar,
@@ -44,14 +45,48 @@ class ItemAnimal extends StatelessWidget {
                 Expanded(
                   flex: 1,
                   child: ClipRRect(
-                    borderRadius: BorderRadiusGeometry.only(
+                    borderRadius: BorderRadius.only(
                       topLeft: Radius.circular(12),
                       bottomLeft: Radius.circular(12),
                     ),
-                    child: Image.asset(
-                      'assets/img/gatos_principal.jpg',
-                      fit: BoxFit.cover,
-                    ),
+                    child: imageUrl.isNotEmpty
+                        ? (imageUrl.startsWith('data:image')
+                              ? Image.memory(
+                                  Uri.parse(imageUrl).data!.contentAsBytes(),
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey[200],
+                                      child: Icon(
+                                        Icons.pets,
+                                        size: 50,
+                                        color: Colors.grey[400],
+                                      ),
+                                    );
+                                  },
+                                )
+                              : Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      color: Colors.grey[200],
+                                      child: Icon(
+                                        Icons.pets,
+                                        size: 50,
+                                        color: Colors.grey[400],
+                                      ),
+                                    );
+                                  },
+                                ))
+                        : Container(
+                            color: Colors.grey[200],
+                            child: Icon(
+                              Icons.pets,
+                              size: 50,
+                              color: Colors.grey[400],
+                            ),
+                          ),
                   ),
                 ),
                 Expanded(
