@@ -45,9 +45,11 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     ia.loadModel();
   }
 
-  Future<void> seleccionarImagen() async {
+  Future<void> seleccionarImagen({required bool desdeCamara}) async {
     final picker = ImagePicker();
-    final imgFile = await picker.pickImage(source: ImageSource.gallery);
+    final imgFile = await picker.pickImage(
+      source: desdeCamara ? ImageSource.camera : ImageSource.gallery,
+    );
     if (imgFile != null) setState(() => _imagen = imgFile);
   }
 
@@ -57,7 +59,8 @@ class _AnimalRegisterState extends State<AnimalRegister> {
 
     try {
       final bytes = await _imagen!.readAsBytes();
-      final fileName = "${_nombre.text.isNotEmpty ? _nombre.text : 'animal'}_${DateTime.now().millisecondsSinceEpoch}.jpg";
+      final fileName =
+          "${_nombre.text.isNotEmpty ? _nombre.text : 'animal'}_${DateTime.now().millisecondsSinceEpoch}.jpg";
 
       if (kIsWeb) {
         final blob = html.Blob([bytes]);
@@ -164,13 +167,23 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 negrita: FontWeight.bold,
               ),
               const SizedBox(height: 20),
-              Formulario(controller: _nombre, text: 'Nombre', textOcul: false, colorBorder: Colors.black, colorBorderFocus: colorPrincipal, colorTextForm: Colors.grey, colorText: Colors.black, sizeM: 30, sizeP: 10),
+              Formulario(
+                  controller: _nombre,
+                  text: 'Nombre',
+                  textOcul: false,
+                  colorBorder: Colors.black,
+                  colorBorderFocus: colorPrincipal,
+                  colorTextForm: Colors.grey,
+                  colorText: Colors.black,
+                  sizeM: 30,
+                  sizeP: 10),
               Row(
                 children: [
                   Expanded(
                     child: ItemFormSelection(
                       onChanged: (value) => _especie = value,
-                      validator: (value) => value == null ? 'Seleccione una especie' : null,
+                      validator: (value) =>
+                          value == null ? 'Seleccione una especie' : null,
                       items: ['Perro', 'Gato', 'Otro'],
                       text: 'Especie',
                     ),
@@ -179,7 +192,8 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                   Expanded(
                     child: ItemFormSelection(
                       onChanged: (value) => _sexo = value,
-                      validator: (value) => value == null ? 'Seleccione el Sexo' : null,
+                      validator: (value) =>
+                          value == null ? 'Seleccione el Sexo' : null,
                       items: ['Macho', 'Hembra'],
                       text: 'Sexo',
                     ),
@@ -189,48 +203,122 @@ class _AnimalRegisterState extends State<AnimalRegister> {
               const SizedBox(height: 20),
               ItemFormSelection(
                 onChanged: (value) => _estadoAdopcion = value,
-                validator: (value) => value == null ? 'Seleccione estado de adopción' : null,
+                validator: (value) =>
+                    value == null ? 'Seleccione estado de adopción' : null,
                 items: ['Disponible', 'No Disponible'],
                 text: 'Estado Adopción',
               ),
               const SizedBox(height: 20),
-              Formulario(controller: _raza, text: 'Raza', textOcul: false, colorBorder: Colors.black, colorBorderFocus: colorPrincipal, colorTextForm: Colors.grey, colorText: Colors.black, sizeM: 30, sizeP: 10),
+              Formulario(
+                  controller: _raza,
+                  text: 'Raza',
+                  textOcul: false,
+                  colorBorder: Colors.black,
+                  colorBorderFocus: colorPrincipal,
+                  colorTextForm: Colors.grey,
+                  colorText: Colors.black,
+                  sizeM: 30,
+                  sizeP: 10),
               const SizedBox(height: 16),
 
+              // Botón para elegir cámara o galería
               ElevatedButton.icon(
                 icon: const Icon(Icons.photo_library),
                 label: const Text('Seleccionar Imagen'),
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.black, padding: const EdgeInsets.all(15)),
-                onPressed: _isLoading ? null : seleccionarImagen,
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.all(15)),
+                onPressed: _isLoading
+                    ? null
+                    : () {
+                        showModalBottomSheet(
+                          context: context,
+                          builder: (context) => Wrap(
+                            children: [
+                              ListTile(
+                                leading: const Icon(Icons.camera_alt),
+                                title: const Text('Cámara'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  seleccionarImagen(desdeCamara: true);
+                                },
+                              ),
+                              ListTile(
+                                leading: const Icon(Icons.photo),
+                                title: const Text('Galería'),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  seleccionarImagen(desdeCamara: false);
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
               ),
 
               if (_imagen != null)
                 Column(
                   children: [
                     const SizedBox(height: 10),
-                    kIsWeb
-                        ? Image.network(_imagen!.path, height: 150, width: 150, fit: BoxFit.cover)
-                        : Image.file(File(_imagen!.path), height: 150, width: 150, fit: BoxFit.cover),
+                    ClipOval(
+                      child: InteractiveViewer(
+                        minScale: 1,
+                        maxScale: 4,
+                        child: kIsWeb
+                            ? Image.network(_imagen!.path,
+                                height: 150, width: 150, fit: BoxFit.cover)
+                            : Image.file(File(_imagen!.path),
+                                height: 150, width: 150, fit: BoxFit.cover),
+                      ),
+                    ),
                     const SizedBox(height: 10),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         TextButton.icon(
-                          onPressed: () => setState(() => _imagen = null),
+                          onPressed: () async {
+                            final confirm = await showDialog<bool>(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: const Text('Confirmar'),
+                                content: const Text(
+                                    '¿Seguro que deseas eliminar la imagen?'),
+                                actions: [
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, false),
+                                      child: const Text('Cancelar')),
+                                  TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(context, true),
+                                      child: const Text('Eliminar')),
+                                ],
+                              ),
+                            );
+                            if (confirm == true) {
+                              setState(() => _imagen = null);
+                            }
+                          },
                           icon: const Icon(Icons.delete, color: Colors.red),
-                          label: const Text('Eliminar', style: TextStyle(color: Colors.red)),
+                          label: const Text('Eliminar',
+                              style: TextStyle(color: Colors.red)),
                         ),
                         const SizedBox(width: 20),
                         TextButton.icon(
-                          onPressed: seleccionarImagen,
-                          icon: const Icon(Icons.change_circle, color: Colors.blue),
-                          label: const Text('Cambiar', style: TextStyle(color: Colors.blue)),
+                          onPressed: () => seleccionarImagen(desdeCamara: false),
+                          icon: const Icon(Icons.change_circle,
+                              color: Colors.blue),
+                          label: const Text('Cambiar',
+                              style: TextStyle(color: Colors.blue)),
                         ),
                         const SizedBox(width: 20),
                         TextButton.icon(
                           onPressed: descargarImagen,
                           icon: const Icon(Icons.download, color: Colors.green),
-                          label: const Text('Descargar', style: TextStyle(color: Colors.green)),
+                          label: const Text('Descargar',
+                              style: TextStyle(color: Colors.green)),
                         ),
                       ],
                     ),
@@ -239,7 +327,10 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                       ElevatedButton.icon(
                         icon: const Icon(Icons.search),
                         label: const Text('Detectar Animal'),
-                        style: ElevatedButton.styleFrom(backgroundColor: Colors.blue, foregroundColor: Colors.white, padding: const EdgeInsets.all(15)),
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.all(15)),
                         onPressed: _isLoading ? null : detectarAnimal,
                       ),
                     if (_isLoading)
@@ -252,7 +343,14 @@ class _AnimalRegisterState extends State<AnimalRegister> {
 
               const SizedBox(height: 16),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.black, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: const BorderSide(color: Colors.grey, width: 2))),
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 20),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                        side: const BorderSide(color: Colors.grey, width: 2))),
                 onPressed: () async {
                   final pickedDate = await showDatePicker(
                     context: context,
@@ -261,14 +359,23 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                     lastDate: DateTime.now(),
                     locale: const Locale('es', 'ES'),
                   );
-                  if (pickedDate != null) setState(() => _fechaIngreso = pickedDate);
+                  if (pickedDate != null)
+                    setState(() => _fechaIngreso = pickedDate);
                 },
-                child: Text(_fechaIngreso == null ? 'Seleccionar fecha de ingreso' : 'Fecha: ${_fechaIngreso!.day.toString().padLeft(2, '0')}/${_fechaIngreso!.month.toString().padLeft(2, '0')}/${_fechaIngreso!.year}'),
+                child: Text(_fechaIngreso == null
+                    ? 'Seleccionar fecha de ingreso'
+                    : 'Fecha: ${_fechaIngreso!.day.toString().padLeft(2, '0')}/${_fechaIngreso!.month.toString().padLeft(2, '0')}/${_fechaIngreso!.year}'),
               ),
               const SizedBox(height: 24),
               _isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : BotonLogin(onPressed: registrarAnimal, texto: 'Registrar Animal', color: Colors.white, colorB: colorPrincipal, size: 15, negrita: FontWeight.normal),
+                  : BotonLogin(
+                      onPressed: registrarAnimal,
+                      texto: 'Registrar Animal',
+                      color: Colors.white,
+                      colorB: colorPrincipal,
+                      size: 15,
+                      negrita: FontWeight.normal),
             ],
           ),
         ),
@@ -276,3 +383,4 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     );
   }
 }
+
