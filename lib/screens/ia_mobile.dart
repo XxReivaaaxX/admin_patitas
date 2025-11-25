@@ -24,7 +24,7 @@ class IAHandler {
 
         if (data["predicciones"] != null) {
           final predicciones = data["predicciones"] as List;
-          String resultado = "Top 3 predicciones:\n";
+          String resultado = "Predicciones:\n";
           for (var p in predicciones) {
             resultado +=
                 "- ${p["clase"]} (${(p["confianza"] * 100).toStringAsFixed(2)}%)\n";
