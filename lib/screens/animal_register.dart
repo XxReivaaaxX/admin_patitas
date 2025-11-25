@@ -352,7 +352,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 ),
                 const SizedBox(height: 10),
 
-                /// ✅ Botón IA habilitado para Web y App
+                // Botón IA habilitado para Web y App
                 ElevatedButton.icon(
                   icon: const Icon(Icons.search),
                   label: const Text('Detectar Animal'),
@@ -364,7 +364,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                   onPressed: _isLoading ? null : detectarAnimal,
                 ),
 
-                /// ✅ Mostrar resultado IA
+                // Mostrar resultado IA
                 if (_resultadoIA != null)
                   Card(
                     color: Colors.grey.shade200,

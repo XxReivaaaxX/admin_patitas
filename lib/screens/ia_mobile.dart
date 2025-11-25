@@ -4,12 +4,11 @@ import 'package:http/http.dart' as http;
 import 'package:admin_patitas/utils/url_api.dart';
 
 class IAHandler {
-  /// En móvil también usamos API
   Future<void> loadModel() async {
     print('IA lista para usar API (móvil)');
   }
 
-  /// Envía la imagen en base64 al API y obtiene la predicción
+  // Se envía la imagen en base64 a la API y se obtiene la predicción
   Future<String> detectar(Uint8List imageBytes) async {
     try {
       final base64Image = base64Encode(imageBytes);
@@ -42,6 +41,8 @@ class IAHandler {
     }
   }
 }
+
+// Omitir lo de abajo 
 
 /* import 'dart:typed_data';
 import 'package:tflite_flutter/tflite_flutter.dart';
