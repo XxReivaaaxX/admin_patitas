@@ -31,6 +31,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
   XFile? _imagen;
   bool _isLoading = false;
   bool _modeloCargado = false;
+  String _resultadoIA = '';
 
   final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
 
@@ -65,14 +66,11 @@ class _AnimalRegisterState extends State<AnimalRegister> {
       final fileName =
           "${_nombre.text.isNotEmpty ? _nombre.text : 'animal'}_${DateTime.now().millisecondsSinceEpoch}.jpg";
 
-      if (kIsWeb) {
-        // Implementación para Web si se requiere
-      } else {
+      if (!kIsWeb) {
         final directory = await getApplicationDocumentsDirectory();
         final filePath = '${directory.path}/$fileName';
         final file = File(filePath);
         await file.writeAsBytes(bytes);
-
         _showSnack('Imagen guardada en: $filePath');
       }
     } catch (e) {
@@ -129,12 +127,15 @@ class _AnimalRegisterState extends State<AnimalRegister> {
 
   Future<void> detectarAnimal() async {
     if (_imagen == null) return;
-    setState(() => _isLoading = true);
+    setState(() {
+      _isLoading = true;
+      _resultadoIA = '';
+    });
 
     try {
       final bytes = await _imagen!.readAsBytes();
       final resultado = await ia.detectar(bytes);
-      _showSnack('Detectado: $resultado');
+      setState(() => _resultadoIA = resultado);
     } catch (e) {
       _showSnack('Error en IA: $e');
     } finally {
@@ -172,17 +173,19 @@ class _AnimalRegisterState extends State<AnimalRegister> {
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 40),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
             children: [
               TextForm(
                 lines: 2,
                 texto: 'REGISTRO DE ANIMAL',
                 color: colorPrincipal,
-                size: 30,
+                size: 28,
                 aling: TextAlign.center,
                 negrita: FontWeight.bold,
               ),
               const SizedBox(height: 20),
+
+              // Campos del formulario
               Formulario(
                 controller: _nombre,
                 text: 'Nombre',
@@ -194,6 +197,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 sizeM: 30,
                 sizeP: 10,
               ),
+              const SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
@@ -217,7 +221,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               ItemFormSelection(
                 onChanged: (value) => _estadoAdopcion = value,
                 validator: (value) =>
@@ -225,7 +229,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 items: ['Disponible', 'No Disponible'],
                 text: 'Estado Adopción',
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               Formulario(
                 controller: _raza,
                 text: 'Raza',
@@ -281,61 +285,20 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                   children: [
                     const SizedBox(height: 10),
                     ClipOval(
-                      child: InteractiveViewer(
-                        minScale: 1,
-                        maxScale: 4,
-                        child: kIsWeb
-                            ? Image.network(
-                                _imagen!.path,
-                                height: 150,
-                                width: 150,
-                                fit: BoxFit.cover,
-                              )
-                            : Image.file(
-                                File(_imagen!.path),
-                                height: 150,
-                                width: 150,
-                                fit: BoxFit.cover,
-                              ),
-                      ),
+                      child: Image.file(File(_imagen!.path),
+                          height: 150, width: 150, fit: BoxFit.cover),
                     ),
                     const SizedBox(height: 10),
                     Wrap(
                       spacing: 10,
+                      runSpacing: 10,
                       alignment: WrapAlignment.center,
                       children: [
                         _buildActionButton(
                           icon: Icons.delete,
                           label: 'Eliminar',
                           color: Colors.red,
-                          onPressed: () async {
-                            final confirm = await showDialog<bool>(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Text('Confirmar eliminación'),
-                                  content: const Text(
-                                    '¿Desea eliminar la imagen seleccionada?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, false),
-                                      child: const Text('Cancelar'),
-                                    ),
-                                    ElevatedButton(
-                                      onPressed: () =>
-                                          Navigator.pop(context, true),
-                                      child: const Text('Eliminar'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                            if (confirm == true) {
-                              setState(() => _imagen = null);
-                            }
-                          },
+                          onPressed: () => setState(() => _imagen = null),
                         ),
                         _buildActionButton(
                           icon: Icons.change_circle,
@@ -361,20 +324,21 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.all(15),
                         ),
-                        onPressed:
-                            (!_modeloCargado || _isLoading) ? null : detectarAnimal,
+                        onPressed: (!_modeloCargado || _isLoading)
+                            ? null
+                            : detectarAnimal,
+                      ),
+                    if (_resultadoIA.isNotEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text('Resultado IA: $_resultadoIA',
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
                       ),
                     if (!_modeloCargado)
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Text('Cargando modelo IA...',
-                            style: TextStyle(color: Colors.grey)),
-                      ),
-                    if (_isLoading)
-                      const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: CircularProgressIndicator(),
-                      ),
+                      const Text('Cargando modelo IA...',
+                          style: TextStyle(color: Colors.grey)),
+                    if (_isLoading) const CircularProgressIndicator(),
                   ],
                 ),
 
@@ -383,14 +347,10 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 20,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    side: const BorderSide(color: Colors.grey, width: 2),
-                  ),
+                      borderRadius: BorderRadius.circular(10),
+                      side: const BorderSide(color: Colors.grey, width: 2)),
                 ),
                 onPressed: () async {
                   final pickedDate = await showDatePicker(
@@ -400,14 +360,11 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                     lastDate: DateTime.now(),
                     locale: const Locale('es', 'ES'),
                   );
-                  if (pickedDate != null)
-                    setState(() => _fechaIngreso = pickedDate);
+                  if (pickedDate != null) setState(() => _fechaIngreso = pickedDate);
                 },
-                child: Text(
-                  _fechaIngreso == null
-                      ? 'Seleccionar fecha de ingreso'
-                      : 'Fecha: ${_fechaIngreso!.day.toString().padLeft(2, '0')}/${_fechaIngreso!.month.toString().padLeft(2, '0')}/${_fechaIngreso!.year}',
-                ),
+                child: Text(_fechaIngreso == null
+                    ? 'Seleccionar fecha de ingreso'
+                    : 'Fecha: ${_fechaIngreso!.day}/${_fechaIngreso!.month}/${_fechaIngreso!.year}'),
               ),
               const SizedBox(height: 24),
               _isLoading
@@ -427,5 +384,6 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     );
   }
 }
+
 
 
