@@ -5,7 +5,7 @@ import 'package:admin_patitas/utils/url_api.dart';
 
 class IAHandler {
   Future<void> loadModel() async {
-    print('IA lista para usar API (móvil)');
+    print('La IA esta lista para usarse desde la API en App');
   }
 
   // Se envía la imagen en base64 a la API y se obtiene la predicción
