@@ -10,9 +10,6 @@ import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/item_form_selection.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
-//import 'dart:html' as html;
-
-// Import condicional IA
 import 'ia_mobile.dart' if (dart.library.html) 'ia_web.dart' as IA;
 
 class AnimalRegister extends StatefulWidget {
@@ -33,6 +30,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
   DateTime? _fechaIngreso;
   XFile? _imagen;
   bool _isLoading = false;
+  bool _modeloCargado = false;
 
   final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
 
@@ -42,7 +40,12 @@ class _AnimalRegisterState extends State<AnimalRegister> {
   void initState() {
     super.initState();
     ia = IA.IAHandler();
-    ia.loadModel();
+    _initIA();
+  }
+
+  Future<void> _initIA() async {
+    await ia.loadModel();
+    setState(() => _modeloCargado = true);
   }
 
   Future<void> seleccionarImagen({required bool desdeCamara}) async {
@@ -51,37 +54,6 @@ class _AnimalRegisterState extends State<AnimalRegister> {
       source: desdeCamara ? ImageSource.camera : ImageSource.gallery,
     );
     if (imgFile != null) setState(() => _imagen = imgFile);
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Tomar foto'),
-              onTap: () async {
-                Navigator.pop(context);
-                final imgFile = await picker.pickImage(
-                  source: ImageSource.camera,
-                );
-                if (imgFile != null) setState(() => _imagen = imgFile);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Seleccionar de galería'),
-              onTap: () async {
-                Navigator.pop(context);
-                final imgFile = await picker.pickImage(
-                  source: ImageSource.gallery,
-                );
-                if (imgFile != null) setState(() => _imagen = imgFile);
-              },
-            ),
-          ],
-        );
-      },
-    );
   }
 
   Future<void> descargarImagen() async {
@@ -94,13 +66,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
           "${_nombre.text.isNotEmpty ? _nombre.text : 'animal'}_${DateTime.now().millisecondsSinceEpoch}.jpg";
 
       if (kIsWeb) {
-        /*
-        final blob = html.Blob([bytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute("download", fileName)
-          ..click();
-        html.Url.revokeObjectUrl(url);*/
+        // Implementación para Web si se requiere
       } else {
         final directory = await getApplicationDocumentsDirectory();
         final filePath = '${directory.path}/$fileName';
@@ -110,9 +76,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
         _showSnack('Imagen guardada en: $filePath');
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error al descargar imagen: $e')));
+      _showSnack('Error al descargar imagen: $e');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -122,20 +86,12 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_imagen == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor seleccione una foto del animal'),
-        ),
-      );
+      _showSnack('Por favor seleccione una foto del animal');
       return;
     }
 
     if (_fechaIngreso == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor seleccione la fecha de ingreso'),
-        ),
-      );
+      _showSnack('Por favor seleccione la fecha de ingreso');
       return;
     }
 
@@ -165,9 +121,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
         Navigator.pop(context);
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error al registrar: $e')));
+      _showSnack('Error al registrar: $e');
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -189,9 +143,25 @@ class _AnimalRegisterState extends State<AnimalRegister> {
   }
 
   void _showSnack(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Widget _buildActionButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return OutlinedButton.icon(
+      icon: Icon(icon, color: color),
+      label: Text(label, style: TextStyle(color: color)),
+      style: OutlinedButton.styleFrom(
+        side: BorderSide(color: color),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      ),
+      onPressed: onPressed,
+    );
   }
 
   @override
@@ -269,7 +239,6 @@ class _AnimalRegisterState extends State<AnimalRegister> {
               ),
               const SizedBox(height: 16),
 
-              // Botón para elegir cámara o galería
               ElevatedButton.icon(
                 icon: const Icon(Icons.photo_library),
                 label: const Text('Seleccionar Imagen'),
@@ -331,10 +300,14 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Wrap(
+                      spacing: 10,
+                      alignment: WrapAlignment.center,
                       children: [
-                        TextButton.icon(
+                        _buildActionButton(
+                          icon: Icons.delete,
+                          label: 'Eliminar',
+                          color: Colors.red,
                           onPressed: () async {
                             final confirm = await showDialog<bool>(
                               context: context,
@@ -363,33 +336,18 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                               setState(() => _imagen = null);
                             }
                           },
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          label: const Text(
-                            'Eliminar',
-                            style: TextStyle(color: Colors.red),
-                          ),
                         ),
-                        const SizedBox(width: 20),
-                        TextButton.icon(
-                          onPressed: () =>
-                              seleccionarImagen(desdeCamara: false),
-                          icon: const Icon(
-                            Icons.change_circle,
-                            color: Colors.blue,
-                          ),
-                          label: const Text(
-                            'Cambiar',
-                            style: TextStyle(color: Colors.blue),
-                          ),
+                        _buildActionButton(
+                          icon: Icons.change_circle,
+                          label: 'Cambiar',
+                          color: Colors.blue,
+                          onPressed: () => seleccionarImagen(desdeCamara: false),
                         ),
-                        const SizedBox(width: 20),
-                        TextButton.icon(
+                        _buildActionButton(
+                          icon: Icons.download,
+                          label: 'Descargar',
+                          color: Colors.green,
                           onPressed: descargarImagen,
-                          icon: const Icon(Icons.download, color: Colors.green),
-                          label: const Text(
-                            'Descargar',
-                            style: TextStyle(color: Colors.green),
-                          ),
                         ),
                       ],
                     ),
@@ -403,7 +361,14 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.all(15),
                         ),
-                        onPressed: _isLoading ? null : detectarAnimal,
+                        onPressed:
+                            (!_modeloCargado || _isLoading) ? null : detectarAnimal,
+                      ),
+                    if (!_modeloCargado)
+                      const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Text('Cargando modelo IA...',
+                            style: TextStyle(color: Colors.grey)),
                       ),
                     if (_isLoading)
                       const Padding(
@@ -462,3 +427,5 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     );
   }
 }
+
+
