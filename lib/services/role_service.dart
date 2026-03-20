@@ -1,25 +1,24 @@
 import 'dart:developer';
-import 'package:firebase_database/firebase_database.dart';
+
 import 'package:admin_patitas/models/user_role.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class RoleService {
-  final DatabaseReference _database = FirebaseDatabase.instance.ref();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   /// Obtiene el rol del usuario en un refugio específico
   Future<UserRole?> getUserRole(String userId, String refugioId) async {
     try {
-      DatabaseReference refugioRef = _database
-          .child('refugios')
-          .child(refugioId);
-      DataSnapshot snapshot = await refugioRef.get();
+      DocumentSnapshot snapshot =
+          await _firestore.collection('refugios').doc(refugioId).get();
 
       if (!snapshot.exists) {
         log('Refugio no encontrado', name: 'RoleService');
         return null;
       }
 
-      Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
 
       // Verificar si es el propietario (admin)
       if (data['id_usuario'] == userId) {
@@ -60,47 +59,41 @@ class RoleService {
       List<Map<String, dynamic>> refugios = [];
 
       log(
-        'Buscando refugios en Realtime Database para UID: $userId',
+        'Buscando refugios en Firestore para UID: $userId',
         name: 'RoleService',
       );
 
-      // Obtener todos los refugios
-      DatabaseReference refugiosRef = _database.child('refugios');
-      DataSnapshot snapshot = await refugiosRef.get();
+      // Obtener todos los refugios con timeout de 10 segundos
+      QuerySnapshot snapshot = await _firestore
+          .collection('refugios')
+          .get()
+          .timeout(const Duration(seconds: 10));
 
-      if (!snapshot.exists) {
+      if (snapshot.docs.isEmpty) {
         log('No hay refugios en la base de datos', name: 'RoleService');
         return [];
       }
 
-      Map<dynamic, dynamic> allRefugios =
-          snapshot.value as Map<dynamic, dynamic>;
       log(
-        'Total de refugios en DB: ${allRefugios.length}',
+        'Total de refugios en Firestore: ${snapshot.docs.length}',
         name: 'RoleService',
       );
 
-      allRefugios.forEach((key, value) {
-        Map<dynamic, dynamic> refugioData = value as Map<dynamic, dynamic>;
-        String refugioId = key as String;
+      for (var doc in snapshot.docs) {
+        Map<String, dynamic> refugioData = doc.data() as Map<String, dynamic>;
+        String refugioId = doc.id;
 
         log('Verificando refugio: $refugioId', name: 'RoleService');
-        log(
-          'id_usuario del refugio: ${refugioData['id_usuario']}',
-          name: 'RoleService',
-        );
-        log('Comparando con userId: $userId', name: 'RoleService');
 
         // Verificar si es propietario (ADMIN) - PRIORIDAD
         if (refugioData['id_usuario'] == userId) {
           log('¡Usuario es ADMIN del refugio $refugioId!', name: 'RoleService');
           refugios.add({'id': refugioId, 'data': refugioData, 'role': 'admin'});
-          return; // Skip checking colaboradores for this refugio
+          continue; // Skip checking colaboradores for this refugio
         }
 
         // Verificar si es colaborador
         var colaboradores = refugioData['colaboradores'];
-        log('Colaboradores: $colaboradores', name: 'RoleService');
 
         if (colaboradores != null) {
           bool isCollaborator = false;
@@ -122,7 +115,7 @@ class RoleService {
             refugios.add({'id': refugioId, 'data': refugioData, 'role': role});
           }
         }
-      });
+      }
 
       log(
         'Total refugios encontrados para usuario: ${refugios.length}',
@@ -142,20 +135,19 @@ class RoleService {
 
       log('Obteniendo todos los refugios del sistema', name: 'RoleService');
 
-      DatabaseReference refugiosRef = _database.child('refugios');
-      DataSnapshot snapshot = await refugiosRef.get();
+      QuerySnapshot snapshot = await _firestore
+          .collection('refugios')
+          .get()
+          .timeout(const Duration(seconds: 10));
 
-      if (!snapshot.exists) {
+      if (snapshot.docs.isEmpty) {
         log('No hay refugios en la base de datos', name: 'RoleService');
         return [];
       }
 
-      Map<dynamic, dynamic> allRefugios =
-          snapshot.value as Map<dynamic, dynamic>;
-
-      allRefugios.forEach((key, value) {
-        Map<dynamic, dynamic> refugioData = value as Map<dynamic, dynamic>;
-        String refugioId = key as String;
+      for (var doc in snapshot.docs) {
+        Map<String, dynamic> refugioData = doc.data() as Map<String, dynamic>;
+        String refugioId = doc.id;
 
         // Agregar el refugio a la lista
         refugios.add({
@@ -164,7 +156,7 @@ class RoleService {
           // No asignamos rol específico ya que es una vista pública
           'role': 'public',
         });
-      });
+      }
 
       log(
         'Total refugios encontrados en el sistema: ${refugios.length}',

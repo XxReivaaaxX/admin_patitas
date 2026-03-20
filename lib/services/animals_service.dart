@@ -1,16 +1,18 @@
 import 'dart:developer';
 
 import 'package:admin_patitas/models/animal.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AnimalsService {
-  final DatabaseReference _database = FirebaseDatabase.instance.ref();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  Future<void> registerAnimals(String id_refugio, Animal animal) async {
+  Future<void> registerAnimals(String idRefugio, Animal animal) async {
     try {
-      final newAnimalRef = _database.child('animales').child(id_refugio).push();
-
-      await newAnimalRef.set({
+      final newAnimalRef = await _firestore
+          .collection('refugios')
+          .doc(idRefugio)
+          .collection('animales')
+          .add({
         'nombre': animal.nombre,
         'especie': animal.especie,
         'raza': animal.raza,
@@ -22,24 +24,25 @@ class AnimalsService {
         'imagenUrl': animal.imageUrl,
       });
 
-      log("Animal registrado correctamente en Firebase: ${newAnimalRef.key}");
+      log("Animal registrado correctamente en Firestore: ${newAnimalRef.id}");
     } catch (e) {
-      log('Error al registrar animal en Firebase: $e');
+      log('Error al registrar animal en Firestore: $e');
     }
   }
 
   Future<List<Animal>> getAnimals(String refugio) async {
     try {
-      final snapshot = await _database.child('animales').child(refugio).get();
+      final snapshot = await _firestore
+          .collection('refugios')
+          .doc(refugio)
+          .collection('animales')
+          .get();
 
-      if (snapshot.exists) {
-        final data = snapshot.value as Map<dynamic, dynamic>;
-        final List<Animal> animals = [];
-
-        data.forEach((key, value) {
-          final animalData = Map<String, dynamic>.from(value as Map);
-          animals.add(Animal.fromJson(key, animalData));
-        });
+      if (snapshot.docs.isNotEmpty) {
+        final List<Animal> animals = snapshot.docs.map((doc) {
+          final data = doc.data();
+          return Animal.fromJson(doc.id, data);
+        }).toList();
 
         return animals;
       } else {
@@ -47,7 +50,7 @@ class AnimalsService {
         return [];
       }
     } catch (e) {
-      log('Error al obtener animales de Firebase: $e');
+      log('Error al obtener animales de Firestore: $e');
       return [];
     }
   }
@@ -59,7 +62,12 @@ class AnimalsService {
         return;
       }
 
-      await _database.child('animales').child(refugio).child(animal.id).update({
+      await _firestore
+          .collection('refugios')
+          .doc(refugio)
+          .collection('animales')
+          .doc(animal.id)
+          .update({
         'nombre': animal.nombre,
         'especie': animal.especie,
         'raza': animal.raza,
@@ -71,9 +79,9 @@ class AnimalsService {
         'imagenUrl': animal.imageUrl,
       });
 
-      log("Animal actualizado correctamente en Firebase: ${animal.id}");
+      log("Animal actualizado correctamente en Firestore: ${animal.id}");
     } catch (e) {
-      log('Error al actualizar animal en Firebase: $e');
+      log('Error al actualizar animal en Firestore: $e');
     }
   }
 
@@ -84,15 +92,16 @@ class AnimalsService {
         return;
       }
 
-      await _database
-          .child('animales')
-          .child(refugio)
-          .child(animal.id)
-          .remove();
+      await _firestore
+          .collection('refugios')
+          .doc(refugio)
+          .collection('animales')
+          .doc(animal.id)
+          .delete();
 
-      log("Animal eliminado correctamente de Firebase: ${animal.id}");
+      log("Animal eliminado correctamente de Firestore: ${animal.id}");
     } catch (e) {
-      log('Error al eliminar animal de Firebase: $e');
+      log('Error al eliminar animal de Firestore: $e');
     }
   }
 }

@@ -1,19 +1,54 @@
 import 'dart:developer';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RefugioManagementService {
-  final DatabaseReference _database = FirebaseDatabase.instance.ref();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  /// Crea un nuevo refugio
+  Future<void> createRefugio(
+    String nombre,
+    String direccion,
+    String idUsuario, {
+    String? telefono,
+    String? whatsapp,
+    String? emailContacto,
+  }) async {
+    try {
+      DocumentReference docRef = await _firestore.collection('refugios').add({
+        'nombre': nombre,
+        'direccion': direccion,
+        'telefono': telefono ?? '',
+        'whatsapp': whatsapp ?? '',
+        'email_contacto': emailContacto ?? '',
+        'id_usuario': idUsuario,
+        'created_at': FieldValue.serverTimestamp(),
+        'colaboradores': {
+          idUsuario: 'admin',
+        },
+      });
+      log('Refugio creado exitosamente: ${docRef.id}', name: 'RefugioManagement');
+    } catch (e) {
+      log('Error al crear refugio: $e', error: e, name: 'RefugioManagement');
+      rethrow;
+    }
+  }
 
   /// Actualiza los datos de un refugio
   Future<bool> updateRefugio(
     String refugioId,
     String nombre,
-    String direccion,
-  ) async {
+    String direccion, {
+    String? telefono,
+    String? whatsapp,
+    String? emailContacto,
+  }) async {
     try {
-      await _database.child('refugios').child(refugioId).update({
+      await _firestore.collection('refugios').doc(refugioId).update({
         'nombre': nombre,
         'direccion': direccion,
+        'telefono': telefono ?? '',
+        'whatsapp': whatsapp ?? '',
+        'email_contacto': emailContacto ?? '',
       });
       log('Refugio actualizado exitosamente', name: 'RefugioManagement');
       return true;
@@ -30,7 +65,7 @@ class RefugioManagementService {
   /// Elimina un refugio
   Future<bool> deleteRefugio(String refugioId) async {
     try {
-      await _database.child('refugios').child(refugioId).remove();
+      await _firestore.collection('refugios').doc(refugioId).delete();
       log('Refugio eliminado exitosamente', name: 'RefugioManagement');
       return true;
     } catch (e) {
@@ -42,24 +77,13 @@ class RefugioManagementService {
   /// Busca el UID de un usuario por su email en la base de datos de usuarios
   Future<String?> _findUserByEmail(String email) async {
     try {
-      // Buscar en el nodo 'users' donde guardamos el mapeo email -> uid
-      DatabaseReference usersRef = _database.child('users');
-      DataSnapshot snapshot = await usersRef.get();
+      QuerySnapshot snapshot = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .get();
 
-      if (!snapshot.exists) {
-        return null;
-      }
-
-      Map<dynamic, dynamic> users = snapshot.value as Map<dynamic, dynamic>;
-
-      // Buscar el UID que corresponde al email
-      for (var entry in users.entries) {
-        String uid = entry.key;
-        var userData = entry.value;
-
-        if (userData is Map && userData['email'] == email) {
-          return uid;
-        }
+      if (snapshot.docs.isNotEmpty) {
+        return snapshot.docs.first.id;
       }
 
       return null;
@@ -76,10 +100,10 @@ class RefugioManagementService {
   /// Registra un usuario en el índice de usuarios (debe llamarse al registrarse)
   Future<void> registerUserEmail(String uid, String email) async {
     try {
-      await _database.child('users').child(uid).set({
+      await _firestore.collection('users').doc(uid).set({
         'email': email,
-        'registered_at': DateTime.now().toIso8601String(),
-      });
+        'registered_at': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
       log('Usuario registrado en índice: $email', name: 'RefugioManagement');
     } catch (e) {
       log(
@@ -109,19 +133,25 @@ class RefugioManagementService {
         };
       }
 
-      DatabaseReference refugioRef = _database
-          .child('refugios')
-          .child(refugioId);
+      DocumentReference refugioRef = _firestore
+          .collection('refugios')
+          .doc(refugioId);
+      
+      DocumentSnapshot snapshot = await refugioRef.get();
 
-      // Obtener colaboradores actuales
-      DataSnapshot snapshot = await refugioRef.child('colaboradores').get();
+      if (!snapshot.exists) {
+        return {
+          'success': false,
+          'message': 'No se encontró el refugio.',
+        };
+      }
+
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      var colaboradoresRaw = data['colaboradores'];
 
       Map<String, dynamic> colaboradores = {};
-      if (snapshot.exists) {
-        var data = snapshot.value;
-        if (data is Map) {
-          colaboradores = Map<String, dynamic>.from(data);
-        }
+      if (colaboradoresRaw is Map) {
+         colaboradores = Map<String, dynamic>.from(colaboradoresRaw);
       }
 
       // Verificar si ya existe
@@ -135,7 +165,7 @@ class RefugioManagementService {
       // Agregar nuevo colaborador
       colaboradores[userId] = role;
 
-      await refugioRef.child('colaboradores').set(colaboradores);
+      await refugioRef.update({'colaboradores': colaboradores});
 
       log(
         'Colaborador agregado exitosamente: $email',
@@ -158,23 +188,33 @@ class RefugioManagementService {
     String userId,
   ) async {
     try {
-      DatabaseReference refugioRef = _database
-          .child('refugios')
-          .child(refugioId);
+      DocumentReference refugioRef = _firestore
+          .collection('refugios')
+          .doc(refugioId);
 
-      // Obtener colaboradores actuales
-      DataSnapshot snapshot = await refugioRef.child('colaboradores').get();
+      DocumentSnapshot snapshot = await refugioRef.get();
 
       if (!snapshot.exists) {
+        return {
+          'success': false,
+          'message': 'No se encontró el refugio.',
+        };
+      }
+
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      var colaboradoresRaw = data['colaboradores'];
+
+      if (colaboradoresRaw == null) {
         return {
           'success': false,
           'message': 'No hay colaboradores en este refugio.',
         };
       }
 
-      Map<String, dynamic> colaboradores = Map<String, dynamic>.from(
-        snapshot.value as Map,
-      );
+      Map<String, dynamic> colaboradores = {};
+      if (colaboradoresRaw is Map) {
+         colaboradores = Map<String, dynamic>.from(colaboradoresRaw);
+      }
 
       // Verificar si existe
       if (!colaboradores.containsKey(userId)) {
@@ -187,7 +227,7 @@ class RefugioManagementService {
       // Eliminar colaborador
       colaboradores.remove(userId);
 
-      await refugioRef.child('colaboradores').set(colaboradores);
+      await refugioRef.update({'colaboradores': colaboradores});
 
       log('Colaborador eliminado exitosamente', name: 'RefugioManagement');
       return {
@@ -207,14 +247,14 @@ class RefugioManagementService {
   /// Obtiene el email de un usuario por su UID
   Future<String?> getUserEmail(String userId) async {
     try {
-      DataSnapshot snapshot = await _database
-          .child('users')
-          .child(userId)
-          .child('email')
+      DocumentSnapshot snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
           .get();
 
       if (snapshot.exists) {
-        return snapshot.value as String;
+        Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+        return data['email'] as String?;
       }
 
       return null;
@@ -231,21 +271,28 @@ class RefugioManagementService {
   /// Obtiene la lista de colaboradores con sus datos
   Future<List<Map<String, dynamic>>> getCollaborators(String refugioId) async {
     try {
-      DatabaseReference refugioRef = _database
-          .child('refugios')
-          .child(refugioId);
-      DataSnapshot snapshot = await refugioRef.child('colaboradores').get();
+      DocumentReference refugioRef = _firestore
+          .collection('refugios')
+          .doc(refugioId);
+      
+      DocumentSnapshot snapshot = await refugioRef.get();
 
       if (!snapshot.exists) {
         return [];
       }
 
-      Map<dynamic, dynamic> colaboradoresData =
-          snapshot.value as Map<dynamic, dynamic>;
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      var colaboradoresRaw = data['colaboradores'];
+      
+      if (colaboradoresRaw == null || colaboradoresRaw is! Map) {
+        return [];
+      }
+
+      Map<String, dynamic> colaboradoresData = Map<String, dynamic>.from(colaboradoresRaw);
       List<Map<String, dynamic>> colaboradores = [];
 
       for (var entry in colaboradoresData.entries) {
-        String userId = entry.key as String;
+        String userId = entry.key;
         String role = entry.value as String;
 
         // Obtener el email del usuario
@@ -266,6 +313,65 @@ class RefugioManagementService {
         name: 'RefugioManagement',
       );
       return [];
+    }
+  }
+
+  /// Obtiene los roles personalizados de un refugio
+  Future<List<String>> getCustomRoles(String refugioId) async {
+    try {
+      DocumentSnapshot snapshot = await _firestore.collection('refugios').doc(refugioId).get();
+      if (!snapshot.exists) return ['admin', 'colaborador', 'veterinario', 'voluntario'];
+      
+      Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+      if (data.containsKey('roles_disponibles')) {
+        return List<String>.from(data['roles_disponibles']);
+      }
+      
+      return ['admin', 'colaborador', 'veterinario', 'voluntario'];
+    } catch (e) {
+      log('Error al obtener roles: $e');
+      return ['admin', 'colaborador', 'veterinario', 'voluntario'];
+    }
+  }
+
+  /// Agrega un nuevo rol personalizado al refugio
+  Future<bool> addCustomRole(String refugioId, String roleName) async {
+    try {
+      DocumentReference ref = _firestore.collection('refugios').doc(refugioId);
+      await _firestore.runTransaction((transaction) async {
+        DocumentSnapshot snapshot = await transaction.get(ref);
+        List<String> roles = ['admin', 'colaborador', 'veterinario', 'voluntario'];
+        
+        if (snapshot.exists) {
+          Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
+          if (data.containsKey('roles_disponibles')) {
+            roles = List<String>.from(data['roles_disponibles']);
+          }
+        }
+        
+        if (!roles.contains(roleName)) {
+          roles.add(roleName);
+          transaction.update(ref, {'roles_disponibles': roles});
+        }
+      });
+      return true;
+    } catch (e) {
+      log('Error al agregar rol: $e');
+      return false;
+    }
+  }
+
+  /// Actualiza el rol de un colaborador existente
+  Future<Map<String, dynamic>> updateCollaboratorRole(String refugioId, String userId, String newRole) async {
+    try {
+      DocumentReference ref = _firestore.collection('refugios').doc(refugioId);
+      await ref.update({
+        'colaboradores.$userId': newRole,
+      });
+      return {'success': true, 'message': 'Rol actualizado correctamente.'};
+    } catch (e) {
+      log('Error al actualizar rol: $e');
+      return {'success': false, 'message': 'Error al actualizar rol.'};
     }
   }
 }

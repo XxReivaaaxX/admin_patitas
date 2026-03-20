@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/models/historial_medico.dart';
 import 'package:admin_patitas/screens/animal_view.dart';
@@ -6,22 +7,22 @@ import 'package:admin_patitas/services/historial_medico_service.dart';
 import 'package:flutter/material.dart';
 
 class SaludAdmin extends StatefulWidget {
-  final String? id_refugio;
-  const SaludAdmin({super.key, required this.id_refugio});
+  final String? idRefugio;
+  const SaludAdmin({super.key, required this.idRefugio});
 
   @override
   State<SaludAdmin> createState() => _SaludAdminState();
 }
 
 class _SaludAdminState extends State<SaludAdmin> {
-  String _selectedValue = '2'; // Iniciar con Enfermedades
+  final String _selectedValue = '2'; // Iniciar con Enfermedades
   String title = 'Enfermedades';
   Map<String, String> options = {'2': 'Enfermedades'};
 
   Future<List<Map<String, dynamic>>> _getAnimalsWithDiseases() async {
     try {
       // Obtener todos los animales del refugio
-      final animals = await AnimalsService().getAnimals(widget.id_refugio!);
+      final animals = await AnimalsService().getAnimals(widget.idRefugio!);
       List<Map<String, dynamic>> animalsWithDiseases = [];
 
       // Palabras clave que indican que no hay enfermedad real
@@ -47,6 +48,8 @@ class _SaludAdminState extends State<SaludAdmin> {
         if (animal.historialMedicoId.isNotEmpty) {
           try {
             final historial = await HistorialMedicoService().getHistorialMedico(
+              widget.idRefugio!,
+              animal.id,
               animal.historialMedicoId,
             );
 
@@ -73,14 +76,14 @@ class _SaludAdminState extends State<SaludAdmin> {
               }
             }
           } catch (e) {
-            print('Error obteniendo historial de ${animal.nombre}: $e');
+            log('Error obteniendo historial de ${animal.nombre}: $e');
           }
         }
       }
 
       return animalsWithDiseases;
     } catch (e) {
-      print('Error obteniendo animales con enfermedades: $e');
+      log('Error obteniendo animales con enfermedades: $e');
       return [];
     }
   }
@@ -146,7 +149,10 @@ class _SaludAdminState extends State<SaludAdmin> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => AnimalView(animal: animal),
+                        builder: (context) => AnimalView(
+                          animal: animal,
+                          idRefugio: widget.idRefugio!,
+                        ),
                       ),
                     );
                   },

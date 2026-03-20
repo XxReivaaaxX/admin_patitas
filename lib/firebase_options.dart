@@ -30,10 +30,7 @@ class DefaultFirebaseOptions {
           'you can reconfigure this by running the FlutterFire CLI again.',
         );
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -47,32 +44,40 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyBdnTOsgN8Ts-lIsdrK8GXSAN1JQ0kzURM',
-    appId: '1:173118255779:web:bde80908ec8fa90b9b4516',
-    messagingSenderId: '173118255779',
-    projectId: 'admin-patitas',
-    authDomain: 'admin-patitas.firebaseapp.com',
-    databaseURL: 'https://admin-patitas-default-rtdb.firebaseio.com',
-    storageBucket: 'admin-patitas.firebasestorage.app',
-    measurementId: 'G-BPJBCHY089',
+    apiKey: 'AIzaSyA_9wqlNOElFu6qFZepe7DeZz8zaKXR5ao',
+    appId: '1:410341463445:web:b25d60c6677a144775129c',
+    messagingSenderId: '410341463445',
+    projectId: 'admin-patitas-15fc3',
+    authDomain: 'admin-patitas-15fc3.firebaseapp.com',
+    storageBucket: 'admin-patitas-15fc3.firebasestorage.app',
+    measurementId: 'G-RM6PVMG0QZ',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyATEsbfA3vYCgpkocfjhXpvOsFW2QlgQH8',
-    appId: '1:173118255779:android:a92af144a3db24669b4516',
-    messagingSenderId: '173118255779',
-    projectId: 'admin-patitas',
-    databaseURL: 'https://admin-patitas-default-rtdb.firebaseio.com',
-    storageBucket: 'admin-patitas.firebasestorage.app',
+    apiKey: 'AIzaSyDs40ow9N3qHlw6JdU4iSow2_INyMejAm0',
+    appId: '1:410341463445:android:0c9a4a97bfa92cde75129c',
+    messagingSenderId: '410341463445',
+    projectId: 'admin-patitas-15fc3',
+    storageBucket: 'admin-patitas-15fc3.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDTn5wdDIENKRk_gcoZJIN2r1m064hSMpc',
-    appId: '1:173118255779:ios:4dca0d98feb78d6c9b4516',
-    messagingSenderId: '173118255779',
-    projectId: 'admin-patitas',
-    databaseURL: 'https://admin-patitas-default-rtdb.firebaseio.com',
-    storageBucket: 'admin-patitas.firebasestorage.app',
+    apiKey: 'AIzaSyA2WfL0cCF4WvnqioQkenbln1-8M3x6qEI',
+    appId: '1:410341463445:ios:19715f2da09cd06675129c',
+    messagingSenderId: '410341463445',
+    projectId: 'admin-patitas-15fc3',
+    storageBucket: 'admin-patitas-15fc3.firebasestorage.app',
     iosBundleId: 'com.example.adminPatitas',
   );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyA_9wqlNOElFu6qFZepe7DeZz8zaKXR5ao',
+    appId: '1:410341463445:web:c76eecfa951a774b75129c',
+    messagingSenderId: '410341463445',
+    projectId: 'admin-patitas-15fc3',
+    authDomain: 'admin-patitas-15fc3.firebaseapp.com',
+    storageBucket: 'admin-patitas-15fc3.firebasestorage.app',
+    measurementId: 'G-RZJ7XMLKFJ',
+  );
+
 }

@@ -9,7 +9,7 @@ class CardRefugios extends StatelessWidget {
   final double? sizeImg;
 
   const CardRefugios({
-    Key? key,
+    super.key,
     required this.sizeImg,
     required this.colorIzq,
     required this.colorDer,
@@ -17,7 +17,7 @@ class CardRefugios extends StatelessWidget {
     required this.nombre,
     required this.correo,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +31,7 @@ class CardRefugios extends StatelessWidget {
               child: Row(
                 children: [
                   Image.asset(
-                    'assets/img/gatos_principal.jpg',
+                    'assets/img/cat_category_premium.png',
                     fit: BoxFit.fill,
                     height: sizeImg,
                   ),
@@ -43,7 +43,7 @@ class CardRefugios extends StatelessWidget {
                 ],
               ),
             ),
-            Container(padding: const EdgeInsets.all(8.0), child: Text(correo!)),
+            Padding(padding: const EdgeInsets.all(8.0), child: Text(correo!)),
           ],
         ),
       ),

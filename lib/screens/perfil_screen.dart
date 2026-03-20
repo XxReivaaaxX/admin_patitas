@@ -1,4 +1,5 @@
-import 'package:admin_patitas/widgets/text_form_register.dart';
+import 'package:admin_patitas/utils/colors.dart';
+import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:admin_patitas/services/role_service.dart';
@@ -28,6 +29,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
     _currentUser = FirebaseAuth.instance.currentUser;
     RoleService roleService = RoleService();
     String? role = await roleService.getCurrentRole();
+    final prefs = await SharedPreferences.getInstance();
+    final String? activeRefugio = prefs.getString('refugio');
 
     // Verificar si el usuario tiene refugios
     if (_currentUser != null) {
@@ -39,7 +42,8 @@ class _PerfilScreenState extends State<PerfilScreen> {
 
     if (mounted) {
       setState(() {
-        _role = role;
+        // Solo asignamos el rol si hay un refugio activo seleccionado
+        _role = activeRefugio != null ? role : null;
         _isLoading = false;
       });
     }
@@ -67,149 +71,177 @@ class _PerfilScreenState extends State<PerfilScreen> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        backgroundColor: AppColors.backgroundLight,
+        body: Center(child: CircularProgressIndicator(color: AppColors.primary)),
+      );
     }
 
+    bool isGuest = _role == null;
     bool isAdmin = _role == 'admin';
 
+    String roleLabel = 'Explorador';
+    if (!isGuest) {
+      roleLabel = isAdmin ? 'Administrador' : 'Colaborador';
+    }
+
     return Scaffold(
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        title: TextForm(
-          lines: 1,
-          texto: 'Perfil',
-          color: Colors.white,
-          size: 20,
-          aling: TextAlign.left,
-          negrita: FontWeight.bold,
+        title: const Text(
+          'Mi Perfil',
+          style: TextStyle(
+            color: AppColors.textDark,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        centerTitle: true,
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
         children: [
           // User Info Card
-          Card(
-            color: Colors.white,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  const CircleAvatar(
-                    radius: 40,
-                    backgroundColor: Color(0xFF4FC3F7),
-                    child: Icon(Icons.person, size: 50, color: Colors.white),
+          Container(
+            padding: const EdgeInsets.all(24.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.05),
+                  offset: const Offset(0, 8),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(3),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: AppColors.primaryGradient,
                   ),
-
-                  Column(
+                  child: const CircleAvatar(
+                    radius: 35,
+                    backgroundColor: Colors.white,
+                    child: Icon(Icons.person, size: 40, color: AppColors.primary),
+                  ),
+                ),
+                const SizedBox(width: 20),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isAdmin ? Color(0xFF51A88B) : Colors.blue,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          isAdmin ? 'Administrador' : 'Colaborador',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 8),
                       Text(
                         _currentUser?.email ?? 'Usuario',
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
+                          color: AppColors.textDark,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isGuest 
+                              ? Colors.grey.withValues(alpha: 0.2)
+                              : (isAdmin ? AppColors.secondary.withValues(alpha: 0.2) : AppColors.primary.withValues(alpha: 0.2)),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          roleLabel,
+                          style: TextStyle(
+                            color: isGuest
+                                ? Colors.grey[700]
+                                : (isAdmin ? AppColors.secondary : AppColors.primary),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 30),
 
           // Options
-          if (isAdmin) ...[
-            Container(
+          if (!isGuest && isAdmin) ...[
+            const Padding(
               padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-              child: TextForm(
-                lines: 1,
-                texto: 'Opciones de Administrador',
-                color: Colors.black,
-                size: 15,
-                aling: TextAlign.left,
-                negrita: FontWeight.bold,
+              child: Text(
+                'Opciones de Administrador',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey,
+                  letterSpacing: 1.2,
+                ),
               ),
             ),
-
-            Card(
-              color: Colors.white,
-              child: ListTile(
-                leading: const Icon(Icons.settings, color: Color(0xFF4FC3F7)),
-                title: const Text('Configurar Refugio'),
-                subtitle: const Text('Editar información del refugio'),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {
-                  Navigator.pushNamed(context, '/refugio_settings');
-                },
-              ),
+            _buildOptionTile(
+              icon: Icons.settings_outlined,
+              title: 'Configurar Refugio',
+              subtitle: 'Editar información y detalles del refugio',
+              onTap: () => Navigator.pushNamed(context, '/refugio_settings'),
             ),
-            Card(
-              color: Colors.white,
-              child: ListTile(
-                leading: const Icon(Icons.group, color: Color(0xFF4FC3F7)),
-                title: const Text('Gestionar Colaboradores'),
-                subtitle: const Text('Agregar o eliminar colaboradores'),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-                onTap: () {
-                  Navigator.pushNamed(context, '/manage_collaborators');
-                },
-              ),
+            const SizedBox(height: 10),
+            _buildOptionTile(
+              icon: Icons.group_outlined,
+              title: 'Gestionar Colaboradores',
+              subtitle: 'Añadir o eliminar accesos de equipo',
+              onTap: () => Navigator.pushNamed(context, '/manage_collaborators'),
             ),
+            const SizedBox(height: 20),
           ],
 
           // Common options
-          Container(
+          const Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
             child: Text(
               'General',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: Colors.grey,
+                letterSpacing: 1.2,
               ),
             ),
           ),
-          // Solo mostrar si el usuario NO tiene refugios
+          
           if (!_hasRefugios)
-            ListTile(
-              leading: const Icon(Icons.how_to_reg, color: Color(0xFF4FC3F7)),
-              title: const Text('Registrarme como Colaborador'),
-              subtitle: const Text('Permitir que me agreguen como colaborador'),
-              trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-              onTap: () {
-                Navigator.pushNamed(context, '/register_existing_users');
-              },
+            _buildOptionTile(
+              icon: Icons.how_to_reg_outlined,
+              title: 'Registrarme como Colaborador',
+              subtitle: 'Permitir que un refugio me asocie',
+              onTap: () => Navigator.pushNamed(context, '/register_existing_users'),
             ),
-          ListTile(
-            leading: const Icon(Icons.info, color: Color(0xFF4FC3F7)),
-            title: const Text('Acerca de'),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 16),
+          
+          if (!_hasRefugios) const SizedBox(height: 10),
+
+          _buildOptionTile(
+            icon: Icons.info_outline,
+            title: 'Acerca de',
+            subtitle: 'Versión y detalles de la app',
             onTap: () {
               showAboutDialog(
                 context: context,
-                applicationName: 'AdminPatitas',
+                applicationName: 'Admin Patitas',
                 applicationVersion: '1.0.0',
                 applicationIcon: ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(15),
                   child: Image.asset(
                     'assets/img/Logo_AdminPatitas.png',
                     width: 60,
@@ -218,18 +250,138 @@ class _PerfilScreenState extends State<PerfilScreen> {
                   ),
                 ),
                 children: [
-                  const Text('Sistema de gestión para refugios de animales.'),
+                  const Text('Sistema premium de gestión para refugios de animales.'),
                 ],
               );
             },
           ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.exit_to_app, color: Colors.red),
-            title: const Text('Cerrar Sesión'),
-            onTap: _signOut,
+          
+          if (!isGuest) ...[
+            const SizedBox(height: 20),
+            _buildOptionTile(
+              icon: Icons.swap_horiz,
+              title: 'Cambiar de Refugio',
+              subtitle: 'Salir del refugio actual y elegir otro',
+              onTap: () async {
+                // Limpiar la preferencia del refugio actual
+                await PreferencesController.preferences.remove('refugio');
+                if (!mounted) return;
+                // Navegar a la pantalla de selección de refugio y limpiar historial
+                Navigator.pushNamedAndRemoveUntil(context, '/refugio', (route) => false);
+              },
+            ),
+          ],
+          const SizedBox(height: 30),
+          
+          _buildLogoutButton(),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOptionTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.02),
+            offset: const Offset(0, 4),
+            blurRadius: 10,
           ),
         ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(15),
+          highlightColor: AppColors.primary.withValues(alpha: 0.05),
+          splashColor: AppColors.primary.withValues(alpha: 0.1),
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: AppColors.primary),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: AppColors.textDark,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLogoutButton() {
+    final bool isUnauthenticated = FirebaseAuth.instance.currentUser == null;
+
+    return InkWell(
+      onTap: isUnauthenticated 
+        ? () => Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false)
+        : _signOut,
+      borderRadius: BorderRadius.circular(15),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: isUnauthenticated ? AppColors.primary.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(color: isUnauthenticated ? AppColors.primary.withValues(alpha: 0.3) : Colors.red.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              isUnauthenticated ? Icons.login : Icons.logout, 
+              color: isUnauthenticated ? AppColors.primary : Colors.red
+            ),
+            const SizedBox(width: 8),
+            Text(
+              isUnauthenticated ? 'Iniciar Sesión' : 'Cerrar Sesión',
+              style: TextStyle(
+                color: isUnauthenticated ? AppColors.primary : Colors.red,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

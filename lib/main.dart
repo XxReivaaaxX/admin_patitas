@@ -12,8 +12,10 @@ import 'package:admin_patitas/screens/panel_animales.dart';
 import 'package:admin_patitas/screens/login.dart';
 import 'package:admin_patitas/screens/pantalla_carga.dart';
 import 'package:admin_patitas/screens/refugio_settings.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:admin_patitas/screens/manage_collaborators.dart';
 import 'package:admin_patitas/screens/register_existing_users.dart';
+import 'package:admin_patitas/screens/public_adoptions_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -34,8 +36,11 @@ class AdminPatitasApp extends StatelessWidget {
 
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.principalBackgroud,
+          seedColor: AppColors.primary,
+          brightness: Brightness.light,
         ),
+        textTheme: GoogleFonts.outfitTextTheme(Theme.of(context).textTheme),
+        scaffoldBackgroundColor: AppColors.backgroundLight,
         useMaterial3: true,
       ),
 
@@ -69,6 +74,7 @@ class AdminPatitasApp extends StatelessWidget {
         '/manage_collaborators': (context) => const ManageCollaborators(),
         '/register_existing_users': (context) =>
             const RegisterExistingUsersScreen(),
+        '/adoptions': (context) => const PublicAdoptionsScreen(),
       },
     );
   }

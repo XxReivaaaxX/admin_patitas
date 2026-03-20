@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:admin_patitas/models/historial_medico.dart';
 import 'package:admin_patitas/services/historial_medico_service.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
@@ -7,12 +8,15 @@ import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
 
 class HistorialRegister extends StatefulWidget {
-  final String? id_animal, id_refugio, nombre;
+  final String? idAnimal, idRefugio, nombre;
+  final HistorialMedico? initialHistorial;
+  
   const HistorialRegister({
     super.key,
     required this.nombre,
-    required this.id_animal,
-    required this.id_refugio,
+    required this.idAnimal,
+    required this.idRefugio,
+    this.initialHistorial,
   });
 
   @override
@@ -27,6 +31,22 @@ class _HistorialRegisterState extends State<HistorialRegister> {
   final TextEditingController _enfermedades = TextEditingController();
   String? _castrado;
   DateTime? _fechaRevision;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.initialHistorial != null) {
+      _peso.text = widget.initialHistorial!.peso;
+      _enfermedades.text = widget.initialHistorial!.enfermedades;
+      _tratamiento.text = widget.initialHistorial!.tratamiento;
+      _castrado = widget.initialHistorial!.castrado;
+      try {
+        _fechaRevision = DateTime.parse(widget.initialHistorial!.fechaRevision);
+      } catch (e) {
+        _fechaRevision = null;
+      }
+    }
+  }
 
   final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
 
@@ -44,27 +64,37 @@ class _HistorialRegisterState extends State<HistorialRegister> {
 
     try {
       final HistorialMedico historialMedico = HistorialMedico(
-        id: '',
+        id: widget.initialHistorial?.id ?? '',
         peso: _peso.text,
         castrado: _castrado!,
         enfermedades: _enfermedades.text,
         fechaRevision: _fechaRevision?.toIso8601String() ?? '',
         tratamiento: _tratamiento.text,
       );
-      await HistorialMedicoService().createHistorialMedico(
-        widget.id_refugio!,
-        widget.id_animal!,
-        historialMedico,
-      );
+      
+      if (widget.initialHistorial != null) {
+        await HistorialMedicoService().updateHistorialMedico(
+          widget.idRefugio!,
+          widget.idAnimal!,
+          widget.initialHistorial!.id,
+          historialMedico,
+        );
+      } else {
+        await HistorialMedicoService().createHistorialMedico(
+          widget.idRefugio!,
+          widget.idAnimal!,
+          historialMedico,
+        );
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Historial creado exitosamente')),
+          SnackBar(content: Text(widget.initialHistorial != null ? 'Historial actualizado exitosamente' : 'Historial creado exitosamente')),
         );
         Navigator.pop(context, historialMedico);
       }
     } catch (e) {
-      print('Excepción: $e');
+      log('Excepción: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,
@@ -193,7 +223,7 @@ class _HistorialRegisterState extends State<HistorialRegister> {
               // Botón de registro
               BotonLogin(
                 onPressed: registerHistorial,
-                texto: 'Crear Historial Médico',
+                texto: widget.initialHistorial != null ? 'Actualizar Historial Médico' : 'Crear Historial Médico',
                 color: Colors.white,
                 colorB: colorPrincipal,
                 size: 15,

@@ -5,11 +5,12 @@ import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/screens/menu_refugios.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
+import 'package:admin_patitas/screens/principal_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer';
 
-import 'package:flutter/rendering.dart';
+
 
 class RefugioScreen extends StatefulWidget {
   const RefugioScreen({super.key});
@@ -56,24 +57,40 @@ class _RefugioScreenState extends State<RefugioScreen>
   }
 
   Future<void> _loadRefugios() async {
-    _futureRefugios = RoleService().getUserRefugios(user.uid);
-    _allRefugios = await _futureRefugios;
-    setState(() {
-      _filteredRefugios = _allRefugios;
-    });
+    try {
+      _futureRefugios = RoleService().getUserRefugios(user.uid);
+      _allRefugios = await _futureRefugios;
+      if (!mounted) return;
+      setState(() {
+        _filteredRefugios = _allRefugios;
+      });
+    } catch (e) {
+      log('Error al cargar refugios: $e', name: 'RefugioScreen');
+      if (mounted) {
+        setState(() {
+          _filteredRefugios = [];
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error al conectar con el servidor')),
+        );
+      }
+    }
   }
 
   Future<void> _loadSavedAnimals() async {
     setState(() => _isLoadingSaved = true);
     try {
       final animals = await AdopcionService().getSavedAnimals(user.uid);
+      if (!mounted) return;
       setState(() {
         _savedAnimals = animals;
       });
     } catch (e) {
       log('Error loading saved animals: $e');
     } finally {
-      setState(() => _isLoadingSaved = false);
+      if (mounted) {
+        setState(() => _isLoadingSaved = false);
+      }
     }
   }
 
@@ -121,9 +138,26 @@ class _RefugioScreenState extends State<RefugioScreen>
 
     PreferencesController.preferences.setString('refugio', refugioId);
 
-    if (!context.mounted) return;
+    if (!mounted) return;
 
     Navigator.pushNamedAndRemoveUntil(context, '/principal', (route) => false);
+  }
+
+  Future<void> _explorePublicAdoptions() async {
+    // Para explorar adopciones, no necesitamos setear un refugio específico en las preferencias
+    // pero podemos limpiar el actual para no confundir
+    await PreferencesController.preferences.remove('refugio');
+    
+    if (!mounted) return;
+    
+    // Navegamos a Principal con el índice 1 (Adopciones)
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PrincipalScreen(initialIndex: 1),
+      ),
+      (route) => false,
+    );
   }
 
   @override
@@ -217,6 +251,25 @@ class _RefugioScreenState extends State<RefugioScreen>
             ],
           ),
         ),
+        // Botón de exploración directa para usuarios sin refugio
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton.icon(
+            onPressed: _explorePublicAdoptions,
+            icon: const Icon(Icons.travel_explore, color: Colors.white),
+            label: const Text(
+              'Explorar Mascotas en Adopción',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.secondary,
+              minimumSize: const Size(double.infinity, 50),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+            ),
+          ),
+        ),
         Expanded(
           child: TabBarView(
             controller: _tabController,
@@ -242,11 +295,15 @@ class _RefugioScreenState extends State<RefugioScreen>
           indicatorColor: AppColors.primary,
           selectedIconTheme: IconThemeData(color: Colors.white),
           unselectedIconTheme: IconThemeData(color: Colors.black),
-          onDestinationSelected: (index) {
-            setState(() {
-              _tabController.index = index;
-            });
-          },
+            onDestinationSelected: (value) {
+              if (value == 2) {
+                _explorePublicAdoptions();
+              } else {
+                setState(() {
+                  _tabController.index = value;
+                });
+              }
+            },
           labelType: NavigationRailLabelType.selected,
           destinations: const [
             NavigationRailDestination(
@@ -257,7 +314,24 @@ class _RefugioScreenState extends State<RefugioScreen>
               icon: Icon(Icons.bookmark),
               label: Text('Mis Guardados'),
             ),
+            const NavigationRailDestination(
+              icon: Icon(Icons.travel_explore),
+              label: Text('Explorar'),
+            ),
           ],
+          trailing: Expanded(
+            child: Align(
+              alignment: Alignment.bottomCenter,
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 20.0),
+                child: IconButton(
+                  icon: const Icon(Icons.travel_explore, color: AppColors.secondary),
+                  onPressed: _explorePublicAdoptions,
+                  tooltip: 'Explorar Adopciones',
+                ),
+              ),
+            ),
+          ),
         ),
         const VerticalDivider(thickness: 1, width: 1),
         // Contenido de la pestaña (toma el resto del espacio)
@@ -299,7 +373,7 @@ class _RefugioScreenState extends State<RefugioScreen>
                       19,
                       18,
                       18,
-                    ).withOpacity(0.7),
+                    ).withValues(alpha: 0.7),
                   ),
                   prefixIcon: const Icon(Icons.search, color: Colors.black),
                   suffixIcon: _searchController.text.isNotEmpty
@@ -312,7 +386,7 @@ class _RefugioScreenState extends State<RefugioScreen>
                         )
                       : null,
                   filled: true,
-                  fillColor: AppColors.secondary.withOpacity(0.2),
+                  fillColor: AppColors.secondary.withValues(alpha: 0.2),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(30),
                     borderSide: BorderSide.none,
@@ -462,12 +536,12 @@ class _RefugioScreenState extends State<RefugioScreen>
                             child: Icon(
                               Icons.home_work,
                               size: 60,
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                             ),
                           ),
                           Container(
                             decoration: BoxDecoration(
-                              color: Colors.black.withOpacity(0.4),
+                              color: Colors.black.withValues(alpha: 0.4),
                               borderRadius: BorderRadius.only(
                                 topLeft: Radius.circular(15),
                                 topRight: Radius.circular(15),
@@ -589,67 +663,107 @@ class _RefugioScreenState extends State<RefugioScreen>
       itemCount: _savedAnimals.length,
       itemBuilder: (context, index) {
         final animal = _savedAnimals[index];
-        return Card(
-          margin: const EdgeInsets.only(bottom: 16),
-          elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(12),
-            leading: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                width: 60,
-                height: 60,
-                color: Colors.grey[200],
-                child:
-                    animal['imageUrl'] != null && animal['imageUrl'].isNotEmpty
-                    ? (animal['imageUrl'].startsWith('data:image')
-                          ? Image.memory(
-                              Uri.parse(
-                                animal['imageUrl'],
-                              ).data!.contentAsBytes(),
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.pets,
-                                  color: Colors.grey[400],
-                                );
-                              },
-                            )
-                          : Image.network(
-                              animal['imageUrl'],
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.pets,
-                                  color: Colors.grey[400],
-                                );
-                              },
-                            ))
-                    : Icon(Icons.pets, color: Colors.grey[400]),
+        final imageUrl = animal['imageUrl'] ?? '';
+        
+        return Container(
+          margin: const EdgeInsets.only(bottom: 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
               ),
-            ),
-            title: Text(
-              animal['nombre'],
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Column(
               children: [
-                const SizedBox(height: 4),
-                Text('${animal['especie']} • ${animal['raza']}'),
-                const SizedBox(height: 4),
-                Text(
-                  'Salud: ${animal['estadoSalud']}',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                Stack(
+                  children: [
+                    Container(
+                      height: 150,
+                      width: double.infinity,
+                      color: Colors.grey[100],
+                      child: imageUrl.isNotEmpty
+                          ? (imageUrl.startsWith('data:image')
+                              ? Image.memory(
+                                  Uri.parse(imageUrl).data!.contentAsBytes(),
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.network(
+                                  imageUrl,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      const Icon(Icons.pets, size: 50, color: Colors.grey),
+                                ))
+                          : const Icon(Icons.pets, size: 50, color: Colors.grey),
+                    ),
+                    Positioned(
+                      top: 12,
+                      right: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withValues(alpha: 0.9),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: const Text(
+                          'Disponible',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              animal['nombre'],
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${animal['especie']} • ${animal['raza']}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => _removeSavedAnimal(animal['animalId']),
+                        icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.red.withValues(alpha: 0.1),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
-            ),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
-              onPressed: () => _removeSavedAnimal(animal['animalId']),
             ),
           ),
         );

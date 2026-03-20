@@ -1,10 +1,12 @@
+import 'dart:developer';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/services/role_service.dart';
 import 'package:admin_patitas/services/adopcion_service.dart';
-import 'package:admin_patitas/utils/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:admin_patitas/utils/colors.dart';
 
 class AdopcionesScreen extends StatefulWidget {
   const AdopcionesScreen({super.key});
@@ -13,7 +15,7 @@ class AdopcionesScreen extends StatefulWidget {
 }
 
 class _AdopcionesScreenState extends State<AdopcionesScreen> {
-  // Estructura: { 'RefugioID': { 'nombre': 'NombreRefugio', 'animales': [Animal1, Animal2] } }
+  // Estructura: { 'RefugioID': { 'nombre': 'NombreRefugio', 'telefono': '...', 'whatsapp': '...', 'email': '...', 'animales': [Animal1, Animal2] } }
   Map<String, Map<String, dynamic>> _groupedAnimals = {};
   Map<String, Map<String, dynamic>> _filteredAnimals = {};
   bool _isLoading = true;
@@ -34,7 +36,12 @@ class _AdopcionesScreenState extends State<AdopcionesScreen> {
   Future<void> _loadSavedStatus() async {
     try {
       User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        setState(() {
+          _savedAnimalIds.clear();
+        });
+        return;
+      }
       final savedAnimals = await AdopcionService().getSavedAnimals(user.uid);
       setState(() {
         _savedAnimalIds.clear();
@@ -43,14 +50,13 @@ class _AdopcionesScreenState extends State<AdopcionesScreen> {
         }
       });
     } catch (e) {
-      debugPrint('Error cargando estado de guardados: $e');
+      log('Error cargando estado de guardados: $e');
     }
   }
 
   Future<void> _loadAvailableAnimals() async {
     try {
-      User? user = FirebaseAuth.instance.currentUser;
-      if (user == null) return;
+      // No requerimos usuario autenticado para ver adopciones públicas
       List<Map<String, dynamic>> refugios = await RoleService()
           .getAllRefugios();
       Map<String, Map<String, dynamic>> grouped = {};
@@ -58,9 +64,22 @@ class _AdopcionesScreenState extends State<AdopcionesScreen> {
         String refugioId = refugio['id'];
         String refugioNombre =
             refugio['data']['nombre'] ?? 'Refugio sin nombre';
-        List<Animal> animals = await AnimalsService().getAnimals(refugioId);
-        if (animals.isNotEmpty) {
-          grouped[refugioId] = {'nombre': refugioNombre, 'animales': animals};
+        String telefono = refugio['data']['telefono'] ?? '';
+        String whatsapp = refugio['data']['whatsapp'] ?? '';
+        String email = refugio['data']['email_contacto'] ?? '';
+
+        List<Animal> allAnimals = await AnimalsService().getAnimals(refugioId);
+        // Filtrar solo los disponibles
+        List<Animal> availableAnimals = allAnimals.where((a) => a.estadoAdopcion == 'Disponible').toList();
+        
+        if (availableAnimals.isNotEmpty) {
+          grouped[refugioId] = {
+            'nombre': refugioNombre, 
+            'telefono': telefono,
+            'whatsapp': whatsapp,
+            'email': email,
+            'animales': availableAnimals
+          };
         }
       }
       setState(() {
@@ -68,7 +87,7 @@ class _AdopcionesScreenState extends State<AdopcionesScreen> {
         _filteredAnimals = grouped; // Inicialmente mostrar todos
       });
     } catch (e) {
-      debugPrint('Error cargando adopciones: $e');
+      log('Error cargando adopciones: $e');
     }
   }
 
@@ -140,6 +159,82 @@ class _AdopcionesScreenState extends State<AdopcionesScreen> {
     }
   }
 
+  Future<void> _showAdoptionContact(String refugioId, Animal animal) async {
+    final refugioData = _groupedAnimals[refugioId];
+    if (refugioData == null) return;
+
+    final telefono = refugioData['telefono'] as String;
+    final whatsapp = refugioData['whatsapp'] as String;
+    final email = refugioData['email'] as String;
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Contactar para adoptar a ${animal.nombre}'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (telefono.isNotEmpty) 
+              _buildContactButton(
+                icon: Icons.phone, 
+                label: 'Llamar: $telefono', 
+                color: Colors.blue,
+                onTap: () => launchUrl(Uri.parse('tel:$telefono')),
+              ),
+            if (whatsapp.isNotEmpty)
+              _buildContactButton(
+                icon: Icons.chat, 
+                label: 'WhatsApp', 
+                color: Colors.green,
+                onTap: () {
+                  // Limpiar número de whatsapp (solo dígitos)
+                  final cleanWa = whatsapp.replaceAll(RegExp(r'[^0-9]'), '');
+                  launchUrl(Uri.parse('https://wa.me/$cleanWa'), mode: LaunchMode.externalApplication);
+                },
+              ),
+            if (email.isNotEmpty)
+              _buildContactButton(
+                icon: Icons.email, 
+                label: 'Enviar Correo', 
+                color: Colors.orange,
+                onTap: () => launchUrl(Uri.parse('mailto:$email?subject=Interés en adoptar a ${animal.nombre}')),
+              ),
+            if (telefono.isEmpty && whatsapp.isEmpty && email.isEmpty)
+              const Padding(
+                padding: EdgeInsets.all(8.0),
+                child: Text('Este refugio aún no ha proporcionado información de contacto directa.'),
+              ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar')),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContactButton({
+    required IconData icon, 
+    required String label, 
+    required Color color, 
+    required VoidCallback onTap
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: ElevatedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, color: Colors.white),
+        label: Text(label, style: const TextStyle(color: Colors.white)),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -155,10 +250,7 @@ class _AdopcionesScreenState extends State<AdopcionesScreen> {
         ),
         backgroundColor: const Color.fromRGBO(55, 148, 194, 1),
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => Navigator.pop(context),
-        ),
+        automaticallyImplyLeading: false,
       ),
       body: Column(
         children: [
@@ -169,7 +261,7 @@ class _AdopcionesScreenState extends State<AdopcionesScreen> {
               color: const Color.fromRGBO(55, 148, 194, 1),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 4,
                   offset: const Offset(0, 2),
                 ),
@@ -181,7 +273,9 @@ class _AdopcionesScreenState extends State<AdopcionesScreen> {
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
                 hintText: 'Buscar por refugio, especie o nombre...',
-                hintStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
+                hintStyle: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
                 prefixIcon: const Icon(Icons.search, color: Colors.white),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
@@ -193,7 +287,7 @@ class _AdopcionesScreenState extends State<AdopcionesScreen> {
                       )
                     : null,
                 filled: true,
-                fillColor: Colors.white.withOpacity(0.2),
+                fillColor: Colors.white.withValues(alpha: 0.2),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(30),
                   borderSide: BorderSide.none,
@@ -291,14 +385,17 @@ class _AdopcionesScreenState extends State<AdopcionesScreen> {
                                     color: Colors.grey.shade200,
                                   ),
                                   boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.05),
+                                      BoxShadow(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.05,
+                                        ),
                                       blurRadius: 4,
                                       offset: const Offset(0, 2),
                                     ),
                                   ],
                                 ),
                                 child: ListTile(
+                                  onTap: () => _showAdoptionContact(refugioId, animal),
                                   contentPadding: const EdgeInsets.all(12),
                                   leading: ClipRRect(
                                     borderRadius: BorderRadius.circular(8),
@@ -346,39 +443,57 @@ class _AdopcionesScreenState extends State<AdopcionesScreen> {
                                           vertical: 2,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: Colors.green.withOpacity(0.1),
+                                          color: Colors.green.withValues(
+                                            alpha: 0.1,
+                                          ),
                                           borderRadius: BorderRadius.circular(
                                             12,
                                           ),
                                         ),
-                                        child: const Text(
-                                          'Disponible',
-                                          style: TextStyle(
+                                        child: Text(
+                                          animal.estadoAdopcion,
+                                          style: const TextStyle(
                                             color: Colors.green,
-                                            fontSize: 10,
+                                            fontSize: 12,
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                  trailing: IconButton(
-                                    icon: Icon(
-                                      isSaved
-                                          ? Icons.bookmark
-                                          : Icons.bookmark_border,
-                                      color: isSaved
-                                          ? const Color.fromRGBO(
-                                              55,
-                                              148,
-                                              194,
-                                              1,
-                                            )
-                                          : Colors.grey,
-                                      size: 28,
-                                    ),
-                                    onPressed: () =>
-                                        _toggleSaveAnimal(refugioId, animal),
+                                  trailing: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          isSaved
+                                              ? Icons.bookmark
+                                              : Icons.bookmark_border,
+                                          color: isSaved
+                                              ? AppColors.primary
+                                              : Colors.grey,
+                                          size: 24,
+                                        ),
+                                        onPressed: () =>
+                                            _toggleSaveAnimal(refugioId, animal),
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: () => _showAdoptionContact(refugioId, animal),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: AppColors.primary,
+                                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 0),
+                                          minimumSize: const Size(70, 24),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(8),
+                                          ),
+                                        ),
+                                        child: const Text(
+                                          'Adoptame',
+                                          style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),

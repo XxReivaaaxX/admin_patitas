@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:admin_patitas/services/refugio_management_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:developer';
@@ -14,6 +14,9 @@ class RefugioSettings extends StatefulWidget {
 class _RefugioSettingsState extends State<RefugioSettings> {
   final TextEditingController _nombreController = TextEditingController();
   final TextEditingController _direccionController = TextEditingController();
+  final TextEditingController _telefonoController = TextEditingController();
+  final TextEditingController _whatsappController = TextEditingController();
+  final TextEditingController _emailContactoController = TextEditingController();
   final RefugioManagementService _managementService =
       RefugioManagementService();
 
@@ -31,6 +34,9 @@ class _RefugioSettingsState extends State<RefugioSettings> {
   void dispose() {
     _nombreController.dispose();
     _direccionController.dispose();
+    _telefonoController.dispose();
+    _whatsappController.dispose();
+    _emailContactoController.dispose();
     super.dispose();
   }
 
@@ -48,20 +54,26 @@ class _RefugioSettingsState extends State<RefugioSettings> {
         return;
       }
 
-      // Cargar datos del refugio
-      DatabaseReference refugioRef = FirebaseDatabase.instance
-          .ref()
-          .child('refugios')
-          .child(_refugioId!);
-      DataSnapshot snapshot = await refugioRef.get();
+      // Cargar datos del refugio desde Firestore
+      DocumentSnapshot snapshot = await FirebaseFirestore.instance
+          .collection('refugios')
+          .doc(_refugioId!)
+          .get();
+      
+      if (!mounted) return;
 
       if (snapshot.exists) {
-        Map<dynamic, dynamic> data = snapshot.value as Map<dynamic, dynamic>;
+        Map<String, dynamic> data = snapshot.data() as Map<String, dynamic>;
         setState(() {
           _nombreController.text = data['nombre'] ?? '';
           _direccionController.text = data['direccion'] ?? '';
+          _telefonoController.text = data['telefono'] ?? '';
+          _whatsappController.text = data['whatsapp'] ?? '';
+          _emailContactoController.text = data['email_contacto'] ?? '';
           _isLoading = false;
         });
+      } else {
+        setState(() => _isLoading = false);
       }
     } catch (e) {
       log('Error al cargar datos del refugio: $e', error: e);
@@ -84,11 +96,13 @@ class _RefugioSettingsState extends State<RefugioSettings> {
       _refugioId!,
       _nombreController.text.trim(),
       _direccionController.text.trim(),
+      telefono: _telefonoController.text.trim(),
+      whatsapp: _whatsappController.text.trim(),
+      emailContacto: _emailContactoController.text.trim(),
     );
 
-    setState(() => _isSaving = false);
-
     if (!mounted) return;
+    setState(() => _isSaving = false);
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -127,6 +141,7 @@ class _RefugioSettingsState extends State<RefugioSettings> {
 
     if (confirm1 != true) return;
 
+    if (!mounted) return;
     // Segunda confirmación
     bool? confirm2 = await showDialog<bool>(
       context: context,
@@ -166,6 +181,7 @@ class _RefugioSettingsState extends State<RefugioSettings> {
       await prefs.remove('current_role');
       await prefs.remove('current_refugio');
 
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Refugio eliminado exitosamente')),
       );
@@ -217,6 +233,39 @@ class _RefugioSettingsState extends State<RefugioSettings> {
               decoration: InputDecoration(
                 labelText: 'Dirección',
                 prefixIcon: const Icon(Icons.location_on),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _telefonoController,
+              decoration: InputDecoration(
+                labelText: 'Teléfono de contacto',
+                prefixIcon: const Icon(Icons.phone),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _whatsappController,
+              decoration: InputDecoration(
+                labelText: 'WhatsApp (opcional)',
+                prefixIcon: const Icon(Icons.chat),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _emailContactoController,
+              decoration: InputDecoration(
+                labelText: 'Correo de contacto',
+                prefixIcon: const Icon(Icons.email),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),

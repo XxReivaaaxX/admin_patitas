@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
@@ -9,11 +10,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class AnimalUpdate extends StatefulWidget {
-  final String? id_refugio;
+  final String? idRefugio;
   final Animal animal;
   const AnimalUpdate({
     super.key,
-    required this.id_refugio,
+    required this.idRefugio,
     required this.animal,
   });
 
@@ -53,12 +54,14 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
           _newImageUrl = base64Image;
         });
 
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Imagen seleccionada correctamente')),
         );
       }
     } catch (e) {
-      print('Error al seleccionar imagen: $e');
+      log('Error al seleccionar imagen: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al seleccionar imagen: $e')),
       );
@@ -81,7 +84,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
             _newImageUrl ??
             widget.animal.imageUrl, // Usar nueva imagen o mantener la actual
       );
-      await AnimalsService().updateAnimals(widget.id_refugio!, animal);
+      await AnimalsService().updateAnimals(widget.idRefugio!, animal);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -90,7 +93,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
         Navigator.pop(context);
       }
     } catch (e) {
-      print('Excepción: $e');
+      log('Excepción: $e');
       if (mounted) {
         ScaffoldMessenger.of(
           context,

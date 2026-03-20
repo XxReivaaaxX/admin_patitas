@@ -104,7 +104,7 @@ class RegisterAnimalScreen extends StatefulWidget {
   const RegisterAnimalScreen({super.key});
 
   @override
-  _RegisterAnimalScreenState createState() => _RegisterAnimalScreenState();
+  State<RegisterAnimalScreen> createState() => _RegisterAnimalScreenState();
 }
 
 class _RegisterAnimalScreenState extends State<RegisterAnimalScreen> {
@@ -125,6 +125,7 @@ class _RegisterAnimalScreenState extends State<RegisterAnimalScreen> {
         'health': healthController.text,
         'createdAt': Timestamp.now(),
       });
+      if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Animal registrado')));
@@ -181,7 +182,7 @@ class EditAnimalScreen extends StatefulWidget {
   final Map<String, dynamic> data;
   const EditAnimalScreen({super.key, required this.docId, required this.data});
   @override
-  _EditAnimalScreenState createState() => _EditAnimalScreenState();
+  State<EditAnimalScreen> createState() => _EditAnimalScreenState();
 }
 
 class _EditAnimalScreenState extends State<EditAnimalScreen> {
@@ -206,6 +207,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
           'species': speciesController.text,
           'health': healthController.text,
         });
+    if (!mounted) return;
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('Animal actualizado')));
@@ -265,6 +267,7 @@ Future<void> confirmAndDeleteAnimal(BuildContext context, String docId) async {
   );
   if (confirm == true) {
     await FirebaseFirestore.instance.collection('animals').doc(docId).delete();
+    if (!context.mounted) return;
     ScaffoldMessenger.of(
       context,
     ).showSnackBar(SnackBar(content: Text('Animal eliminado')));

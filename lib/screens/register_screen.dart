@@ -1,7 +1,9 @@
-import 'package:admin_patitas/services/user_service.dart';
+import 'dart:developer';
+import 'package:admin_patitas/services/refugio_management_service.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:admin_patitas/screens/pantalla_carga.dart';
-import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
+import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -16,8 +18,6 @@ class RegisterUser extends StatefulWidget {
 
 class _RegisterUserState extends State<RegisterUser> {
   final _formKey = GlobalKey<FormState>();
-  late final UserController userController;
-
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
   final TextEditingController _validePassword = TextEditingController();
@@ -28,7 +28,6 @@ class _RegisterUserState extends State<RegisterUser> {
 
   @override
   void initState() {
-    userController = UserController();
     super.initState();
   }
 
@@ -39,7 +38,8 @@ class _RegisterUserState extends State<RegisterUser> {
       // Para Web: abrir en nueva pestaña
       final Uri pdfUri = Uri.parse(pdfPath);
       if (!await launchUrl(pdfUri, mode: LaunchMode.externalApplication)) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('No se pudo abrir el PDF')),
         );
       }
@@ -49,7 +49,7 @@ class _RegisterUserState extends State<RegisterUser> {
         context: context,
         builder: (context) => Dialog(
           insetPadding: const EdgeInsets.all(10),
-          child: Container(
+          child: SizedBox(
             width: MediaQuery.of(context).size.width * 0.95,
             height: MediaQuery.of(context).size.height * 0.85,
             child: Column(
@@ -98,8 +98,23 @@ class _RegisterUserState extends State<RegisterUser> {
     final email = _email.text.trim();
     final password = _password.text.trim();
 
-    bool success = await userController.registerUser(email, password);
+    bool success = false;
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+      
+      if (userCredential.user != null) {
+        await RefugioManagementService().registerUserEmail(
+          userCredential.user!.uid,
+          email,
+        );
+        success = true;
+      }
+    } catch (e) {
+      log('Error en registro: $e', error: e, name: 'RegisterUser');
+    }
 
+    if (!mounted) return;
     setState(() => isLoading = false);
 
     if (success) {

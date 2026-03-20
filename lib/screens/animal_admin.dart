@@ -50,6 +50,10 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                     return ListView.builder(
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
+                        final animal = snapshot.data![index];
+                        if (animal.estadoAdopcion == 'Adoptado') {
+                          return const SizedBox.shrink();
+                        }
                         return ItemAnimal(
                           sizeImg: 70,
                           nombre: snapshot.data![index].nombre,
@@ -61,8 +65,10 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    AnimalView(animal: snapshot.data![index]),
+                                builder: (context) => AnimalView(
+                                  animal: snapshot.data![index],
+                                  idRefugio: widget.refugio!,
+                                ),
                               ),
                             );
                           },
@@ -71,7 +77,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               context: context,
                               builder: (BuildContext context) => AlertDialog(
                                 title: Text(
-                                  'Eliminar a ' + snapshot.data![index].nombre,
+                                  'Eliminar a ${snapshot.data![index].nombre}',
                                 ),
                                 content: const Text(
                                   'Desea eliminar este animal se borraran todos sus datos',
@@ -89,6 +95,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                                         snapshot.data![index],
                                       );
 
+                                      if (!context.mounted) return;
                                       Navigator.pop(context, 'OK');
                                     },
                                     child: const Text('Aceptar'),
@@ -109,7 +116,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => AnimalUpdate(
-                                  id_refugio: widget.refugio,
+                                  idRefugio: widget.refugio,
                                   animal: snapshot.data![index],
                                 ),
                               ),
@@ -123,10 +130,15 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                           },
                           onPressedAdopcion: () async {
                             Animal currentAnimal = snapshot.data![index];
-                            String newStatus =
-                                currentAnimal.estadoAdopcion == 'Disponible'
-                                ? 'No Disponible'
-                                : 'Disponible';
+                            String newStatus;
+                            if (currentAnimal.estadoAdopcion == 'Disponible') {
+                              newStatus = 'No Disponible';
+                            } else if (currentAnimal.estadoAdopcion ==
+                                'No Disponible') {
+                              newStatus = 'Adoptado';
+                            } else {
+                              newStatus = 'Disponible';
+                            }
 
                             log(
                               'Cambiando estado de adopción de ${currentAnimal.nombre} a $newStatus',
@@ -143,6 +155,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               nombre: currentAnimal.nombre,
                               genero: currentAnimal.genero,
                               estadoAdopcion: newStatus,
+                              imageUrl: currentAnimal.imageUrl,
                             );
 
                             await AnimalsService().updateAnimals(
@@ -161,6 +174,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               );
                             });
 
+                            if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
@@ -183,18 +197,25 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                       ),
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
+                        final animal = snapshot.data![index];
+                        if (animal.estadoAdopcion == 'Adoptado') {
+                          return const SizedBox.shrink();
+                        }
                         return ItemAnimalColum(
                           sizeImg: 70,
                           nombre: snapshot.data![index].nombre,
                           edad: snapshot.data![index].especie,
                           estado: snapshot.data![index].estadoSalud,
                           estadoAdopcion: snapshot.data![index].estadoAdopcion,
+                          imageUrl: snapshot.data![index].imageUrl,
                           onTap: () {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    AnimalView(animal: snapshot.data![index]),
+                                builder: (context) => AnimalView(
+                                  animal: snapshot.data![index],
+                                  idRefugio: widget.refugio!,
+                                ),
                               ),
                             );
                           },
@@ -203,7 +224,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               context: context,
                               builder: (BuildContext context) => AlertDialog(
                                 title: Text(
-                                  'Eliminar a ' + snapshot.data![index].nombre,
+                                  'Eliminar a ${snapshot.data![index].nombre}',
                                 ),
                                 content: const Text(
                                   'Desea eliminar este animal se borraran todos sus datos',
@@ -221,6 +242,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                                         snapshot.data![index],
                                       );
 
+                                      if (!context.mounted) return;
                                       Navigator.pop(context, 'OK');
                                     },
                                     child: const Text('Aceptar'),
@@ -241,7 +263,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               context,
                               MaterialPageRoute(
                                 builder: (context) => AnimalUpdate(
-                                  id_refugio: widget.refugio,
+                                  idRefugio: widget.refugio,
                                   animal: snapshot.data![index],
                                 ),
                               ),
@@ -255,10 +277,15 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                           },
                           onPressedAdopcion: () async {
                             Animal currentAnimal = snapshot.data![index];
-                            String newStatus =
-                                currentAnimal.estadoAdopcion == 'Disponible'
-                                ? 'No Disponible'
-                                : 'Disponible';
+                            String newStatus;
+                            if (currentAnimal.estadoAdopcion == 'Disponible') {
+                              newStatus = 'No Disponible';
+                            } else if (currentAnimal.estadoAdopcion ==
+                                'No Disponible') {
+                              newStatus = 'Adoptado';
+                            } else {
+                              newStatus = 'Disponible';
+                            }
 
                             log(
                               'Cambiando estado de adopción de ${currentAnimal.nombre} a $newStatus',
@@ -275,6 +302,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               nombre: currentAnimal.nombre,
                               genero: currentAnimal.genero,
                               estadoAdopcion: newStatus,
+                              imageUrl: currentAnimal.imageUrl,
                             );
 
                             await AnimalsService().updateAnimals(
@@ -293,6 +321,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               );
                             });
 
+                            if (!context.mounted) return;
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(

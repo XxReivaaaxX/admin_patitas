@@ -1,3 +1,4 @@
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/screens/salud_admin.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/screens/animal_admin.dart';
@@ -11,12 +12,11 @@ class AnimalScreen extends StatefulWidget {
 }
 
 class _AnimalScreenState extends State<AnimalScreen> {
-  String? id_refugio = "";
+  String? idRefugio = "";
 
   @override
   void initState() {
-    id_refugio = PreferencesController.preferences.getString('refugio');
-    // TODO: implement initState
+    idRefugio = PreferencesController.preferences.getString('refugio');
     super.initState();
   }
 
@@ -26,22 +26,27 @@ class _AnimalScreenState extends State<AnimalScreen> {
       initialIndex: 0,
       length: 2,
       child: Scaffold(
-        backgroundColor: Colors.black,
-        appBar: TabBar.secondary(
-          isScrollable: true,
-          labelColor: Colors.white,
-          indicatorColor: Colors.blue,
-          tabAlignment: TabAlignment.center,
-          tabs: <Widget>[
-            Tab(text: "Administrar Animales"),
-            Tab(text: "Seguimiento de salud"),
-          ],
+        backgroundColor: AppColors.backgroundLight,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          toolbarHeight: 0, // hide appbar title area, only show bottom tab bar
+          bottom: TabBar.secondary(
+            isScrollable: true,
+            labelColor: AppColors.primary,
+            unselectedLabelColor: AppColors.textDark.withValues(alpha: 0.5),
+            indicatorColor: AppColors.primary,
+            tabAlignment: TabAlignment.center,
+            tabs: const <Widget>[
+              Tab(text: "Administrar Animales"),
+              Tab(text: "Seguimiento de salud"),
+            ],
+          ),
         ),
         body: TabBarView(
           children: <Widget>[
-            AnimalAdmin(refugio: id_refugio),
-
-            SaludAdmin(id_refugio: id_refugio),
+            AnimalAdmin(refugio: idRefugio),
+            SaludAdmin(idRefugio: idRefugio),
           ],
         ),
       ),

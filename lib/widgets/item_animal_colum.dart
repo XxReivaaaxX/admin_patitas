@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
 
@@ -8,93 +6,100 @@ class ItemAnimalColum extends StatelessWidget {
       onpressedModificar,
       onpressedEliminar,
       onPressedAdopcion;
-  final String nombre, edad, estado, estadoAdopcion;
-  final sizeImg;
+  final String nombre, edad, estado, estadoAdopcion, imageUrl;
+  final double sizeImg;
 
   const ItemAnimalColum({
-    Key? key,
+    super.key,
     required this.sizeImg,
     required this.nombre,
     required this.edad,
     required this.estado,
     required this.estadoAdopcion,
+    required this.imageUrl,
     required this.onTap,
     required this.onpressedModificar,
     required this.onpressedEliminar,
     required this.onPressedAdopcion,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.all(20),
+      margin: const EdgeInsets.all(20),
       color: Colors.white,
       shadowColor: Colors.grey,
       elevation: 8,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
-
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             AspectRatio(
-              aspectRatio: 10 / 3,
+              aspectRatio: 16 / 9,
               child: ClipRRect(
-                borderRadius: BorderRadiusGeometry.only(
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(12),
                   topRight: Radius.circular(12),
                 ),
-                child: Image.asset(
-                  'assets/img/gatos_principal.jpg',
-                  fit: BoxFit.cover,
-                ),
+                child: imageUrl.isNotEmpty
+                    ? (imageUrl.startsWith('data:image')
+                        ? Image.memory(
+                            Uri.parse(imageUrl).data!.contentAsBytes(),
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                _buildErrorImage(),
+                          )
+                        : Image.network(
+                            imageUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                _buildErrorImage(),
+                          ))
+                    : _buildErrorImage(),
               ),
             ),
             Expanded(
               flex: 2,
-              child: Container(
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        padding: EdgeInsets.all(10),
-                        child: TextForm(
-                          lines: 2,
-                          texto: nombre,
-                          color: Colors.black,
-                          size: 20,
-                          aling: TextAlign.center,
-                          negrita: FontWeight.bold,
-                        ),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: TextForm(
+                        lines: 2,
+                        texto: nombre,
+                        color: Colors.black,
+                        size: 20,
+                        aling: TextAlign.center,
+                        negrita: FontWeight.bold,
                       ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        padding: EdgeInsets.only(left: 25),
-                        child: Column(
-                          children: [
-                            TextForm(
-                              lines: 2,
-                              texto: edad,
-                              color: Colors.black,
-                              size: 15,
-                              aling: TextAlign.left,
-                              negrita: FontWeight.normal,
-                            ),
-                            TextForm(
-                              lines: 2,
-                              texto: estado,
-                              color: Colors.black,
-                              size: 15,
-                              aling: TextAlign.left,
-                              negrita: FontWeight.normal,
-                            ),
-                          ],
-                        ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25),
+                      child: Column(
+                        children: [
+                          TextForm(
+                            lines: 2,
+                            texto: edad,
+                            color: Colors.black,
+                            size: 15,
+                            aling: TextAlign.left,
+                            negrita: FontWeight.normal,
+                          ),
+                          TextForm(
+                            lines: 2,
+                            texto: estado,
+                            color: Colors.black,
+                            size: 15,
+                            aling: TextAlign.left,
+                            negrita: FontWeight.normal,
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -102,24 +107,24 @@ class ItemAnimalColum extends StatelessWidget {
               flex: 1,
               child: SingleChildScrollView(
                 child: Container(
-                  margin: EdgeInsets.all(5),
+                  margin: const EdgeInsets.all(5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       IconButton(
                         onPressed: onpressedModificar,
-                        icon: Icon(Icons.edit, color: Colors.greenAccent),
+                        icon: const Icon(Icons.edit, color: Colors.greenAccent),
                         padding: EdgeInsets.zero,
-                        constraints: BoxConstraints(),
+                        constraints: const BoxConstraints(),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       IconButton(
                         onPressed: onpressedEliminar,
-                        icon: Icon(Icons.delete, color: Colors.red),
+                        icon: const Icon(Icons.delete, color: Colors.red),
                         padding: EdgeInsets.zero,
-                        constraints: BoxConstraints(),
+                        constraints: const BoxConstraints(),
                       ),
-                      SizedBox(height: 10),
+                      const SizedBox(height: 10),
                       IconButton(
                         onPressed: onPressedAdopcion,
                         icon: Icon(
@@ -130,7 +135,7 @@ class ItemAnimalColum extends StatelessWidget {
                         ),
                         tooltip: 'Estado Adopción: $estadoAdopcion',
                         padding: EdgeInsets.zero,
-                        constraints: BoxConstraints(),
+                        constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
@@ -139,6 +144,16 @@ class ItemAnimalColum extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+  Widget _buildErrorImage() {
+    return Container(
+      color: Colors.grey[200],
+      child: const Icon(
+        Icons.pets,
+        size: 50,
+        color: Colors.grey,
       ),
     );
   }

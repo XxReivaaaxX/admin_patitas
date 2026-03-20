@@ -1,19 +1,14 @@
 
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/item_form_selection.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
-import 'ia_mobile.dart' if (dart.library.html) 'ia_web.dart' as IA;
-import 'dart:html' as html;
 
 class AnimalRegister extends StatefulWidget {
   final String idRefugio;
@@ -27,23 +22,24 @@ class _AnimalRegisterState extends State<AnimalRegister> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nombre = TextEditingController();
   final TextEditingController _raza = TextEditingController();
+  final TextEditingController _otraEspecie = TextEditingController();
+  final TextEditingController _peso = TextEditingController();
+  final TextEditingController _colorSenas = TextEditingController();
+  final TextEditingController _estadoSaludDetallado = TextEditingController();
+  
   String? _especie;
   String? _sexo;
   String? _estadoAdopcion;
   DateTime? _fechaIngreso;
   XFile? _imagen;
   bool _isLoading = false;
-  String? _resultadoIA;
-
+  bool _mostrarOtraEspecie = false;
   final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
 
-  late IA.IAHandler ia;
 
   @override
   void initState() {
     super.initState();
-    ia = IA.IAHandler();
-    ia.loadModel();
   }
 
   Future<void> seleccionarImagen({required bool desdeCamara}) async {
@@ -54,35 +50,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     if (imgFile != null) setState(() => _imagen = imgFile);
   }
 
-  Future<void> descargarImagen() async {
-    if (_imagen == null) return;
-    setState(() => _isLoading = true);
 
-    try {
-      final bytes = await _imagen!.readAsBytes();
-      final fileName =
-          "${_nombre.text.isNotEmpty ? _nombre.text : 'animal'}_${DateTime.now().millisecondsSinceEpoch}.jpg";
-
-      if (kIsWeb) {
-        final blob = html.Blob([bytes]);
-        final url = html.Url.createObjectUrlFromBlob(blob);
-        final anchor = html.AnchorElement(href: url)
-          ..setAttribute("download", fileName)
-          ..click();
-        html.Url.revokeObjectUrl(url);
-      } else {
-        final directory = await getApplicationDocumentsDirectory();
-        final filePath = '${directory.path}/$fileName';
-        final file = File(filePath);
-        await file.writeAsBytes(bytes);
-        _showSnack('Imagen guardada en: $filePath');
-      }
-    } catch (e) {
-      _showSnack('Error al descargar imagen: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
 
   Future<void> registrarAnimal() async {
     if (!_formKey.currentState!.validate()) return;
@@ -103,18 +71,28 @@ class _AnimalRegisterState extends State<AnimalRegister> {
       final bytes = await _imagen!.readAsBytes();
       final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
 
+      String especieFinal = _especie!;
+      if (_especie == 'Otro' && _otraEspecie.text.isNotEmpty) {
+        especieFinal = _otraEspecie.text;
+      }
+
       final animal = Animal(
         nombre: _nombre.text,
-        especie: _especie!,
+        especie: especieFinal,
         raza: _raza.text,
         genero: _sexo!,
-        estadoSalud: '',
+        estadoSalud: _estadoSaludDetallado.text.isNotEmpty 
+            ? _estadoSaludDetallado.text 
+            : 'Saludable',
         fechaIngreso: _fechaIngreso!.toIso8601String(),
         id: '',
         historialMedicoId: '',
         estadoAdopcion: _estadoAdopcion ?? 'No Disponible',
         imageUrl: base64Image,
       );
+      
+      // Note: Peso and ColorSeñas are not in the current Animal model, 
+      // but we could extend the model if needed. For now, we prioritze the existing schema.
 
       await AnimalsService().registerAnimals(widget.idRefugio, animal);
 
@@ -129,23 +107,6 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     }
   }
 
-  Future<void> detectarAnimal() async {
-    if (_imagen == null) return;
-    setState(() {
-      _isLoading = true;
-      _resultadoIA = null;
-    });
-
-    try {
-      final bytes = await _imagen!.readAsBytes();
-      final resultado = await ia.detectar(bytes);
-      setState(() => _resultadoIA = resultado);
-    } catch (e) {
-      _showSnack('Error en IA: $e');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
 
   void _showSnack(String message) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
@@ -186,10 +147,15 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 children: [
                   Expanded(
                     child: ItemFormSelection(
-                      onChanged: (value) => _especie = value,
+                      onChanged: (value) {
+                        setState(() {
+                          _especie = value;
+                          _mostrarOtraEspecie = value == 'Otro';
+                        });
+                      },
                       validator: (value) =>
                           value == null ? 'Seleccione una especie' : null,
-                      items: ['Perro', 'Gato', 'Otro'],
+                      items: const ['Perro', 'Gato', 'Otro'],
                       text: 'Especie',
                     ),
                   ),
@@ -205,6 +171,20 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                   ),
                 ],
               ),
+              if (_mostrarOtraEspecie) ...[
+                const SizedBox(height: 20),
+                Formulario(
+                  controller: _otraEspecie,
+                  text: '¿Qué especie es? (Ej: Conejo)',
+                  textOcul: false,
+                  colorBorder: Colors.black,
+                  colorBorderFocus: colorPrincipal,
+                  colorTextForm: Colors.grey,
+                  colorText: Colors.black,
+                  sizeM: 30,
+                  sizeP: 10,
+                ),
+              ],
               const SizedBox(height: 20),
               ItemFormSelection(
                 onChanged: (value) => _estadoAdopcion = value,
@@ -216,7 +196,51 @@ class _AnimalRegisterState extends State<AnimalRegister> {
               const SizedBox(height: 20),
               Formulario(
                 controller: _raza,
-                text: 'Raza',
+                text: 'Raza / Cruce',
+                textOcul: false,
+                colorBorder: Colors.black,
+                colorBorderFocus: colorPrincipal,
+                colorTextForm: Colors.grey,
+                colorText: Colors.black,
+                sizeM: 30,
+                sizeP: 10,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  Expanded(
+                    child: Formulario(
+                      controller: _peso,
+                      text: 'Peso (Kg)',
+                      textOcul: false,
+                      colorBorder: Colors.black,
+                      colorBorderFocus: colorPrincipal,
+                      colorTextForm: Colors.grey,
+                      colorText: Colors.black,
+                      sizeM: 30,
+                      sizeP: 10,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Formulario(
+                      controller: _colorSenas,
+                      text: 'Color / Señas',
+                      textOcul: false,
+                      colorBorder: Colors.black,
+                      colorBorderFocus: colorPrincipal,
+                      colorTextForm: Colors.grey,
+                      colorText: Colors.black,
+                      sizeM: 30,
+                      sizeP: 10,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              Formulario(
+                controller: _estadoSaludDetallado,
+                text: 'Estado de Salud (Detalles)',
                 textOcul: false,
                 colorBorder: Colors.black,
                 colorBorderFocus: colorPrincipal,
@@ -338,48 +362,9 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                         side: const BorderSide(color: Colors.blue),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    OutlinedButton.icon(
-                      onPressed: _isLoading ? null : descargarImagen,
-                      icon: const Icon(Icons.download, color: Colors.green),
-                      label: const Text('Descargar'),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: Colors.green,
-                        side: const BorderSide(color: Colors.green),
-                      ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 10),
-
-                // Botón IA habilitado para Web y App
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.search),
-                  label: const Text('Detectar Animal'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.all(15),
-                  ),
-                  onPressed: _isLoading ? null : detectarAnimal,
-                ),
-
-                // Mostrar resultado IA
-                if (_resultadoIA != null)
-                  Card(
-                    color: Colors.grey.shade200,
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: Text(
-                        _resultadoIA!,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
               ],
 
               const SizedBox(height: 16),
@@ -404,8 +389,9 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                     lastDate: DateTime.now(),
                     locale: const Locale('es', 'ES'),
                   );
-                  if (pickedDate != null)
+                  if (pickedDate != null) {
                     setState(() => _fechaIngreso = pickedDate);
+                  }
                 },
                 child: Text(
                   _fechaIngreso == null

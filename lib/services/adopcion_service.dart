@@ -1,9 +1,9 @@
 import 'dart:developer';
 import 'package:admin_patitas/models/animal.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class AdopcionService {
-  final DatabaseReference _database = FirebaseDatabase.instance.ref();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Guardar un animal en la lista de adoptados/guardados del usuario
   Future<void> saveAnimal(
@@ -12,11 +12,11 @@ class AdopcionService {
     Animal animal,
   ) async {
     try {
-      final animalRef = _database
-          .child('users')
-          .child(userId)
-          .child('adopciones_guardadas')
-          .child(animal.id);
+      final animalRef = _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('adopciones_guardadas')
+          .doc(animal.id);
 
       await animalRef.set({
         'refugioId': refugioId,
@@ -28,7 +28,7 @@ class AdopcionService {
         'estadoSalud': animal.estadoSalud,
         'fechaIngreso': animal.fechaIngreso,
         'estadoAdopcion': animal.estadoAdopcion,
-        'savedAt': ServerValue.timestamp,
+        'savedAt': FieldValue.serverTimestamp(),
       });
 
       log("Animal guardado correctamente: ${animal.nombre}");
@@ -41,12 +41,12 @@ class AdopcionService {
   // Eliminar un animal de la lista de guardados
   Future<void> removeAnimal(String userId, String animalId) async {
     try {
-      await _database
-          .child('users')
-          .child(userId)
-          .child('adopciones_guardadas')
-          .child(animalId)
-          .remove();
+      await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('adopciones_guardadas')
+          .doc(animalId)
+          .delete();
 
       log("Animal eliminado de guardados: $animalId");
     } catch (e) {
@@ -58,11 +58,11 @@ class AdopcionService {
   // Verificar si un animal ya está guardado
   Future<bool> isAnimalSaved(String userId, String animalId) async {
     try {
-      final snapshot = await _database
-          .child('users')
-          .child(userId)
-          .child('adopciones_guardadas')
-          .child(animalId)
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('adopciones_guardadas')
+          .doc(animalId)
           .get();
 
       return snapshot.exists;
@@ -75,20 +75,18 @@ class AdopcionService {
   // Obtener todos los animales guardados por el usuario
   Future<List<Map<String, dynamic>>> getSavedAnimals(String userId) async {
     try {
-      final snapshot = await _database
-          .child('users')
-          .child(userId)
-          .child('adopciones_guardadas')
+      final snapshot = await _firestore
+          .collection('users')
+          .doc(userId)
+          .collection('adopciones_guardadas')
           .get();
 
-      if (snapshot.exists) {
-        final data = snapshot.value as Map<dynamic, dynamic>;
+      if (snapshot.docs.isNotEmpty) {
         final List<Map<String, dynamic>> savedAnimals = [];
 
-        data.forEach((key, value) {
-          final animalData = Map<String, dynamic>.from(value as Map);
-          savedAnimals.add(animalData);
-        });
+        for (var doc in snapshot.docs) {
+          savedAnimals.add(doc.data());
+        }
 
         return savedAnimals;
       } else {

@@ -1,4 +1,5 @@
-import 'dart:convert';
+import 'dart:developer';
+import 'package:admin_patitas/services/refugio_management_service.dart';
 
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
@@ -7,7 +8,7 @@ import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 
 class RegisterRefugio extends StatefulWidget {
   const RegisterRefugio({super.key});
@@ -21,57 +22,59 @@ class _RegisterRefugioState extends State<RegisterRefugio> {
 
   String nombre = "", direccion = "", idUsuario = "";
   List ayudantes = [];
-  TextEditingController _nombre = new TextEditingController();
-  TextEditingController _direccion = new TextEditingController();
+  final TextEditingController _nombre = TextEditingController();
+  final TextEditingController _direccion = TextEditingController();
+  final TextEditingController _telefono = TextEditingController();
+  final TextEditingController _whatsapp = TextEditingController();
+  final TextEditingController _emailContacto = TextEditingController();
 
   @override
   void initState() {
-    // TODO: implement initState
+
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       idUsuario = user.uid;
     } else {
-      print("usuario no encontrado");
+      log("usuario no encontrado", name: 'RegisterRefugio');
     }
 
     super.initState();
   }
 
   void registerRefugio() async {
-    const url =
-        'https://api-patitas-production-e508.up.railway.app/registro-refugio';
-    final uri = Uri.parse(url);
+    setState(() => idUsuario = FirebaseAuth.instance.currentUser?.uid ?? "");
+    
+    if (idUsuario.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error: Usuario no autenticado')),
+      );
+      return;
+    }
 
     try {
-      final response = await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'nombre': _nombre.text,
-          'direccion': _direccion.text,
-          'id_usuario': idUsuario,
-        }),
+      final refugioManagementService = RefugioManagementService();
+      await refugioManagementService.createRefugio(
+        _nombre.text.trim(),
+        _direccion.text.trim(),
+        idUsuario,
+        telefono: _telefono.text.trim(),
+        whatsapp: _whatsapp.text.trim(),
+        emailContacto: _emailContacto.text.trim(),
       );
 
-      print('Código de estado: ${response.statusCode}');
-      print('Respuesta: ${response.body}');
-
-      if (response.statusCode == 200) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('refugio registrado exitosamente')),
+          const SnackBar(content: Text('Refugio registrado exitosamente')),
         );
         Navigator.pop(context);
-        //Navigator.pushNamed(context, '/principal');
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error: ${response.body}')));
       }
     } catch (e) {
-      print('Excepción de Flutter/Dart: $e');
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Excepción: $e')));
+      log('Excepción de Flutter/Dart: $e', error: e, name: 'RegisterRefugio');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al registrar refugio: $e')),
+        );
+      }
     }
   }
 
@@ -125,12 +128,45 @@ class _RegisterRefugioState extends State<RegisterRefugio> {
 
                 Formulario(
                   controller: _direccion,
-                  text: 'Direccion',
+                  text: 'Dirección',
                   textOcul: false,
                   colorBorder: Colors.white,
                   colorBorderFocus: colorPrincipal,
                   colorText: Colors.black,
                   colorTextForm: Colors.grey,
+                  sizeM: 30,
+                  sizeP: 10,
+                ),
+                Formulario(
+                  controller: _telefono,
+                  text: 'Teléfono de Contacto',
+                  textOcul: false,
+                  colorBorder: Colors.black,
+                  colorBorderFocus: colorPrincipal,
+                  colorTextForm: Colors.grey,
+                  colorText: Colors.black,
+                  sizeM: 30,
+                  sizeP: 10,
+                ),
+                Formulario(
+                  controller: _whatsapp,
+                  text: 'WhatsApp (opcional)',
+                  textOcul: false,
+                  colorBorder: Colors.black,
+                  colorBorderFocus: colorPrincipal,
+                  colorTextForm: Colors.grey,
+                  colorText: Colors.black,
+                  sizeM: 30,
+                  sizeP: 10,
+                ),
+                Formulario(
+                  controller: _emailContacto,
+                  text: 'Correo de Contacto',
+                  textOcul: false,
+                  colorBorder: Colors.black,
+                  colorBorderFocus: colorPrincipal,
+                  colorTextForm: Colors.grey,
+                  colorText: Colors.black,
                   sizeM: 30,
                   sizeP: 10,
                 ),

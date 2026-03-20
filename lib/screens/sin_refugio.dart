@@ -1,6 +1,4 @@
-import 'package:admin_patitas/models/routes_menu.dart';
 import 'package:admin_patitas/screens/principal_screen.dart';
-import 'package:admin_patitas/screens/register_refugio.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -33,13 +31,14 @@ class _SinRefugioState extends State<SinRefugio> {
             color: Colors.white,
             tooltip: 'Show Snackbar',
             onPressed: () async {
-              await FirebaseAuth.instance.signOut().then((value) {
+              await FirebaseAuth.instance.signOut();
+              if (context.mounted) {
                 Navigator.pushNamedAndRemoveUntil(
                   context,
                   '/login',
                   (route) => false,
                 );
-              });
+              }
             },
           ),
         ],

@@ -1,8 +1,9 @@
+import 'dart:developer';
 import 'package:admin_patitas/models/vacuna.dart';
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class VacunaService {
-  final DatabaseReference _database = FirebaseDatabase.instance.ref();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Listas de vacunas predefinidas por especie
   static const List<String> vacunasPerros = [
@@ -47,16 +48,15 @@ class VacunaService {
     Vacuna vacuna,
   ) async {
     try {
-      final vacunaRef = _database
-          .child('animales')
-          .child(refugioId)
-          .child(animalId)
-          .child('vacunas')
-          .push();
-
-      await vacunaRef.set(vacuna.toJson());
+      await _firestore
+          .collection('refugios')
+          .doc(refugioId)
+          .collection('animales')
+          .doc(animalId)
+          .collection('vacunas')
+          .add(vacuna.toJson());
     } catch (e) {
-      print('Error creando vacuna: $e');
+      log('Error creando vacuna en Firestore: $e');
       rethrow;
     }
   }
@@ -64,23 +64,21 @@ class VacunaService {
   // Obtener todas las vacunas de un animal
   Future<List<Vacuna>> getVacunas(String refugioId, String animalId) async {
     try {
-      final snapshot = await _database
-          .child('animales')
-          .child(refugioId)
-          .child(animalId)
-          .child('vacunas')
+      final snapshot = await _firestore
+          .collection('refugios')
+          .doc(refugioId)
+          .collection('animales')
+          .doc(animalId)
+          .collection('vacunas')
           .get();
 
-      if (!snapshot.exists) {
+      if (snapshot.docs.isEmpty) {
         return [];
       }
 
-      final List<Vacuna> vacunas = [];
-      final data = snapshot.value as Map<dynamic, dynamic>;
-
-      data.forEach((key, value) {
-        vacunas.add(Vacuna.fromJson(value as Map<dynamic, dynamic>, key));
-      });
+      final List<Vacuna> vacunas = snapshot.docs.map((doc) {
+        return Vacuna.fromJson(doc.data(), doc.id);
+      }).toList();
 
       // Ordenar por fecha de aplicación (más reciente primero)
       vacunas.sort((a, b) {
@@ -95,7 +93,7 @@ class VacunaService {
 
       return vacunas;
     } catch (e) {
-      print('Error obteniendo vacunas: $e');
+      log('Error obteniendo vacunas de Firestore: $e');
       return [];
     }
   }
@@ -108,15 +106,16 @@ class VacunaService {
     Vacuna vacuna,
   ) async {
     try {
-      await _database
-          .child('animales')
-          .child(refugioId)
-          .child(animalId)
-          .child('vacunas')
-          .child(vacunaId)
+      await _firestore
+          .collection('refugios')
+          .doc(refugioId)
+          .collection('animales')
+          .doc(animalId)
+          .collection('vacunas')
+          .doc(vacunaId)
           .update(vacuna.toJson());
     } catch (e) {
-      print('Error actualizando vacuna: $e');
+      log('Error actualizando vacuna en Firestore: $e');
       rethrow;
     }
   }
@@ -128,15 +127,16 @@ class VacunaService {
     String vacunaId,
   ) async {
     try {
-      await _database
-          .child('animales')
-          .child(refugioId)
-          .child(animalId)
-          .child('vacunas')
-          .child(vacunaId)
-          .remove();
+      await _firestore
+          .collection('refugios')
+          .doc(refugioId)
+          .collection('animales')
+          .doc(animalId)
+          .collection('vacunas')
+          .doc(vacunaId)
+          .delete();
     } catch (e) {
-      print('Error eliminando vacuna: $e');
+      log('Error eliminando vacuna en Firestore: $e');
       rethrow;
     }
   }
@@ -146,27 +146,28 @@ class VacunaService {
     String refugioId,
   ) async {
     try {
-      final snapshot = await _database.child('animales').child(refugioId).get();
+      final snapshot = await _firestore
+          .collection('refugios')
+          .doc(refugioId)
+          .collection('animales')
+          .get();
 
-      if (!snapshot.exists) {
+      if (snapshot.docs.isEmpty) {
         return [];
       }
 
       final List<Map<String, dynamic>> resultado = [];
-      final data = snapshot.value as Map<dynamic, dynamic>;
 
-      for (var entry in data.entries) {
-        final animalId = entry.key;
-        final animalData = entry.value as Map<dynamic, dynamic>;
+      for (var doc in snapshot.docs) {
+        final animalId = doc.id;
+        final animalData = doc.data();
+        
+        // Fetch vacunas for each animal
+        final vacunasSnapshot = await doc.reference.collection('vacunas').get();
 
-        if (animalData['vacunas'] != null) {
-          final vacunasData = animalData['vacunas'] as Map<dynamic, dynamic>;
-
-          for (var vacunaEntry in vacunasData.entries) {
-            final vacuna = Vacuna.fromJson(
-              vacunaEntry.value as Map<dynamic, dynamic>,
-              vacunaEntry.key,
-            );
+        if (vacunasSnapshot.docs.isNotEmpty) {
+          for (var vacunaDoc in vacunasSnapshot.docs) {
+            final vacuna = Vacuna.fromJson(vacunaDoc.data(), vacunaDoc.id);
 
             if (vacuna.isProximaAVencer() || vacuna.isVencida()) {
               resultado.add({
@@ -181,7 +182,7 @@ class VacunaService {
 
       return resultado;
     } catch (e) {
-      print('Error obteniendo animales con vacunas próximas: $e');
+      log('Error obteniendo animales con vacunas próximas en Firestore: $e');
       return [];
     }
   }

@@ -1,88 +1,119 @@
-import 'dart:convert';
 import 'dart:developer';
 
-import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/models/historial_medico.dart';
-import 'package:admin_patitas/utils/url_api.dart';
-import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class HistorialMedicoService {
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   Future<void> createHistorialMedico(
-    String id_refugio,
-    String id_animal,
+    String idRefugio,
+    String idAnimal,
     HistorialMedico historialMedico,
   ) async {
     try {
-      final uri = Uri.parse(UrlApi.url + "registro-historial-medico");
+      final docRef = await _firestore
+          .collection('refugios')
+          .doc(idRefugio)
+          .collection('animales')
+          .doc(idAnimal)
+          .collection('historial_medico')
+          .add({
+        'castrado': historialMedico.castrado,
+        'fecha_revision': historialMedico.fechaRevision,
+        'peso': historialMedico.peso,
+        'enfermedades': historialMedico.enfermedades,
+        'tratamiento': historialMedico.tratamiento,
+      });
+ 
+      // Update the animal document with the new historialMedicoId
+      await _firestore
+          .collection('refugios')
+          .doc(idRefugio)
+          .collection('animales')
+          .doc(idAnimal)
+          .update({'historial_medico_id': docRef.id});
 
-      await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'id_refugio': id_refugio,
-          'id_animal': id_animal,
-          'castrado': historialMedico.castrado,
-          'fecha_revision': historialMedico.fechaRevision,
-          'peso': historialMedico.peso,
-          'enfermedades': historialMedico.enfermedades,
-          'tratamiento': historialMedico.tratamiento,
-        }),
-      );
-
-      print("historial medico creado correctamente");
+      log("historial medico creado correctamente en Firestore");
     } catch (e) {
       log('error al crear los datos de historial medico $e');
     }
   }
 
-  Future<HistorialMedico> getHistorialMedico(String id_historial) async {
+  Future<HistorialMedico> getHistorialMedico(
+    String idRefugio,
+    String idAnimal,
+    String idHistorial,
+  ) async {
     try {
-      final uri = Uri.parse(UrlApi.url + "historial-medico/" + id_historial);
-      final response = await http.get(uri);
-
-      if (response.statusCode == 200) {
-        log('respuesta obtenida del historial:  ${response.body}');
-        final Map<String, dynamic> _historial = jsonDecode(response.body);
-
-        final HistorialMedico historialMedico = HistorialMedico.fromJson(
-          id_historial,
-          _historial,
-        );
-
-        return historialMedico;
+      final snapshot = await _firestore
+          .collection('refugios')
+          .doc(idRefugio)
+          .collection('animales')
+          .doc(idAnimal)
+          .collection('historial_medico')
+          .doc(idHistorial)
+          .get();
+ 
+      if (snapshot.exists && snapshot.data() != null) {
+        return HistorialMedico.fromJson(snapshot.id, snapshot.data()!);
       } else {
-        log('error al obtener los datos de historial');
-        throw Exception('error al obtener datos del historial');
+        throw Exception('Historial no encontrado');
       }
     } catch (e) {
       log('error en el servicio de historial $e');
-      throw Exception('error al caregar datos');
+      throw Exception('error al cargar datos');
     }
   }
 
   Future<void> updateHistorialMedico(
-    String id_historial,
+    String idRefugio,
+    String idAnimal,
+    String idHistorial,
     HistorialMedico historialMedico,
   ) async {
     try {
-      final uri = Uri.parse(UrlApi.url + "update-historial-medico");
+      await _firestore
+          .collection('refugios')
+          .doc(idRefugio)
+          .collection('animales')
+          .doc(idAnimal)
+          .collection('historial_medico')
+          .doc(idHistorial)
+          .update({
+        'castrado': historialMedico.castrado,
+        'fecha_revision': historialMedico.fechaRevision,
+        'peso': historialMedico.peso,
+        'enfermedades': historialMedico.enfermedades,
+        'tratamiento': historialMedico.tratamiento,
+      });
 
-      await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'id_historial': id_historial,
-          'castrado': historialMedico.castrado,
-          'fecha_revision': historialMedico.fechaRevision,
-          'peso': historialMedico.peso,
-          'enfermedades': historialMedico.enfermedades,
-          'tratamiento': historialMedico.tratamiento,
-        }),
-      );
-
-      print("historial medico actualizado correctamente");
+      log("historial medico actualizado correctamente en Firestore");
     } catch (e) {
       log('error al actualizar los datos de historial medico $e');
+    }
+  }
+
+  Future<List<HistorialMedico>> getAllHistoriales(
+    String idRefugio,
+    String idAnimal,
+  ) async {
+    try {
+      final snapshot = await _firestore
+          .collection('refugios')
+          .doc(idRefugio)
+          .collection('animales')
+          .doc(idAnimal)
+          .collection('historial_medico')
+          .orderBy('fecha_revision', descending: true)
+          .get();
+
+      return snapshot.docs
+          .map((doc) => HistorialMedico.fromJson(doc.id, doc.data()))
+          .toList();
+    } catch (e) {
+      log('error al obtener todos los historiales: $e');
+      return [];
     }
   }
 }

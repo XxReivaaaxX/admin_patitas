@@ -19,12 +19,36 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
 
   String? _refugioId;
   List<Map<String, dynamic>> _collaborators = [];
+  List<String> _availableRoles = ['admin', 'colaborador', 'veterinario', 'voluntario'];
+  String _selectedRole = 'colaborador';
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _loadCollaborators();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() => _isLoading = true);
+    await _loadCollaborators();
+    await _loadRoles();
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _loadRoles() async {
+    if (_refugioId == null) return;
+    try {
+      final roles = await _managementService.getCustomRoles(_refugioId!);
+      setState(() {
+        _availableRoles = roles;
+        if (!_availableRoles.contains(_selectedRole)) {
+          _selectedRole = _availableRoles.contains('colaborador') ? 'colaborador' : _availableRoles.first;
+        }
+      });
+    } catch (e) {
+      log('Error al cargar roles: $e');
+    }
   }
 
   @override
@@ -50,14 +74,12 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
       List<Map<String, dynamic>> collaborators = await _managementService
           .getCollaborators(_refugioId!);
 
+      if (!mounted) return;
       setState(() {
         _collaborators = collaborators;
-        _isLoading = false;
       });
     } catch (e) {
       log('Error al cargar colaboradores: $e', error: e);
-      if (!mounted) return;
-      setState(() => _isLoading = false);
     }
   }
 
@@ -91,7 +113,7 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
     }
 
     Map<String, dynamic> result = await _managementService
-        .addCollaboratorByEmail(_refugioId!, email);
+        .addCollaboratorByEmail(_refugioId!, email, role: _selectedRole);
 
     if (!mounted) return;
 
@@ -145,6 +167,43 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
     }
   }
 
+  Future<void> _showManageRolesDialog() async {
+    final TextEditingController roleController = TextEditingController();
+    await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Gestionar Roles del Refugio'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Añade nombres de cargos personalizados para tu equipo.', style: TextStyle(fontSize: 12)),
+            const SizedBox(height: 15),
+            TextField(
+              controller: roleController,
+              decoration: const InputDecoration(
+                labelText: 'Nuevo nombre de rol',
+                hintText: 'ej: Rescatista, Cirujano...',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar')),
+          ElevatedButton(
+            onPressed: () async {
+              if (roleController.text.isNotEmpty) {
+                await _managementService.addCustomRole(_refugioId!, roleController.text.trim());
+                await _loadRoles();
+                if (mounted) Navigator.pop(context);
+              }
+            },
+            child: const Text('Añadir'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -154,6 +213,13 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
           style: TextStyle(color: AppColors.primary),
         ),
         backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings, color: AppColors.primary),
+            onPressed: _showManageRolesDialog,
+            tooltip: 'Gestionar Roles',
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -166,38 +232,63 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Agregar Colaborador',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.normal,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Agregar Colaborador',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                          TextButton.icon(
+                            onPressed: _showManageRolesDialog,
+                            icon: const Icon(Icons.add_moderator, size: 18),
+                            label: const Text('Gestionar Roles'),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
+                            flex: 2,
                             child: TextField(
                               controller: _emailController,
                               keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
-                                labelText: 'Email del Colaborador',
+                                labelText: 'Email',
                                 hintText: 'ejemplo@mail.com',
                                 prefixIcon: const Icon(Icons.email),
                                 border: OutlineInputBorder(
                                   borderRadius: BorderRadius.circular(10),
-                                  borderSide: BorderSide(
-                                    color: AppColors.primary,
-                                  ),
                                 ),
-                                focusColor: AppColors.primary,
-
                                 filled: true,
                                 fillColor: Colors.white,
-                                floatingLabelStyle: TextStyle(
-                                  color: AppColors.primary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            flex: 1,
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedRole,
+                              decoration: InputDecoration(
+                                labelText: 'Rol',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
+                              items: _availableRoles.map((role) {
+                                return DropdownMenuItem(
+                                  value: role,
+                                  child: Text(role, style: const TextStyle(fontSize: 12)),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) setState(() => _selectedRole = val);
+                              },
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -210,7 +301,7 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Icon(Icons.add),
+                            child: const Icon(Icons.add, color: Colors.white),
                           ),
                         ],
                       ),
@@ -264,7 +355,7 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
                                 leading: CircleAvatar(
                                   backgroundColor: role == 'admin'
                                       ? Colors.orange
-                                      : const Color(0xFF4FC3F7),
+                                      : AppColors.secondary,
                                   child: Icon(
                                     role == 'admin'
                                         ? Icons.admin_panel_settings
@@ -278,16 +369,28 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                subtitle: Text(
-                                  role == 'admin'
-                                      ? 'Administrador'
-                                      : 'Colaborador',
-                                  style: TextStyle(
-                                    color: role == 'admin'
-                                        ? Colors.orange
-                                        : Colors.blue,
-                                    fontWeight: FontWeight.bold,
+                                subtitle: PopupMenuButton<String>(
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        role,
+                                        style: TextStyle(
+                                          color: role == 'admin'
+                                              ? Colors.orange
+                                              : AppColors.primary,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const Icon(Icons.arrow_drop_down, size: 16),
+                                    ],
                                   ),
+                                  onSelected: (newRole) async {
+                                    await _managementService.updateCollaboratorRole(_refugioId!, userId, newRole);
+                                    _loadCollaborators();
+                                  },
+                                  itemBuilder: (context) => _availableRoles.map((r) {
+                                    return PopupMenuItem(value: r, child: Text(r));
+                                  }).toList(),
                                 ),
                                 trailing: IconButton(
                                   icon: const Icon(

@@ -1,4 +1,3 @@
-import 'package:admin_patitas/models/animal.dart';
 import 'package:flutter/material.dart';
 
 class CardInfoAnimal extends StatelessWidget {

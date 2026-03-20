@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:admin_patitas/models/historial_medico.dart';
 import 'package:admin_patitas/services/historial_medico_service.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
@@ -7,11 +8,13 @@ import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
 
 class HistorialUpdate extends StatefulWidget {
-  final String? id_historial, nombre;
+  final String? idRefugio, idAnimal, idHistorial, nombre;
   final HistorialMedico historialMedico;
   const HistorialUpdate({
     super.key,
-    required this.id_historial,
+    required this.idRefugio,
+    required this.idAnimal,
+    required this.idHistorial,
     required this.nombre,
     required this.historialMedico,
   });
@@ -51,7 +54,7 @@ class _HistorialUpdateState extends State<HistorialUpdate> {
 
     try {
       final HistorialMedico historialMedico = HistorialMedico(
-        id: widget.id_historial!,
+        id: widget.idHistorial!,
         peso: _peso.text,
         castrado: _castrado!,
         enfermedades: _enfermedades.text,
@@ -59,7 +62,9 @@ class _HistorialUpdateState extends State<HistorialUpdate> {
         tratamiento: _tratamiento.text,
       );
       await HistorialMedicoService().updateHistorialMedico(
-        widget.id_historial!,
+        widget.idRefugio!,
+        widget.idAnimal!,
+        widget.idHistorial!,
         historialMedico,
       );
 
@@ -70,7 +75,7 @@ class _HistorialUpdateState extends State<HistorialUpdate> {
         Navigator.pop(context, historialMedico);
       }
     } catch (e) {
-      print('Excepción: $e');
+      log('Excepción: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error al actualizar historial: $e')),
@@ -100,7 +105,7 @@ class _HistorialUpdateState extends State<HistorialUpdate> {
       try {
         _fechaRevision = DateTime.parse(widget.historialMedico.fechaRevision);
       } catch (e) {
-        print('Error parsing date: $e');
+        log('Error parsing date: $e');
       }
     }
   }

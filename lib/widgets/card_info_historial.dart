@@ -10,10 +10,14 @@ import 'package:flutter/material.dart';
 class CardInfoHistorial extends StatefulWidget {
   final HistorialMedico historialMedico;
   final String nombre;
+  final String idRefugio;
+  final String idAnimal;
   const CardInfoHistorial({
     super.key,
     required this.historialMedico,
     required this.nombre,
+    required this.idRefugio,
+    required this.idAnimal,
   });
 
   @override
@@ -36,45 +40,45 @@ class _CardInfoHistorialState extends State<CardInfoHistorial> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(20),
+    return Padding(
+      padding: const EdgeInsets.all(20),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            child: TextButton.icon(
-              icon: Icon(Icons.settings, color: AppColors.secondary),
-              onPressed: () async {
-                final respuesta = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => HistorialUpdate(
-                      id_historial: widget.historialMedico.id,
-                      nombre: widget.nombre,
-                      historialMedico: widget.historialMedico,
-                    ),
+          TextButton.icon(
+            icon: Icon(Icons.settings, color: AppColors.secondary),
+            onPressed: () async {
+              final respuesta = await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => HistorialUpdate(
+                    idRefugio: widget.idRefugio,
+                    idAnimal: widget.idAnimal,
+                    idHistorial: widget.historialMedico.id,
+                    nombre: widget.nombre,
+                    historialMedico: widget.historialMedico,
                   ),
-                );
-                //recargar la lista cuando se cierra la ventana anterior
-                if (respuesta != null) {
-                  setState(() {
-                    historialMedico = respuesta;
-                    // Actualizar también la fecha de revisión
-                    if (historialMedico.fechaRevision.isNotEmpty) {
-                      try {
-                        fechaRevision = DateTime.parse(
-                          historialMedico.fechaRevision,
-                        );
-                      } catch (e) {
-                        print('Error parsing updated date: $e');
-                      }
+                ),
+              );
+              //recargar la lista cuando se cierra la ventana anterior
+              if (respuesta != null) {
+                setState(() {
+                  historialMedico = respuesta;
+                  // Actualizar también la fecha de revisión
+                  if (historialMedico.fechaRevision.isNotEmpty) {
+                    try {
+                      fechaRevision = DateTime.parse(
+                        historialMedico.fechaRevision,
+                      );
+                    } catch (e) {
+                      log('Error parsing updated date: $e');
                     }
-                  });
-                }
-              },
-              label: Text('Actualizar Historial'),
-            ),
+                  }
+                });
+              }
+            },
+            label: const Text('Actualizar Historial'),
           ),
           CardInfoAnimal(
             datos: {
@@ -85,12 +89,13 @@ class _CardInfoHistorialState extends State<CardInfoHistorial> {
               'Castrado': historialMedico.castrado,
             },
           ),
-          Container(
-            child: Column(
-              children: [
-                Container(
-                  alignment: Alignment.centerLeft,
-                  margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                   child: TextForm(
                     lines: 1,
                     texto: 'Enfermedades',
@@ -100,35 +105,34 @@ class _CardInfoHistorialState extends State<CardInfoHistorial> {
                     negrita: FontWeight.normal,
                   ),
                 ),
-                Container(
-                  width: double.infinity,
-                  height: 150,
-
-                  padding: EdgeInsets.all(10),
-                  margin: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    border: Border.all(width: 1, color: Colors.grey),
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
-                  child: TextForm(
-                    lines: 10,
-                    texto: historialMedico.enfermedades,
-                    color: Colors.black,
-                    size: 15,
-                    aling: TextAlign.justify,
-                    negrita: FontWeight.normal,
-                  ),
+              ),
+              Container(
+                width: double.infinity,
+                height: 150,
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border: Border.all(width: 1, color: Colors.grey),
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
                 ),
-              ],
-            ),
+                child: TextForm(
+                  lines: 10,
+                  texto: historialMedico.enfermedades,
+                  color: Colors.black,
+                  size: 15,
+                  aling: TextAlign.justify,
+                  negrita: FontWeight.normal,
+                ),
+              ),
+            ],
           ),
-
-          Container(
-            child: Column(
-              children: [
-                Container(
-                  margin: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                  alignment: Alignment.centerLeft,
+          Column(
+            children: [
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                   child: TextForm(
                     lines: 1,
                     texto: 'Tratamiento',
@@ -138,26 +142,26 @@ class _CardInfoHistorialState extends State<CardInfoHistorial> {
                     negrita: FontWeight.normal,
                   ),
                 ),
-                Container(
-                  width: double.infinity,
-                  height: 150,
-                  padding: EdgeInsets.all(10),
-                  margin: EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    border: Border.all(width: 1, color: Colors.grey),
-                    borderRadius: BorderRadius.all(Radius.circular(10)),
-                  ),
-                  child: TextForm(
-                    lines: 10,
-                    texto: historialMedico.tratamiento,
-                    color: Colors.black,
-                    size: 15,
-                    aling: TextAlign.justify,
-                    negrita: FontWeight.normal,
-                  ),
+              ),
+              Container(
+                width: double.infinity,
+                height: 150,
+                padding: const EdgeInsets.all(10),
+                margin: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  border: Border.all(width: 1, color: Colors.grey),
+                  borderRadius: const BorderRadius.all(Radius.circular(10)),
                 ),
-              ],
-            ),
+                child: TextForm(
+                  lines: 10,
+                  texto: historialMedico.tratamiento,
+                  color: Colors.black,
+                  size: 15,
+                  aling: TextAlign.justify,
+                  negrita: FontWeight.normal,
+                ),
+              ),
+            ],
           ),
         ],
       ),

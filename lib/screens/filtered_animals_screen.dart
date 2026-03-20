@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/screens/animal_view.dart';
 import 'package:admin_patitas/services/animals_service.dart';
@@ -51,7 +52,7 @@ class _FilteredAnimalsScreenState extends State<FilteredAnimalsScreen> {
         _animals = filtered;
       });
     } catch (e) {
-      print('Error loading animals: $e');
+      log('Error loading animals: $e');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -74,7 +75,7 @@ class _FilteredAnimalsScreenState extends State<FilteredAnimalsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -239,8 +240,10 @@ class _FilteredAnimalsScreenState extends State<FilteredAnimalsScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          AnimalView(animal: animal),
+                                      builder: (context) => AnimalView(
+                                        animal: animal,
+                                        idRefugio: _refugioId!,
+                                      ),
                                     ),
                                   );
                                 },
@@ -290,8 +293,8 @@ class _FilteredAnimalsScreenState extends State<FilteredAnimalsScreen> {
                                         color:
                                             animal.estadoAdopcion ==
                                                 'Disponible'
-                                            ? Colors.green.withOpacity(0.1)
-                                            : Colors.orange.withOpacity(0.1),
+                                            ? Colors.green.withValues(alpha: 0.1)
+                                            : Colors.orange.withValues(alpha: 0.1),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(
