@@ -1,3 +1,4 @@
+import 'package:admin_patitas/services/notification_service_cloud.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/screens/refugio_screen.dart';
@@ -6,10 +7,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:admin_patitas/screens/principal_screen.dart';
-import 'package:admin_patitas/screens/register_screen.dart';
+import 'package:admin_patitas/screens/menuPrincipal/principal_screen.dart';
+import 'package:admin_patitas/screens/userRegister/register_screen.dart';
 import 'package:admin_patitas/screens/panel_animales.dart';
-import 'package:admin_patitas/screens/login.dart';
+import 'package:admin_patitas/screens/login/login.dart';
 import 'package:admin_patitas/screens/pantalla_carga.dart';
 import 'package:admin_patitas/screens/refugio_settings.dart';
 import 'package:admin_patitas/screens/manage_collaborators.dart';
@@ -19,6 +20,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await PreferencesController.iniciarPref();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  //await NotificationServiceCloud.initialize();
 
   runApp(const AdminPatitasApp());
 }

@@ -1,73 +1,43 @@
 import 'dart:typed_data';
-import 'package:image/image.dart' as img;
-import 'package:tflite_flutter/tflite_flutter.dart';
-import 'package:flutter/services.dart' show rootBundle;
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:admin_patitas/utils/url_api.dart';
 
 class IAHandler {
-  late Interpreter interpreter;
-  late List<String> labels;
-  late int numClasses;
-  bool _isModelLoaded = false;
-
-  /// Carga el modelo TFLite y las etiquetas
   Future<void> loadModel() async {
+    print('La IA esta lista para usarse desde la API en App');
+  }
+
+  // Se envía la imagen en base64 a la API y se obtiene la predicción
+  Future<String> detectar(Uint8List imageBytes) async {
     try {
-      interpreter = await Interpreter.fromAsset('model.tflite');
-      final labelsData = await rootBundle.loadString('assets/labels.txt');
-      labels = labelsData.split('\n').where((e) => e.isNotEmpty).toList();
-      numClasses = labels.length;
-      _isModelLoaded = true;
-    } catch (e) {
-      throw Exception('Error al cargar modelo: $e');
-    }
-  }
+      final base64Image = base64Encode(imageBytes);
 
-  /// Detecta la clase más probable a partir de la imagen
-  Future<String> detectar(Uint8List bytes) async {
-    if (!_isModelLoaded) {
-      throw Exception('Modelo no cargado');
-    }
+      final response = await http.post(
+        Uri.parse('${UrlApi.url}detectar'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'image': 'data:image/jpeg;base64,$base64Image'}),
+      );
 
-    // Decodificar imagen y redimensionar a 224x224
-    final imgDecoded = img.decodeImage(bytes);
-    if (imgDecoded == null) {
-      throw Exception('No se pudo decodificar la imagen');
-    }
-    final resized = img.copyResize(imgDecoded, width: 224, height: 224);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
 
-    // Normalizar valores RGB entre 0 y 1
-    final input = List.generate(224, (y) =>
-      List.generate(224, (x) =>
-        [resized.getPixel(x, y).r / 255.0,
-         resized.getPixel(x, y).g / 255.0,
-         resized.getPixel(x, y).b / 255.0]));
-
-    final inputTensor = [input];
-
-    // Crear salida con tamaño dinámico según numClasses
-    var output = List.filled(numClasses, 0.0).reshape([1, numClasses]);
-
-    // Ejecutar inferencia
-    interpreter.run(inputTensor, output);
-
-    // Buscar índice con mayor probabilidad
-    final index = _argMax(output[0]);
-    return labels.isNotEmpty ? labels[index] : 'Clase $index';
-  }
-
-  /// Devuelve el índice del valor máximo en la lista
-  int _argMax(List<double> list) {
-    double maxVal = list[0];
-    int maxIndex = 0;
-    for (int i = 1; i < list.length; i++) {
-      if (list[i] > maxVal) {
-        maxVal = list[i];
-        maxIndex = i;
+        if (data["predicciones"] != null) {
+          final predicciones = data["predicciones"] as List;
+          String resultado = "Predicciones:\n";
+          for (var p in predicciones) {
+            resultado +=
+                "- ${p["clase"]} (${(p["confianza"] * 100).toStringAsFixed(2)}%)\n";
+          }
+          return resultado;
+        } else {
+          return "Respuesta inesperada: ${response.body}";
+        }
+      } else {
+        return 'Error en API: ${response.statusCode}';
       }
+    } catch (e) {
+      return 'Error al conectar con API: $e';
     }
-    return maxIndex;
   }
 }
-
-
-

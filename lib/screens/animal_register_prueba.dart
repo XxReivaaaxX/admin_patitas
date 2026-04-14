@@ -1,7 +1,6 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'package:admin_patitas/services/notification_service.dart';
+import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,11 +11,7 @@ import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/item_form_selection.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
-import 'package:image/image.dart' as img;
 import 'ia_mobile.dart' if (dart.library.html) 'ia_web.dart' as IA;
-
-import 'dart:typed_data';
-
 //import 'dart:html' as html;
 
 class AnimalRegister extends StatefulWidget {
@@ -38,7 +33,6 @@ class _AnimalRegisterState extends State<AnimalRegister> {
   XFile? _imagen;
   bool _isLoading = false;
   String? _resultadoIA;
-  //bool _modeloCargado = false;
 
   final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
 
@@ -48,7 +42,6 @@ class _AnimalRegisterState extends State<AnimalRegister> {
   void initState() {
     super.initState();
     ia = IA.IAHandler();
-
     ia.loadModel();
   }
 
@@ -59,43 +52,8 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     );
     if (imgFile != null) setState(() => _imagen = imgFile);
   }
+
   /*
-  Future<void> seleccionarImagen() async {
-    final picker = ImagePicker();
-
-    showModalBottomSheet(
-      context: context,
-      builder: (context) {
-        return Wrap(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Tomar foto'),
-              onTap: () async {
-                Navigator.pop(context);
-                final imgFile = await picker.pickImage(
-                  source: ImageSource.camera,
-                );
-                if (imgFile != null) setState(() => _imagen = imgFile);
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Seleccionar de galería'),
-              onTap: () async {
-                Navigator.pop(context);
-                final imgFile = await picker.pickImage(
-                  source: ImageSource.gallery,
-                );
-                if (imgFile != null) setState(() => _imagen = imgFile);
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }*/
-
   Future<void> descargarImagen() async {
     if (_imagen == null) return;
     setState(() => _isLoading = true);
@@ -106,13 +64,17 @@ class _AnimalRegisterState extends State<AnimalRegister> {
           "${_nombre.text.isNotEmpty ? _nombre.text : 'animal'}_${DateTime.now().millisecondsSinceEpoch}.jpg";
 
       if (kIsWeb) {
-        // Implementación para Web si se requiere
+        final blob = html.Blob([bytes]);
+        final url = html.Url.createObjectUrlFromBlob(blob);
+        final anchor = html.AnchorElement(href: url)
+          ..setAttribute("download", fileName)
+          ..click();
+        html.Url.revokeObjectUrl(url);
       } else {
         final directory = await getApplicationDocumentsDirectory();
         final filePath = '${directory.path}/$fileName';
         final file = File(filePath);
         await file.writeAsBytes(bytes);
-
         _showSnack('Imagen guardada en: $filePath');
       }
     } catch (e) {
@@ -121,7 +83,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
       setState(() => _isLoading = false);
     }
   }
-
+*/
   Future<void> registrarAnimal() async {
     if (!_formKey.currentState!.validate()) return;
 
@@ -139,16 +101,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
 
     try {
       final bytes = await _imagen!.readAsBytes();
-      final originalImage = img.decodeImage(bytes);
-      final resizedImage = img.copyResize(
-        originalImage!,
-        width: 500,
-        height: 500,
-      );
-
-      final compressedBytes = img.encodeJpg(resizedImage, quality: 70);
-      final base64Image =
-          'data:image/jpeg;base64,${base64Encode(compressedBytes)}';
+      final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
 
       final animal = Animal(
         nombre: _nombre.text,
@@ -164,14 +117,6 @@ class _AnimalRegisterState extends State<AnimalRegister> {
       );
 
       await AnimalsService().registerAnimals(widget.idRefugio, animal);
-      // Ejecutar en segundo plano sin `await` para que la pantalla no se congele
-      unawaited(
-        NotificationsService().sendNotificationToCollaborators(
-          refugioId: widget.idRefugio,
-          title: "Nuevo animal en el refugio",
-          body: "",
-        ),
-      );
 
       if (mounted) {
         _showSnack('Animal registrado exitosamente');
@@ -208,33 +153,11 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onPressed,
-  }) {
-    return OutlinedButton.icon(
-      icon: Icon(icon, color: color),
-      label: Text(label, style: TextStyle(color: color)),
-      style: OutlinedButton.styleFrom(
-        side: BorderSide(color: color),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      ),
-      onPressed: onPressed,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Registro Animal'),
-        backgroundColor: Colors.white,
-      ),
-      body: Container(
-        color: Colors.white,
+      appBar: AppBar(title: const Text('Registro Animal')),
+      body: SafeArea(
         child: Form(
           key: _formKey,
           child: ListView(
@@ -260,6 +183,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 sizeM: 30,
                 sizeP: 10,
               ),
+              const SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -420,7 +344,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                     ),
                     const SizedBox(width: 10),
                     OutlinedButton.icon(
-                      onPressed: _isLoading ? null : descargarImagen,
+                      onPressed: () {},
                       icon: const Icon(Icons.download, color: Colors.green),
                       label: const Text('Descargar'),
                       style: OutlinedButton.styleFrom(
@@ -461,6 +385,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                     ),
                   ),
               ],
+
               const SizedBox(height: 16),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -481,6 +406,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                     initialDate: DateTime.now(),
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
+                    locale: const Locale('es', 'ES'),
                   );
                   if (pickedDate != null)
                     setState(() => _fechaIngreso = pickedDate);

@@ -1,5 +1,5 @@
 import 'package:admin_patitas/models/routes_menu.dart';
-import 'package:admin_patitas/screens/principal_screen.dart';
+import 'package:admin_patitas/screens/menuPrincipal/principal_screen.dart';
 import 'package:admin_patitas/screens/register_refugio.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';

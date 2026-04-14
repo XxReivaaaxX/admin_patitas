@@ -51,17 +51,29 @@ class _HistorialRegisterState extends State<HistorialRegister> {
         fechaRevision: _fechaRevision?.toIso8601String() ?? '',
         tratamiento: _tratamiento.text,
       );
-      await HistorialMedicoService().createHistorialMedico(
-        widget.id_refugio!,
-        widget.id_animal!,
-        historialMedico,
-      );
+      final String? idRecibido = await HistorialMedicoService()
+          .createHistorialMedico(
+            widget.id_refugio!,
+            widget.id_animal!,
+            historialMedico,
+          );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Historial creado exitosamente')),
-        );
-        Navigator.pop(context, historialMedico);
+      if (idRecibido != null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Historial creado exitosamente')),
+          );
+
+          Navigator.pop(context, idRecibido);
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No se pudo obtener el ID del historial'),
+            ),
+          );
+        }
       }
     } catch (e) {
       print('Excepción: $e');

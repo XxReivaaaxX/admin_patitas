@@ -1,4 +1,4 @@
-import 'package:admin_patitas/screens/login.dart';
+import 'package:admin_patitas/screens/login/login.dart';
 import 'package:admin_patitas/screens/pantalla_carga.dart';
 import 'package:admin_patitas/screens/sin_refugio.dart';
 import 'package:firebase_auth/firebase_auth.dart';

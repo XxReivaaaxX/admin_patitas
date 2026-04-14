@@ -15,37 +15,40 @@ class LogoBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Image.asset(
-          'assets/img/Logo_AdminPatitas.png',
-          fit: BoxFit.contain,
-          height: sizeImg,
-        ),
-        Container(
-          padding: const EdgeInsets.all(8.0),
-          child: RichText(
-            text: TextSpan(
-              text: 'ADMIN',
-              style: TextStyle(
-                color: colorIzq,
-                fontWeight: FontWeight.bold,
-                fontSize: sizeText,
-              ),
-              children: <TextSpan>[
-                TextSpan(
-                  text: 'PATITAS',
-                  style: TextStyle(
-                    color: colorDer,
-                    fontWeight: FontWeight.bold,
-                    fontSize: sizeText,
-                  ),
+    return Container(
+      padding: EdgeInsets.only(left: 20),
+      child: Row(
+        children: [
+          Image.asset(
+            'assets/img/Logo_AdminPatitas.png',
+            fit: BoxFit.contain,
+            height: sizeImg,
+          ),
+          Container(
+            padding: const EdgeInsets.all(8.0),
+            child: RichText(
+              text: TextSpan(
+                text: 'ADMIN',
+                style: TextStyle(
+                  color: colorIzq,
+                  fontWeight: FontWeight.bold,
+                  fontSize: sizeText,
                 ),
-              ],
+                children: <TextSpan>[
+                  TextSpan(
+                    text: 'PATITAS',
+                    style: TextStyle(
+                      color: colorDer,
+                      fontWeight: FontWeight.bold,
+                      fontSize: sizeText,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

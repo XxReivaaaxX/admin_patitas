@@ -57,14 +57,19 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                           estado: snapshot.data![index].estadoSalud,
                           estadoAdopcion: snapshot.data![index].estadoAdopcion,
                           imageUrl: snapshot.data![index].imageUrl,
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
                                     AnimalView(animal: snapshot.data![index]),
                               ),
                             );
+                            setState(() {
+                              _futureAnimals = AnimalsService().getAnimals(
+                                widget.refugio!,
+                              );
+                            });
                           },
                           onpressedEliminar: () async {
                             final dialog = await showDialog<String>(
@@ -143,6 +148,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               nombre: currentAnimal.nombre,
                               genero: currentAnimal.genero,
                               estadoAdopcion: newStatus,
+                              imageUrl: currentAnimal.imageUrl,
                             );
 
                             await AnimalsService().updateAnimals(
@@ -189,6 +195,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                           edad: snapshot.data![index].especie,
                           estado: snapshot.data![index].estadoSalud,
                           estadoAdopcion: snapshot.data![index].estadoAdopcion,
+                          imageUrl: snapshot.data![index].imageUrl,
                           onTap: () {
                             Navigator.push(
                               context,
@@ -275,6 +282,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               nombre: currentAnimal.nombre,
                               genero: currentAnimal.genero,
                               estadoAdopcion: newStatus,
+                              imageUrl: currentAnimal.imageUrl,
                             );
 
                             await AnimalsService().updateAnimals(

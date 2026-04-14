@@ -25,10 +25,12 @@ class AnimalView extends StatefulWidget {
 
 class _AnimalViewState extends State<AnimalView> {
   Map<String, String> infoAnimal = {};
+  Animal? animal;
   String? idRefugio = "";
-  late Future<HistorialMedico> historialMedico;
+  Future<HistorialMedico>? historialMedico;
   List<Vacuna> vacunas = [];
   bool loadingVacunas = false;
+  String id_historial = '';
   bool loading = false;
   DateTime? fechaIngreso;
   Color colorPrincipal = Color.fromRGBO(55, 148, 194, 1);
@@ -38,10 +40,12 @@ class _AnimalViewState extends State<AnimalView> {
     super.initState();
     loading = false;
     idRefugio = PreferencesController.preferences.getString('refugio');
+    animal = widget.animal;
+    id_historial = widget.animal.historialMedicoId;
 
-    if (widget.animal.historialMedicoId != '') {
+    if (id_historial != '') {
       historialMedico = HistorialMedicoService().getHistorialMedico(
-        widget.animal.historialMedicoId,
+        id_historial,
       );
     }
     fechaIngreso = DateTime.parse(widget.animal.fechaIngreso);
@@ -96,13 +100,66 @@ class _AnimalViewState extends State<AnimalView> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(14)),
               ),
+              /*
               child: ClipRRect(
                 borderRadius: BorderRadiusGeometry.all(Radius.circular(14)),
                 child: Image.asset(
-                  'assets/img/gatos_principal.jpg',
+                  widget.animal.imageUrl == ''
+                      ? 'assets/img/gatos_principal.jpg'
+                      : widget.animal.imageUrl,
                   width: double.infinity,
                   fit: BoxFit.cover,
                 ),
+              ),*/
+              child: ClipRRect(
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(12),
+                  bottomLeft: Radius.circular(12),
+                ),
+                child: animal!.imageUrl.isNotEmpty
+                    ? (animal!.imageUrl.startsWith('data:image')
+                          ? Image.memory(
+                              Uri.parse(
+                                animal!.imageUrl,
+                              ).data!.contentAsBytes(),
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[200],
+                                  child: Icon(
+                                    Icons.pets,
+                                    size: 50,
+                                    color: Colors.grey[400],
+                                  ),
+                                );
+                              },
+                            )
+                          : Image.network(
+                              animal!.imageUrl,
+                              fit: BoxFit.cover,
+                              width: double.infinity,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  color: Colors.grey[200],
+                                  child: Icon(
+                                    Icons.pets,
+                                    size: 50,
+                                    color: Colors.grey[400],
+                                  ),
+                                );
+                              },
+                            ))
+                    : Container(
+                        color: Colors.grey[200],
+                        width: double.infinity,
+                        child: Icon(
+                          Icons.pets,
+
+                          size: 50,
+                          color: Colors.grey[400],
+                        ),
+                      ),
               ),
             ),
 
@@ -150,16 +207,30 @@ class _AnimalViewState extends State<AnimalView> {
                                 color: Colors.greenAccent,
                               ),
                               onPressed: () async {
-                                await Navigator.push(
+                                final res = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => AnimalUpdate(
                                       id_refugio: idRefugio,
-                                      animal: widget.animal,
+                                      animal: animal!,
                                     ),
                                   ),
                                 );
-                                setState(() {});
+                                if (res != null && mounted) {
+                                  setState(() {
+                                    animal = res;
+                                    infoAnimal = {
+                                      'Nombre': res.nombre,
+                                      'Raza': res.raza,
+                                      'Genero': res.genero,
+                                      'Especie': res.especie,
+                                      'Estado de Adopción': res.estadoAdopcion,
+                                      'Fecha': res.fechaIngreso != null
+                                          ? '${res.fechaIngreso!.day}/${res.fechaIngreso!.month}/${res.fechaIngreso!.year}'
+                                          : 'sin datos',
+                                    };
+                                  });
+                                }
                               },
                             ),
                           ),
@@ -180,7 +251,7 @@ class _AnimalViewState extends State<AnimalView> {
                     ),
 
                     // Segunda tab: Historial médico
-                    if (widget.animal.historialMedicoId == '') ...[
+                    if (id_historial == '') ...[
                       Column(
                         children: [
                           Container(
@@ -189,7 +260,7 @@ class _AnimalViewState extends State<AnimalView> {
                               icon: const Icon(Icons.add),
                               label: const Text('Crear historial médico'),
                               onPressed: () async {
-                                await Navigator.push(
+                                final historialRes = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => HistorialRegister(
@@ -199,7 +270,15 @@ class _AnimalViewState extends State<AnimalView> {
                                     ),
                                   ),
                                 );
-                                setState(() {});
+                                if (historialRes != null &&
+                                    historialRes != '') {
+                                  setState(() {
+                                    id_historial = historialRes;
+
+                                    historialMedico = HistorialMedicoService()
+                                        .getHistorialMedico(historialRes);
+                                  });
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue,
@@ -412,6 +491,7 @@ class _AnimalViewState extends State<AnimalView> {
                   Expanded(
                     flex: 1,
                     child: SizedBox(
+                      /*
                       child: ClipRRect(
                         borderRadius: const BorderRadius.all(
                           Radius.circular(14),
@@ -420,6 +500,56 @@ class _AnimalViewState extends State<AnimalView> {
                           'assets/img/gatos_principal.jpg',
                           fit: BoxFit.cover,
                         ),
+                      ),*/
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          bottomLeft: Radius.circular(12),
+                        ),
+                        child: animal!.imageUrl.isNotEmpty
+                            ? (animal!.imageUrl.startsWith('data:image')
+                                  ? Image.memory(
+                                      Uri.parse(
+                                        animal!.imageUrl,
+                                      ).data!.contentAsBytes(),
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                            return Container(
+                                              color: Colors.grey[200],
+                                              child: Icon(
+                                                Icons.pets,
+                                                size: 50,
+                                                color: Colors.grey[400],
+                                              ),
+                                            );
+                                          },
+                                    )
+                                  : Image.network(
+                                      animal!.imageUrl,
+                                      fit: BoxFit.cover,
+                                      width: double.infinity,
+                                      errorBuilder:
+                                          (context, error, stackTrace) {
+                                            return Container(
+                                              color: Colors.grey[200],
+                                              child: Icon(
+                                                Icons.pets,
+                                                size: 50,
+                                                color: Colors.grey[400],
+                                              ),
+                                            );
+                                          },
+                                    ))
+                            : Container(
+                                color: Colors.grey[200],
+                                child: Icon(
+                                  Icons.pets,
+                                  size: 50,
+                                  color: Colors.grey[400],
+                                ),
+                              ),
                       ),
                     ),
                   ),
@@ -441,16 +571,30 @@ class _AnimalViewState extends State<AnimalView> {
                                 color: Colors.greenAccent,
                               ),
                               onPressed: () async {
-                                await Navigator.push(
+                                final res = await Navigator.push(
                                   context,
                                   MaterialPageRoute(
                                     builder: (context) => AnimalUpdate(
                                       id_refugio: idRefugio,
-                                      animal: widget.animal,
+                                      animal: animal!,
                                     ),
                                   ),
                                 );
-                                setState(() {});
+                                if (res != null && mounted) {
+                                  setState(() {
+                                    animal = res;
+                                    infoAnimal = {
+                                      'Nombre': res.nombre,
+                                      'Raza': res.raza,
+                                      'Genero': res.genero,
+                                      'Especie': res.especie,
+                                      'Estado de Adopción': res.estadoAdopcion,
+                                      'Fecha': res.fechaIngreso != null
+                                          ? '${res.fechaIngreso!.day}/${res.fechaIngreso!.month}/${res.fechaIngreso!.year}'
+                                          : 'sin datos',
+                                    };
+                                  });
+                                }
                               },
                               label: Text('Actualizar Datos'),
                             ),
@@ -528,6 +672,150 @@ class _AnimalViewState extends State<AnimalView> {
               ),
             ),
           ],
+          //prueba vacunas
+          Container(
+            height: 500,
+            margin: EdgeInsets.symmetric(horizontal: 100, vertical: 20),
+            child: Card(
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: 50,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        IconButton(
+                          icon: Icon(
+                            Icons.add_circle,
+                            color: Colors.greenAccent,
+                          ),
+                          onPressed: () async {
+                            final result = await Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => VacunaRegister(
+                                  refugioId: idRefugio!,
+                                  animalId: widget.animal.id,
+                                  animalNombre: widget.animal.nombre,
+                                  animalEspecie: widget.animal.especie,
+                                ),
+                              ),
+                            );
+                            if (result == true && mounted) {
+                              loadVacunas();
+                            }
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: loadingVacunas
+                        ? const Center(child: CircularProgressIndicator())
+                        : vacunas.isEmpty
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.vaccines,
+                                  size: 80,
+                                  color: Colors.grey[400],
+                                ),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'No hay vacunas registradas',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Presiona + para agregar una vacuna',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[500],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(16),
+                            itemCount: vacunas.length,
+                            itemBuilder: (context, index) {
+                              final vacuna = vacunas[index];
+                              return VacunaCard(
+                                vacuna: vacuna,
+                                onDelete: () async {
+                                  final confirm = await showDialog<bool>(
+                                    context: context,
+                                    builder: (dialogContext) => AlertDialog(
+                                      title: const Text(
+                                        'Confirmar eliminación',
+                                      ),
+                                      content: Text(
+                                        '¿Eliminar vacuna "${vacuna.nombre}"?',
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(
+                                            dialogContext,
+                                            false,
+                                          ),
+                                          child: const Text('Cancelar'),
+                                        ),
+                                        TextButton(
+                                          onPressed: () => Navigator.pop(
+                                            dialogContext,
+                                            true,
+                                          ),
+                                          child: const Text(
+                                            'Eliminar',
+                                            style: TextStyle(color: Colors.red),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+
+                                  if (confirm == true) {
+                                    try {
+                                      await VacunaService().deleteVacuna(
+                                        idRefugio!,
+                                        widget.animal.id,
+                                        vacuna.id,
+                                      );
+                                      if (mounted) {
+                                        loadVacunas();
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text('Vacuna eliminada'),
+                                          ),
+                                        );
+                                      }
+                                    } catch (e) {
+                                      if (mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(content: Text('Error: $e')),
+                                        );
+                                      }
+                                    }
+                                  }
+                                },
+                              );
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -557,7 +845,7 @@ class _AnimalViewState extends State<AnimalView> {
         actions: [
           IconButton(
             icon: Icon(Icons.arrow_back, color: colorPrincipal),
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, id_historial),
           ),
         ],
       ),

@@ -3,11 +3,12 @@ import 'dart:developer';
 
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/models/historial_medico.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:admin_patitas/utils/url_api.dart';
 import 'package:http/http.dart' as http;
 
 class HistorialMedicoService {
-  Future<void> createHistorialMedico(
+  Future<String?> createHistorialMedico(
     String id_refugio,
     String id_animal,
     HistorialMedico historialMedico,
@@ -15,7 +16,7 @@ class HistorialMedicoService {
     try {
       final uri = Uri.parse(UrlApi.url + "registro-historial-medico");
 
-      await http.post(
+      final response = await http.post(
         uri,
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
@@ -28,10 +29,18 @@ class HistorialMedicoService {
           'tratamiento': historialMedico.tratamiento,
         }),
       );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print("Historial médico creado correctamente. ID: ${data['id']}");
 
-      print("historial medico creado correctamente");
+        return data['id'].toString();
+      } else {
+        print("Error en el servidor: ${response.body}");
+        return '';
+      }
     } catch (e) {
       log('error al crear los datos de historial medico $e');
+      return '';
     }
   }
 

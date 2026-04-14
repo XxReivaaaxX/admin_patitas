@@ -5,8 +5,20 @@ import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/item_form_selection.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+
+String _processImage(List<int> bytes) {
+  final originalImage = img.decodeImage(Uint8List.fromList(bytes));
+  if (originalImage == null) {
+    throw Exception("No se pudo decodificar la imagen.");
+  }
+  final resizedImage = img.copyResize(originalImage, width: 500, height: 500);
+  final compressedBytes = img.encodeJpg(resizedImage, quality: 70);
+  return 'data:image/jpeg;base64,${base64Encode(compressedBytes)}';
+}
 
 class AnimalUpdate extends StatefulWidget {
   final String? id_refugio;
@@ -47,7 +59,8 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
 
       if (image != null) {
         final bytes = await image.readAsBytes();
-        final base64Image = 'data:image/jpeg;base64,${base64Encode(bytes)}';
+
+        final base64Image = await compute(_processImage, bytes);
 
         setState(() {
           _newImageUrl = base64Image;
@@ -87,7 +100,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Animal actualizado exitosamente')),
         );
-        Navigator.pop(context);
+        Navigator.pop(context, animal);
       }
     } catch (e) {
       print('Excepción: $e');

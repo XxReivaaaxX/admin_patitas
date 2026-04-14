@@ -17,6 +17,7 @@ android {
         // Request Java 21 for source and target compatibility. Gradle/AGP and
         // the local JDK must support Java 21; if not installed, set JAVA_HOME
         // or install JDK 21 first.
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.toVersion(21)
         targetCompatibility = JavaVersion.toVersion(21)
     }
@@ -62,4 +63,7 @@ android {
 
 flutter {
     source = "../.."
+}
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
