@@ -1,6 +1,8 @@
 import 'package:admin_patitas/screens/salud_admin.dart';
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/screens/animal_admin.dart';
+import 'package:admin_patitas/utils/state_tab.dart';
 import 'package:flutter/material.dart';
 
 class AnimalScreen extends StatefulWidget {
@@ -25,25 +27,37 @@ class _AnimalScreenState extends State<AnimalScreen> {
     return DefaultTabController(
       initialIndex: 0,
       length: 2,
-      child: Scaffold(
-        backgroundColor: Colors.black,
-        appBar: TabBar.secondary(
-          isScrollable: true,
-          labelColor: Colors.white,
-          indicatorColor: Colors.blue,
-          tabAlignment: TabAlignment.center,
-          tabs: <Widget>[
-            Tab(text: "Administrar Animales"),
-            Tab(text: "Seguimiento de salud"),
-          ],
-        ),
-        body: TabBarView(
-          children: <Widget>[
-            AnimalAdmin(refugio: id_refugio),
+      child: Builder(
+        builder: (context) {
+          // Escucha cambios de tab
+          TabController tabController = DefaultTabController.of(context);
+          tabController.addListener(() {
+            if (!tabController.indexIsChanging) {
+              showFabNotifier.value = tabController.index == 0;
+            }
+          });
 
-            SaludAdmin(id_refugio: id_refugio),
-          ],
-        ),
+          return Scaffold(
+            backgroundColor: AppColors.backgroundLight,
+            appBar: TabBar.secondary(
+              isScrollable: true,
+              labelColor: AppColors.primary,
+              indicatorColor: AppColors.primary,
+              unselectedLabelColor: Colors.black,
+              tabAlignment: TabAlignment.center,
+              tabs: <Widget>[
+                Tab(text: "Administrar Animales"),
+                Tab(text: "Seguimiento de salud"),
+              ],
+            ),
+            body: TabBarView(
+              children: <Widget>[
+                AnimalAdmin(refugio: id_refugio),
+                SaludAdmin(id_refugio: id_refugio),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

@@ -3,7 +3,6 @@ import 'package:admin_patitas/widgets/background_image.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/cut_custom.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class RegisterUserMobile extends StatefulWidget {
@@ -72,12 +71,16 @@ class _RegisterUserMobileState extends State<RegisterUserMobile> {
             // contenedor de formulario
             Container(
               color: AppColors.backgroundLight,
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: const EdgeInsets.only(
+                left: 24.0,
+                right: 24.0,
+                bottom: 30,
+              ),
               child: Form(
                 key: widget.formkey,
                 child: Column(
                   children: [
-                    Container(
+                    SizedBox(
                       width: double.infinity,
                       child: Text(
                         'Crear Cuenta',
@@ -101,6 +104,7 @@ class _RegisterUserMobileState extends State<RegisterUserMobile> {
                       colorText: Colors.black,
                       sizeM: 20,
                       sizeP: 10,
+                      floatingLabel: false,
                     ),
                     const SizedBox(height: 10),
                     Formulario(
@@ -113,6 +117,7 @@ class _RegisterUserMobileState extends State<RegisterUserMobile> {
                       colorText: Colors.black,
                       sizeM: 20,
                       sizeP: 10,
+                      floatingLabel: false,
                     ),
                     const SizedBox(height: 10),
                     Formulario(
@@ -126,6 +131,7 @@ class _RegisterUserMobileState extends State<RegisterUserMobile> {
                       sizeM: 20,
                       sizeP: 10,
                       passwordToCompare: widget.password.text,
+                      floatingLabel: false,
                     ),
                     Row(
                       children: [

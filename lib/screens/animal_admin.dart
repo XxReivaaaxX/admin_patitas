@@ -5,6 +5,7 @@ import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/screens/animal_register.dart';
 import 'package:admin_patitas/screens/animal_view.dart';
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/item_animal.dart';
 import 'package:admin_patitas/widgets/item_animal_colum.dart';
 import 'package:flutter/material.dart';
@@ -36,7 +37,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 235, 235, 235),
+      backgroundColor: AppColors.backgroundLight,
       body: Container(
         margin: EdgeInsets.symmetric(horizontal: 20),
         //recorrer lista obtenida
@@ -326,7 +327,8 @@ class _AnimalAdminState extends State<AnimalAdmin> {
       ),
 
       floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
+        backgroundColor: AppColors.secondary,
+        shape: const CircleBorder(),
 
         onPressed: () async {
           await Navigator.push(

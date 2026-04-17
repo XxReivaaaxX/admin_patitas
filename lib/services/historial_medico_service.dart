@@ -8,64 +8,64 @@ import 'package:admin_patitas/utils/url_api.dart';
 import 'package:http/http.dart' as http;
 
 class HistorialMedicoService {
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref();
+
   Future<String?> createHistorialMedico(
     String id_refugio,
     String id_animal,
     HistorialMedico historialMedico,
   ) async {
     try {
-      final uri = Uri.parse(UrlApi.url + "registro-historial-medico");
+      // 1. Crear el nuevo historial en el nodo 'historialMedico'
+      final nuevoHistorialRef = _dbRef.child('historialMedico').push();
+      final String? id_historial = nuevoHistorialRef.key;
 
-      final response = await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'id_refugio': id_refugio,
-          'id_animal': id_animal,
-          'castrado': historialMedico.castrado,
-          'fecha_revision': historialMedico.fechaRevision,
-          'peso': historialMedico.peso,
-          'enfermedades': historialMedico.enfermedades,
-          'tratamiento': historialMedico.tratamiento,
-        }),
-      );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        print("Historial médico creado correctamente. ID: ${data['id']}");
+      if (id_historial == null) return '';
 
-        return data['id'].toString();
-      } else {
-        print("Error en el servidor: ${response.body}");
-        return '';
-      }
+      await nuevoHistorialRef.set({
+        'castrado': historialMedico.castrado,
+        'fecha_revision': historialMedico.fechaRevision,
+        'peso': historialMedico.peso,
+        'enfermedades': historialMedico.enfermedades,
+        'tratamiento': historialMedico.tratamiento,
+      });
+
+      // 2. Actualizar la referencia del ID en el nodo del animal (siguiendo tu lógica de Python)
+      // Ruta: animales / id_refugio / id_animal
+      await _dbRef.child('animales/$id_refugio/$id_animal').update({
+        'historial_medico_id': id_historial,
+      });
+
+      print("Historial médico creado correctamente. ID: $id_historial");
+      return id_historial;
     } catch (e) {
-      log('error al crear los datos de historial medico $e');
+      log('Error al crear los datos de historial medico: $e');
       return '';
     }
   }
 
   Future<HistorialMedico> getHistorialMedico(String id_historial) async {
     try {
-      final uri = Uri.parse(UrlApi.url + "historial-medico/" + id_historial);
-      final response = await http.get(uri);
+      final snapshot = await _dbRef
+          .child('historialMedico/$id_historial')
+          .get();
 
-      if (response.statusCode == 200) {
-        log('respuesta obtenida del historial:  ${response.body}');
-        final Map<String, dynamic> _historial = jsonDecode(response.body);
-
-        final HistorialMedico historialMedico = HistorialMedico.fromJson(
-          id_historial,
-          _historial,
+      if (snapshot.exists) {
+        // Firebase devuelve la data como Map<dynamic, dynamic>
+        final Map<String, dynamic> data = Map<String, dynamic>.from(
+          snapshot.value as Map,
         );
 
-        return historialMedico;
+        log('Respuesta obtenida del historial: $data');
+
+        return HistorialMedico.fromJson(id_historial, data);
       } else {
-        log('error al obtener los datos de historial');
-        throw Exception('error al obtener datos del historial');
+        log('Error: No se encontró el historial con ID: $id_historial');
+        throw Exception('Historial no encontrado');
       }
     } catch (e) {
-      log('error en el servicio de historial $e');
-      throw Exception('error al caregar datos');
+      log('Error en el servicio de historial: $e');
+      throw Exception('Error al cargar datos');
     }
   }
 
@@ -74,24 +74,18 @@ class HistorialMedicoService {
     HistorialMedico historialMedico,
   ) async {
     try {
-      final uri = Uri.parse(UrlApi.url + "update-historial-medico");
+      // Actualizamos directamente el nodo específico
+      await _dbRef.child('historialMedico/$id_historial').update({
+        'castrado': historialMedico.castrado,
+        'fecha_revision': historialMedico.fechaRevision,
+        'peso': historialMedico.peso,
+        'enfermedades': historialMedico.enfermedades,
+        'tratamiento': historialMedico.tratamiento,
+      });
 
-      await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'id_historial': id_historial,
-          'castrado': historialMedico.castrado,
-          'fecha_revision': historialMedico.fechaRevision,
-          'peso': historialMedico.peso,
-          'enfermedades': historialMedico.enfermedades,
-          'tratamiento': historialMedico.tratamiento,
-        }),
-      );
-
-      print("historial medico actualizado correctamente");
+      print("Historial médico actualizado correctamente");
     } catch (e) {
-      log('error al actualizar los datos de historial medico $e');
+      log('Error al actualizar los datos de historial medico: $e');
     }
   }
 }

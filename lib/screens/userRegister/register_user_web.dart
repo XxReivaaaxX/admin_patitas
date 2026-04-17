@@ -12,7 +12,8 @@ class RegisterUserWeb extends StatefulWidget {
   final TextEditingController validePassword;
   final VoidCallback register;
   final VoidCallback verTerminos;
-  final bool isLoading, pdfOpen;
+  final bool isLoading, pdfOpen, isChecked;
+  final ValueChanged<bool?> onChanged;
   const RegisterUserWeb({
     super.key,
     required this.formkey,
@@ -23,6 +24,8 @@ class RegisterUserWeb extends StatefulWidget {
     required this.pdfOpen,
     required this.register,
     required this.verTerminos,
+    required this.isChecked,
+    required this.onChanged,
   });
 
   @override
@@ -30,7 +33,6 @@ class RegisterUserWeb extends StatefulWidget {
 }
 
 class _RegisterUserWebState extends State<RegisterUserWeb> {
-  bool isChecked = false;
   @override
   Widget build(BuildContext context) {
     Color colorPrincipal = AppColors.primary;
@@ -72,6 +74,7 @@ class _RegisterUserWebState extends State<RegisterUserWeb> {
                     colorText: Colors.black,
                     sizeM: 20,
                     sizeP: 10,
+                    floatingLabel: false,
                   ),
                   const SizedBox(height: 20),
                   Formulario(
@@ -84,6 +87,7 @@ class _RegisterUserWebState extends State<RegisterUserWeb> {
                     colorText: Colors.black,
                     sizeM: 20,
                     sizeP: 10,
+                    floatingLabel: false,
                   ),
                   const SizedBox(height: 20),
                   Formulario(
@@ -97,6 +101,7 @@ class _RegisterUserWebState extends State<RegisterUserWeb> {
                     sizeM: 20,
                     sizeP: 10,
                     passwordToCompare: widget.password.text,
+                    floatingLabel: false,
                   ),
                   Row(
                     children: [
@@ -104,13 +109,9 @@ class _RegisterUserWebState extends State<RegisterUserWeb> {
                         checkColor: Colors.white,
                         activeColor: colorPrincipal,
                         side: const BorderSide(color: Colors.blue),
-                        value: isChecked,
+                        value: widget.isChecked,
                         onChanged: widget.pdfOpen
-                            ? (bool? value) {
-                                setState(() {
-                                  isChecked = value!;
-                                });
-                              }
+                            ? widget.onChanged
                             : null, // Deshabilitado si no se abrió el PDF
                       ),
                       const Text('Acepto términos y condiciones'),
@@ -121,12 +122,12 @@ class _RegisterUserWebState extends State<RegisterUserWeb> {
                     ],
                   ),
                   BotonLogin(
-                    onPressed: (widget.pdfOpen && isChecked)
+                    onPressed: (widget.pdfOpen && widget.isChecked)
                         ? widget.register
                         : null,
                     texto: 'Registrar',
                     color: Colors.white,
-                    colorB: (widget.pdfOpen && isChecked)
+                    colorB: (widget.pdfOpen && widget.isChecked)
                         ? colorPrincipal
                         : Colors.grey,
                     size: 16,

@@ -7,7 +7,7 @@ import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:admin_patitas/screens/refugio_screen.dart';
+import 'package:admin_patitas/screens/refugioScreen/refugio_screen.dart';
 
 class InicioScreen extends StatefulWidget {
   const InicioScreen({super.key});

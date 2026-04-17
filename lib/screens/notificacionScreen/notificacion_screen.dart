@@ -40,6 +40,7 @@ class _NotificacionScreenState extends State<NotificacionScreen> {
     await NotificationsService().updateReadNotificationState(
       userId: _currentUser!.uid,
       notifId: item.notifications.id,
+      refugioId: id_refugio!,
     );
 
     setState(() {

@@ -1,5 +1,5 @@
 import 'package:admin_patitas/screens/adopciones_screen.dart';
-import 'package:admin_patitas/screens/register_refugio.dart';
+import 'package:admin_patitas/screens/refugioRegister/register_refugio.dart';
 import 'package:flutter/material.dart';
 
 class MenuRefugios extends StatelessWidget {

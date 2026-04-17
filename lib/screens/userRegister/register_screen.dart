@@ -163,6 +163,12 @@ class _RegisterUserState extends State<RegisterUser> {
                         pdfOpen: pdfOpened,
                         register: () => _register(),
                         verTerminos: () => _verTerminos(),
+                        isChecked: isChecked,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            isChecked = value ?? false;
+                          });
+                        },
                       ),
                     ],
                   );

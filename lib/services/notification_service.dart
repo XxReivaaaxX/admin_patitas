@@ -68,13 +68,17 @@ class NotificationsService {
         for (var colaborador in colaboradores) {
           final userId = colaborador['userId'];
           if (userId != null && userId != currentUserId) {
-            updates['user_notifications/$userId/$notifId'] = {'isRead': false};
+            updates['user_notifications/$userId/$refugioId/$notifId'] = {
+              'isRead': false,
+            };
           }
         }
 
         // envia la notificacion al administrador cuando es creada por un colaborador
         if (adminId != null && adminId != currentUserId) {
-          updates['user_notifications/$adminId/$notifId'] = {'isRead': false};
+          updates['user_notifications/$adminId/$refugioId/$notifId'] = {
+            'isRead': false,
+          };
         }
 
         if (updates.isNotEmpty) {
@@ -100,6 +104,7 @@ class NotificationsService {
       final userNotifsSnapshot = await _db
           .child('user_notifications')
           .child(userId)
+          .child(refugioId)
           .get();
 
       if (!userNotifsSnapshot.exists) return [];
@@ -141,11 +146,15 @@ class NotificationsService {
   Future<void> updateReadNotificationState({
     required String userId,
     required String notifId,
+    required String refugioId,
   }) async {
     try {
-      await _db.child('user_notifications').child(userId).child(notifId).update(
-        {'isRead': true},
-      );
+      await _db
+          .child('user_notifications')
+          .child(userId)
+          .child(refugioId)
+          .child(notifId)
+          .update({'isRead': true});
     } catch (e) {
       print('Error al marcar notificación como leída: $e');
     }
@@ -154,18 +163,23 @@ class NotificationsService {
   //revisa cambios de lectura en tiempo real
 
   Stream<int> getUnreadCountStream(String userId, String refugioId) {
-    return _db.child('user_notifications').child(userId).onValue.map((event) {
-      if (!event.snapshot.exists) return 0;
+    return _db
+        .child('user_notifications')
+        .child(userId)
+        .child(refugioId)
+        .onValue
+        .map((event) {
+          if (!event.snapshot.exists) return 0;
 
-      final data = event.snapshot.value as Map<dynamic, dynamic>;
+          final data = event.snapshot.value as Map<dynamic, dynamic>;
 
-      int count = 0;
-      data.forEach((key, value) {
-        if (value['isRead'] == false) {
-          count++;
-        }
-      });
-      return count;
-    });
+          int count = 0;
+          data.forEach((key, value) {
+            if (value['isRead'] == false) {
+              count++;
+            }
+          });
+          return count;
+        });
   }
 }

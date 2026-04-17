@@ -2,11 +2,15 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:admin_patitas/models/usuario.dart';
 import 'package:admin_patitas/utils/url_api.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class UserController {
   /// Inicia sesión en la API y guarda token en SharedPreferences
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseDatabase _database = FirebaseDatabase.instance;
   Future<bool> iniciarSesion(String email, String password) async {
     final uri = Uri.parse('${UrlApi.url}login');
 
@@ -39,26 +43,35 @@ class UserController {
     }
   }
 
-  /// Registra usuario en la API
+  /// Registra un nuevo usuario en Firebase Auth y guarda datos en Realtime Database
   Future<bool> registerUser(String email, String password) async {
-    final uri = Uri.parse('${UrlApi.url}register');
-
     try {
-      final response = await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'email': email, 'password': password}),
-      );
+      UserCredential userCredential = await _auth
+          .createUserWithEmailAndPassword(email: email, password: password);
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        log('Usuario registrado correctamente en API');
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        DatabaseReference userRef = _database
+            .ref()
+            .child('users')
+            .child(user.uid);
+
+        await userRef.set({
+          'email': email,
+          'registered_at': DateTime.now().toIso8601String(),
+        });
+
+        log('Usuario registrado: ${user.uid}');
         return true;
-      } else {
-        log('Error al registrar usuario: ${response.body}');
-        return false;
       }
+
+      return false;
+    } on FirebaseAuthException catch (e) {
+      log('Error de Firebase Auth: ${e.code} - ${e.message}');
+      return false;
     } catch (e) {
-      log('Excepción en registerUser: $e');
+      log('Excepción general en registerUser: $e');
       return false;
     }
   }

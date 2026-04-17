@@ -1,7 +1,7 @@
 import 'package:admin_patitas/services/notification_service_cloud.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
-import 'package:admin_patitas/screens/refugio_screen.dart';
+import 'package:admin_patitas/screens/refugioScreen/refugio_screen.dart';
 import 'package:admin_patitas/screens/sin_refugio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';

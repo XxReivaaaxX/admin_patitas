@@ -2,6 +2,7 @@ import 'package:admin_patitas/models/routes_menu.dart';
 import 'package:admin_patitas/services/notification_service.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
+import 'package:admin_patitas/utils/state_tab.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -29,6 +30,7 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
   }
 
   // visualisacion de menu para pantallas pequeñas o mobile
+
   Widget getMenuMovil() {
     return Scaffold(
       body: RoutesMenu(index: itemIndex),
@@ -64,46 +66,119 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
       ),
     );
   }
+  /*
+  Widget getMenuMovil() {
+    return Scaffold(
+      extendBody: true,
+      body: RoutesMenu(index: itemIndex),
+      floatingActionButton: itemIndex == 1
+          ? ValueListenableBuilder<bool>(
+              valueListenable: showFabNotifier,
+              builder: (context, showFab, _) {
+                return showFab
+                    ? _buildAddAnimalButton()
+                    : const SizedBox.shrink();
+              },
+            )
+          : null,
+      floatingActionButtonLocation: FloatingActionButtonLocation.endDocked,
+      bottomNavigationBar: BottomAppBar(
+        shape: itemIndex == 1 ? const CircularNotchedRectangle() : null,
+        notchMargin: 8.0, // Espacio entre el botón y el recorte
+        color: AppColors.backgroundLight,
+
+        child: Container(
+          height: 60,
+
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => itemIndex = 0),
+                  child: itemIndex == 0
+                      ? buildSelectedIcon(Icons.home, 'Principal')
+                      : buildUnselectedIcon(Icons.home_outlined, 'Principal'),
+                ),
+              ),
+
+              Expanded(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () => setState(() => itemIndex = 1),
+                  child: itemIndex == 1
+                      ? buildSelectedIcon(Icons.pets, 'Animales')
+                      : buildUnselectedIcon(Icons.pets_outlined, 'Animales'),
+                ),
+              ),
+
+              // Espacio flexible para que el botón Add
+              if (itemIndex == 1) const Spacer(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAddAnimalButton() {
+    return FloatingActionButton(
+      onPressed: () {
+        // Tu acción aquí
+      },
+      elevation: 4,
+      backgroundColor: const Color(0xFFE8E6F5),
+      shape: const CircleBorder(),
+      child: const Icon(Icons.add, color: Color(0xFF6B5FBF), size: 26),
+    );
+  }*/
 
   //diseño de item seleccionado (para mobile)
   Widget buildSelectedIcon(IconData icon, String label) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 2),
-      margin: EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.secondary,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white),
-          SizedBox(width: 2),
-          Text(
-            label,
-            style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-              fontSize: 12,
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 2),
+        margin: EdgeInsets.symmetric(vertical: 0),
+        decoration: BoxDecoration(
+          color: AppColors.secondary,
+          borderRadius: BorderRadius.circular(30),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: Colors.white),
+            SizedBox(width: 2),
+            Text(
+              label,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 12,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   //item sin seleccion (para mobile)
   Widget buildUnselectedIcon(IconData icon, String label) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 50, vertical: 2),
-      margin: EdgeInsets.symmetric(vertical: 10),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: AppColors.backgroundDark),
-          SizedBox(height: 2),
-          Text(label, style: TextStyle(fontSize: 12, color: Colors.black)),
-        ],
+    return FittedBox(
+      fit: BoxFit.scaleDown,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 2),
+        margin: EdgeInsets.symmetric(vertical: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: AppColors.backgroundDark),
+            SizedBox(height: 2),
+            Text(label, style: TextStyle(fontSize: 12, color: Colors.black)),
+          ],
+        ),
       ),
     );
   }

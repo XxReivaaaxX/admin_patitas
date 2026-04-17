@@ -1,3 +1,4 @@
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class Formulario extends StatelessWidget {
@@ -8,6 +9,7 @@ class Formulario extends StatelessWidget {
   final double sizeM, sizeP;
   final String? passwordToCompare; // Para validar contraseña
   final String? Function(String?)? customValidator; // Para validaciones extra
+  final bool floatingLabel;
 
   const Formulario({
     super.key,
@@ -22,71 +24,93 @@ class Formulario extends StatelessWidget {
     required this.sizeP,
     this.passwordToCompare,
     this.customValidator,
+    required this.floatingLabel,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.only(bottom: sizeM),
-      child: TextFormField(
-        cursorColor: colorText,
-        style: TextStyle(color: colorText),
-        obscureText: textOcul,
-        controller: controller,
-        validator: (value) {
-          // Validación personalizada si se pasa
-          if (customValidator != null) {
-            return customValidator!(value);
-          }
-
-          // Validación por defecto
-          if (value == null || value.isEmpty) {
-            return 'Por favor ingrese el dato solicitado';
-          }
-
-          // Validación para correo
-          if (text.toLowerCase() == 'correo') {
-            final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-            if (!emailRegex.hasMatch(value)) {
-              return 'Ingrese un correo válido';
-            }
-          }
-
-          // Validación para contraseña
-          if (text.toLowerCase().contains('contraseña') &&
-              !text.toLowerCase().contains('validar')) {
-            if (value.length < 6) {
-              return 'La contraseña debe tener al menos 6 caracteres';
-            }
-          }
-
-          // Validación para confirmar contraseña
-          if (text.toLowerCase().contains('validar') && passwordToCompare != null) {
-            if (value != passwordToCompare) {
-              return 'Las contraseñas no coinciden';
-            }
-          }
-
-          return null;
-        },
-        decoration: InputDecoration(
-          contentPadding: EdgeInsets.all(sizeP),
-          border: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-            borderSide: BorderSide(color: colorBorder),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (!floatingLabel)
+          Padding(
+            padding: const EdgeInsets.only(left: 4.0, bottom: 8.0),
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: AppColors.backgroundDark,
+                fontWeight: FontWeight.normal,
+                fontSize: 14,
+              ),
+            ),
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: const BorderRadius.all(Radius.circular(10)),
-            borderSide: BorderSide(color: colorBorderFocus),
+        Container(
+          margin: EdgeInsets.only(bottom: sizeM),
+          child: TextFormField(
+            cursorColor: colorText,
+            style: TextStyle(color: colorText),
+            obscureText: textOcul,
+            controller: controller,
+            validator: (value) {
+              // Validación personalizada si se pasa
+              if (customValidator != null) {
+                return customValidator!(value);
+              }
+
+              // Validación por defecto
+              if (value == null || value.isEmpty) {
+                return 'Por favor ingrese el dato solicitado';
+              }
+
+              // Validación para correo
+              if (text.toLowerCase() == 'correo') {
+                final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                if (!emailRegex.hasMatch(value)) {
+                  return 'Ingrese un correo válido';
+                }
+              }
+
+              // Validación para contraseña
+              if (text.toLowerCase().contains('contraseña') &&
+                  !text.toLowerCase().contains('validar')) {
+                if (value.length < 6) {
+                  return 'La contraseña debe tener al menos 6 caracteres';
+                }
+              }
+
+              // Validación para confirmar contraseña
+              if (text.toLowerCase().contains('validar') &&
+                  passwordToCompare != null) {
+                if (value != passwordToCompare) {
+                  return 'Las contraseñas no coinciden';
+                }
+              }
+
+              return null;
+            },
+            decoration: InputDecoration(
+              contentPadding: EdgeInsets.all(sizeP),
+              border: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                borderSide: BorderSide(color: colorBorder),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: const BorderRadius.all(Radius.circular(10)),
+                borderSide: BorderSide(color: colorBorderFocus),
+              ),
+              floatingLabelBehavior: floatingLabel
+                  ? FloatingLabelBehavior.auto
+                  : FloatingLabelBehavior.never,
+              labelText: text,
+              floatingLabelStyle: TextStyle(
+                color: colorBorderFocus,
+                fontWeight: FontWeight.bold,
+              ),
+              labelStyle: TextStyle(color: colorTextForm),
+            ),
           ),
-          labelText: text,
-          floatingLabelStyle: TextStyle(
-            color: colorBorderFocus,
-            fontWeight: FontWeight.bold,
-          ),
-          labelStyle: TextStyle(color: colorTextForm),
         ),
-      ),
+      ],
     );
   }
 }

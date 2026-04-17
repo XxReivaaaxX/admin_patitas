@@ -241,6 +241,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
                   colorText: Colors.black,
                   sizeM: 30,
                   sizeP: 10,
+                  floatingLabel: true,
                 ),
                 const SizedBox(height: 20),
 
@@ -291,6 +292,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
                   colorText: Colors.black,
                   sizeM: 30,
                   sizeP: 10,
+                  floatingLabel: true,
                 ),
                 const SizedBox(height: 16),
 

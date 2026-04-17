@@ -1,3 +1,4 @@
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -73,16 +74,17 @@ class _PerfilScreenState extends State<PerfilScreen> {
     bool isAdmin = _role == 'admin';
 
     return Scaffold(
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
         title: TextForm(
           lines: 1,
           texto: 'Perfil',
-          color: Colors.white,
+          color: AppColors.primary,
           size: 20,
           aling: TextAlign.left,
           negrita: FontWeight.bold,
         ),
-        backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+        backgroundColor: AppColors.backgroundLight,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
@@ -97,7 +99,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                 children: [
                   const CircleAvatar(
                     radius: 40,
-                    backgroundColor: Color(0xFF4FC3F7),
+                    backgroundColor: AppColors.primary,
                     child: Icon(Icons.person, size: 50, color: Colors.white),
                   ),
 
@@ -109,7 +111,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: isAdmin ? Color(0xFF51A88B) : Colors.blue,
+                          color: isAdmin ? AppColors.secondary : Colors.blue,
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -153,7 +155,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
             Card(
               color: Colors.white,
               child: ListTile(
-                leading: const Icon(Icons.settings, color: Color(0xFF4FC3F7)),
+                leading: const Icon(Icons.settings, color: AppColors.primary),
                 title: const Text('Configurar Refugio'),
                 subtitle: const Text('Editar información del refugio'),
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -165,7 +167,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
             Card(
               color: Colors.white,
               child: ListTile(
-                leading: const Icon(Icons.group, color: Color(0xFF4FC3F7)),
+                leading: const Icon(Icons.group, color: AppColors.primary),
                 title: const Text('Gestionar Colaboradores'),
                 subtitle: const Text('Agregar o eliminar colaboradores'),
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -191,7 +193,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
           // Solo mostrar si el usuario NO tiene refugios
           if (!_hasRefugios)
             ListTile(
-              leading: const Icon(Icons.how_to_reg, color: Color(0xFF4FC3F7)),
+              leading: const Icon(Icons.how_to_reg, color: AppColors.primary),
               title: const Text('Registrarme como Colaborador'),
               subtitle: const Text('Permitir que me agreguen como colaborador'),
               trailing: const Icon(Icons.arrow_forward_ios, size: 16),
@@ -200,7 +202,7 @@ class _PerfilScreenState extends State<PerfilScreen> {
               },
             ),
           ListTile(
-            leading: const Icon(Icons.info, color: Color(0xFF4FC3F7)),
+            leading: const Icon(Icons.info, color: AppColors.primary),
             title: const Text('Acerca de'),
             trailing: const Icon(Icons.arrow_forward_ios, size: 16),
             onTap: () {

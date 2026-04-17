@@ -124,6 +124,7 @@ class _HistorialRegisterState extends State<HistorialRegister> {
                 colorText: Colors.black,
                 sizeM: 30,
                 sizeP: 10,
+                floatingLabel: true,
               ),
               const SizedBox(height: 20),
 
@@ -148,6 +149,7 @@ class _HistorialRegisterState extends State<HistorialRegister> {
                 colorText: Colors.black,
                 sizeM: 30,
                 sizeP: 10,
+                floatingLabel: true,
               ),
               const SizedBox(height: 20),
 
@@ -162,6 +164,7 @@ class _HistorialRegisterState extends State<HistorialRegister> {
                 colorText: Colors.black,
                 sizeM: 30,
                 sizeP: 10,
+                floatingLabel: true,
               ),
               const SizedBox(height: 20),
 

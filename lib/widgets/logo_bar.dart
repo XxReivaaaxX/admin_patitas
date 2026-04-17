@@ -16,7 +16,7 @@ class LogoBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.only(left: 20),
+      padding: EdgeInsets.only(left: 14),
       child: Row(
         children: [
           Image.asset(

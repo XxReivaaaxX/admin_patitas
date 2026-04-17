@@ -259,6 +259,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 colorText: Colors.black,
                 sizeM: 30,
                 sizeP: 10,
+                floatingLabel: true,
               ),
               Row(
                 children: [
@@ -302,6 +303,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 colorText: Colors.black,
                 sizeM: 30,
                 sizeP: 10,
+                floatingLabel: true,
               ),
               const SizedBox(height: 16),
 
