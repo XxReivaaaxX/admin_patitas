@@ -1,18 +1,18 @@
-import 'package:admin_patitas/screens/salud_admin.dart';
+import 'package:admin_patitas/screens/adopcionesScreen/adopcion_screen_mobile.dart';
+import 'package:admin_patitas/screens/adopcionesScreen/adopcion_screen_web.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
-import 'package:admin_patitas/screens/animal_admin.dart';
 import 'package:admin_patitas/utils/state_tab.dart';
 import 'package:flutter/material.dart';
 
-class AnimalScreen extends StatefulWidget {
-  const AnimalScreen({super.key});
+class AdopcionesMenu extends StatefulWidget {
+  const AdopcionesMenu({super.key});
 
   @override
-  State<AnimalScreen> createState() => _AnimalScreenState();
+  State<AdopcionesMenu> createState() => _AdopcionesMenuState();
 }
 
-class _AnimalScreenState extends State<AnimalScreen> {
+class _AdopcionesMenuState extends State<AdopcionesMenu> {
   String? id_refugio = "";
   final ValueNotifier<int> _selectedIndexNotifier = ValueNotifier<int>(0);
 
@@ -20,7 +20,6 @@ class _AnimalScreenState extends State<AnimalScreen> {
   void initState() {
     id_refugio = PreferencesController.preferences.getString('refugio');
 
-    // TODO: implement initState
     super.initState();
   }
 
@@ -59,8 +58,8 @@ class _AnimalScreenState extends State<AnimalScreen> {
             ),
             body: TabBarView(
               children: <Widget>[
-                AnimalAdmin(refugio: id_refugio),
-                SaludAdmin(id_refugio: id_refugio),
+                AdopcionScreenWeb(refugio: id_refugio),
+                AdopcionScreenMobile(refugio: id_refugio),
               ],
             ),
           );
@@ -142,8 +141,8 @@ class _AnimalScreenState extends State<AnimalScreen> {
                 child: IndexedStack(
                   index: selectedIndex,
                   children: [
-                    AnimalAdmin(refugio: id_refugio),
-                    SaludAdmin(id_refugio: id_refugio),
+                    AdopcionScreenWeb(refugio: id_refugio),
+                    AdopcionScreenMobile(refugio: id_refugio),
                   ],
                 ),
               ),

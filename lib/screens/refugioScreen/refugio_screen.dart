@@ -4,7 +4,7 @@ import 'package:admin_patitas/services/role_service.dart';
 import 'package:admin_patitas/services/adopcion_service.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
-import 'package:admin_patitas/screens/menu_refugios.dart';
+import 'package:admin_patitas/screens/refugioScreen/menu_refugios.dart';
 import 'package:admin_patitas/widgets/custom_icon_button.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';

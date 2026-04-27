@@ -29,13 +29,13 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
     _refugioId = PreferencesController.preferences.getString('refugio');
   }
 
-  // visualisacion de menu para pantallas pequeñas o mobile
+  // visualisacion de menu para mobile
 
   Widget getMenuMovil() {
     return Scaffold(
       body: RoutesMenu(index: itemIndex),
       bottomNavigationBar: BottomNavigationBar(
-        currentIndex: itemIndex < 2 ? itemIndex : 0,
+        currentIndex: itemIndex < 3 ? itemIndex : 0,
         onTap: (int index) {
           setState(() {
             itemIndex = index; // Directamente 0 o 1
@@ -60,6 +60,17 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
           BottomNavigationBarItem(
             activeIcon: buildSelectedIcon(Icons.pets, 'Animales'),
             icon: buildUnselectedIcon(Icons.pets_outlined, 'Animales'),
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            activeIcon: buildSelectedIcon(
+              Icons.volunteer_activism,
+              'Adopciones',
+            ),
+            icon: buildUnselectedIcon(
+              Icons.volunteer_activism_outlined,
+              'Adopciones',
+            ),
             label: '',
           ),
         ],
@@ -194,13 +205,13 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
         dividerColor: Colors.transparent,
         indicatorSize: TabBarIndicatorSize.label,
 
-        labelColor: itemIndex >= 2 ? Colors.black : AppColors.secondary,
+        labelColor: itemIndex >= 3 ? Colors.black : AppColors.secondary,
         unselectedLabelColor: Colors.black,
 
-        labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+        labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
         unselectedLabelStyle: const TextStyle(
           fontWeight: FontWeight.normal,
-          fontSize: 13,
+          fontSize: 18,
         ),
 
         overlayColor: WidgetStateProperty.all(Colors.transparent),
@@ -208,6 +219,7 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
         tabs: [
           Tab(text: 'Principal'),
           Tab(text: 'Animales'),
+          Tab(text: 'Adopciones'),
         ],
       ),
     );
@@ -224,14 +236,13 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
             _refugioId!,
           ),
           builder: (context, snapshot) {
-            // Si el stream aún no tiene datos, ponemos 0
             final count = snapshot.data ?? 0;
 
             return IconButton(
               onPressed: () {
                 setState(() {
-                  itemIndex = 2;
-                  itemExternalIndex = 2;
+                  itemIndex = 3;
+                  itemExternalIndex = 3;
                 });
               },
               icon: Stack(
@@ -242,7 +253,7 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
                     backgroundColor: Colors.transparent,
                     child: Icon(
                       Icons.notification_add_outlined,
-                      size: 18,
+                      size: 28,
                       color: AppColors.primary,
                     ),
                   ),
@@ -254,8 +265,8 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(2),
                         constraints: BoxConstraints(
-                          minWidth: count > 9 ? 16 : 10,
-                          minHeight: 10,
+                          minWidth: count > 9 ? 16 : 15,
+                          minHeight: 15,
                         ),
                         decoration: const BoxDecoration(
                           color: Colors.red,
@@ -283,15 +294,15 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
         GestureDetector(
           onTap: () {
             setState(() {
-              itemIndex = 3;
-              itemExternalIndex = 3;
+              itemIndex = 4;
+              itemExternalIndex = 4;
             });
           },
           child: CircleAvatar(
             radius: 15,
 
             backgroundColor: Colors.transparent,
-            child: Icon(Icons.person, size: 18, color: AppColors.primary),
+            child: Icon(Icons.person, size: 28, color: AppColors.primary),
           ),
         ),
       ],
@@ -305,17 +316,17 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
       builder: (context, constraints) {
         bool isWeb = constraints.maxWidth >= 600;
         return DefaultTabController(
-          length: 4,
+          length: 5,
           initialIndex: itemIndex,
           child: Scaffold(
             appBar: AppBar(
               actionsPadding: EdgeInsets.symmetric(horizontal: 20),
               backgroundColor: AppColors.backgroundLight,
               title: LogoBar(
-                sizeImg: 25,
+                sizeImg: isWeb ? 35 : 25,
                 colorIzq: AppColors.primary,
                 colorDer: AppColors.primary,
-                sizeText: 15,
+                sizeText: isWeb ? 20 : 15,
               ),
               actions: isWeb
                   ? [getMenuWeb(), getExternalMenu()]

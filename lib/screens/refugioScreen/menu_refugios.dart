@@ -1,4 +1,4 @@
-import 'package:admin_patitas/screens/adopciones_screen.dart';
+import 'package:admin_patitas/screens/externalAdoptionScreen/adopciones_external_screen.dart';
 import 'package:admin_patitas/screens/refugioRegister/register_refugio.dart';
 import 'package:flutter/material.dart';
 
@@ -56,7 +56,7 @@ class MenuRefugios extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => const AdopcionesScreen(),
+                    builder: (context) => const AdopcionesExternalScreen(),
                   ),
                 );
               },

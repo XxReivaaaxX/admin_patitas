@@ -6,13 +6,14 @@ import 'package:admin_patitas/utils/colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class AdopcionesScreen extends StatefulWidget {
-  const AdopcionesScreen({super.key});
+class AdopcionesExternalScreen extends StatefulWidget {
+  const AdopcionesExternalScreen({super.key});
   @override
-  State<AdopcionesScreen> createState() => _AdopcionesScreenState();
+  State<AdopcionesExternalScreen> createState() =>
+      _AdopcionesExternalScreenState();
 }
 
-class _AdopcionesScreenState extends State<AdopcionesScreen> {
+class _AdopcionesExternalScreenState extends State<AdopcionesExternalScreen> {
   // Estructura: { 'RefugioID': { 'nombre': 'NombreRefugio', 'animales': [Animal1, Animal2] } }
   Map<String, Map<String, dynamic>> _groupedAnimals = {};
   Map<String, Map<String, dynamic>> _filteredAnimals = {};

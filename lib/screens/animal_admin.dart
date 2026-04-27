@@ -6,8 +6,10 @@ import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/screens/animal_register.dart';
 import 'package:admin_patitas/screens/animal_view.dart';
 import 'package:admin_patitas/utils/colors.dart';
+import 'package:admin_patitas/widgets/custom_icon_button.dart';
 import 'package:admin_patitas/widgets/item_animal.dart';
 import 'package:admin_patitas/widgets/item_animal_colum.dart';
+import 'package:admin_patitas/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 
 class AnimalAdmin extends StatefulWidget {
@@ -37,7 +39,101 @@ class _AnimalAdminState extends State<AnimalAdmin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBodyBehindAppBar: true,
       backgroundColor: AppColors.backgroundLight,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        titleSpacing: 0,
+        title: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              // Barra de búsqueda
+              Expanded(
+                child: Container(
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: AppColors.secondary.withOpacity(0.09),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: TextField(
+                    onChanged: (value) {
+                      // tu lógica de búsqueda
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Buscar animal...',
+                      hintStyle: TextStyle(
+                        fontSize: 14,
+                        color: AppColors.secondary,
+                      ),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: AppColors.secondary,
+                        size: 20,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 10),
+
+              // Botón filtro
+              Container(
+                height: 35,
+                width: 35,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: IconButton(
+                  onPressed: () {
+                    // tu lógica de filtro
+                  },
+                  icon: Icon(Icons.tune_rounded, color: Colors.white, size: 20),
+                  padding: EdgeInsets.zero,
+                ),
+              ),
+
+              const SizedBox(width: 10),
+
+              // Botón agregar
+              if (MediaQuery.of(context).size.width >= 700)
+                CustomIconButton(
+                  icono: Icons.add,
+                  texto: "Nuevo Animal",
+                  onTap: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            AnimalRegister(idRefugio: widget.refugio!),
+                      ),
+                    );
+                    //recargar la lista cuando se cierra la ventana anterior
+                    setState(() {
+                      _futureAnimals = AnimalsService().getAnimals(
+                        widget.refugio!,
+                      );
+                    });
+                  },
+                ),
+            ],
+          ),
+        ),
+      ),
       body: Container(
         margin: EdgeInsets.symmetric(horizontal: 20),
         //recorrer lista obtenida
@@ -52,9 +148,12 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
                         return ItemAnimal(
+                          constraints: constraints,
                           sizeImg: 70,
+                          sexo: snapshot.data![index].genero,
                           nombre: snapshot.data![index].nombre,
-                          edad: snapshot.data![index].especie,
+                          raza: snapshot.data![index].raza,
+                          especie: snapshot.data![index].especie,
                           estado: snapshot.data![index].estadoSalud,
                           estadoAdopcion: snapshot.data![index].estadoAdopcion,
                           imageUrl: snapshot.data![index].imageUrl,
@@ -182,18 +281,23 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                     );
                   } else {
                     return GridView.builder(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 3,
-                        childAspectRatio: 1.3,
+                      gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                        maxCrossAxisExtent: 350,
+                        mainAxisExtent: 250,
+
+                        //childAspectRatio: constraints.maxWidth < 1400 ? 1 : 1.4,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
                       ),
                       itemCount: snapshot.data!.length,
                       itemBuilder: (context, index) {
-                        return ItemAnimalColum(
+                        return ItemAnimal(
+                          constraints: constraints,
                           sizeImg: 70,
+                          sexo: snapshot.data![index].genero,
+                          raza: snapshot.data![index].raza,
                           nombre: snapshot.data![index].nombre,
-                          edad: snapshot.data![index].especie,
+                          especie: snapshot.data![index].especie,
                           estado: snapshot.data![index].estadoSalud,
                           estadoAdopcion: snapshot.data![index].estadoAdopcion,
                           imageUrl: snapshot.data![index].imageUrl,
@@ -326,25 +430,28 @@ class _AnimalAdminState extends State<AnimalAdmin> {
         ),
       ),
 
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: AppColors.secondary,
-        shape: const CircleBorder(),
+      floatingActionButton: MediaQuery.of(context).size.width < 700
+          ? FloatingActionButton(
+              backgroundColor: AppColors.secondary,
+              shape: const CircleBorder(),
 
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => AnimalRegister(idRefugio: widget.refugio!),
-            ),
-          );
-          //recargar la lista cuando se cierra la ventana anterior
-          setState(() {
-            _futureAnimals = AnimalsService().getAnimals(widget.refugio!);
-          });
-        },
+              onPressed: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        AnimalRegister(idRefugio: widget.refugio!),
+                  ),
+                );
+                //recargar la lista cuando se cierra la ventana anterior
+                setState(() {
+                  _futureAnimals = AnimalsService().getAnimals(widget.refugio!);
+                });
+              },
 
-        child: const Icon(Icons.add, color: Colors.white),
-      ),
+              child: const Icon(Icons.add, color: Colors.white),
+            )
+          : null,
     );
   }
 }

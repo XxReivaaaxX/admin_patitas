@@ -8,4 +8,7 @@ class AppColors {
   static const Color principalBackgroud = Color.fromARGB(255, 235, 235, 235);
   static const Color backgroundDark = Colors.black;
   static const Color backgroundLight = Color.fromARGB(255, 244, 245, 244);
+
+  static const Color textDark = Colors.black;
+  static const Color textLight = Color(0xFFF8F9FA);
 }

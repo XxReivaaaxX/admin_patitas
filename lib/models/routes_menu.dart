@@ -1,4 +1,5 @@
 //import 'package:admin_patitas/screens/animal_screen.dart';
+import 'package:admin_patitas/screens/adopcionesScreen/adopciones_menu.dart';
 import 'package:admin_patitas/screens/inicioScreen/inicio_screen.dart';
 import 'package:admin_patitas/screens/notificacionScreen/notificacion_screen.dart';
 import 'package:admin_patitas/screens/panel_animales.dart' show AnimalScreen;
@@ -19,6 +20,7 @@ class RoutesMenu extends StatelessWidget {
     List<Widget> mobilePages = [
       const InicioScreen(),
       const AnimalScreen(),
+      const AdopcionesMenu(),
       const NotificacionScreen(),
       const PerfilScreen(),
     ];
@@ -26,6 +28,7 @@ class RoutesMenu extends StatelessWidget {
     List<Widget> webPages = [
       const InicioScreen(),
       const AnimalScreen(),
+      const AdopcionesMenu(),
       const NotificacionScreen(),
       const PerfilScreen(),
     ];
