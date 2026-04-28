@@ -4,7 +4,7 @@ import 'package:admin_patitas/screens/animal_update.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/screens/animal_register.dart';
-import 'package:admin_patitas/screens/animal_view.dart';
+import 'package:admin_patitas/screens/animalDetails/animal_view.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/custom_icon_button.dart';
 import 'package:admin_patitas/widgets/item_animal.dart';

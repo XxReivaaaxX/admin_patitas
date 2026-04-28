@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/models/historial_medico.dart';
 import 'package:admin_patitas/models/vacuna.dart';
+import 'package:admin_patitas/screens/animalDetails/animal_view_mobile.dart';
 import 'package:admin_patitas/screens/animal_update.dart';
 import 'package:admin_patitas/screens/historial_register.dart';
 import 'package:admin_patitas/screens/vacuna_register.dart';

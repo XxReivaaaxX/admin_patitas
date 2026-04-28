@@ -1,7 +1,7 @@
 import 'package:admin_patitas/screens/salud_admin.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
-import 'package:admin_patitas/screens/animal_admin.dart';
+import 'package:admin_patitas/screens/animalsScreen/animal_admin.dart';
 import 'package:admin_patitas/utils/state_tab.dart';
 import 'package:flutter/material.dart';
 
