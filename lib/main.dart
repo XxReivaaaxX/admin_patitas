@@ -1,4 +1,3 @@
-import 'package:admin_patitas/screens/externalAdoptionScreen/adopciones_external_screen.dart';
 import 'package:admin_patitas/screens/externalAdoptionScreen/public_adoptions_screen.dart';
 import 'package:admin_patitas/services/notification_service_cloud.dart';
 import 'package:admin_patitas/utils/colors.dart';
@@ -73,7 +72,7 @@ class AdminPatitasApp extends StatelessWidget {
         '/manage_collaborators': (context) => const ManageCollaborators(),
         '/register_existing_users': (context) =>
             const RegisterExistingUsersScreen(),
-        '/adoptions': (context) => const AdopcionesExternalScreen(),
+        '/adoptions': (context) => const PublicAdoptionsScreen(),
       },
     );
   }

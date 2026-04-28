@@ -316,7 +316,7 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
       builder: (context, constraints) {
         bool isWeb = constraints.maxWidth >= 600;
         return DefaultTabController(
-          length: 5,
+          length: 3,
           initialIndex: itemIndex,
           child: Scaffold(
             appBar: AppBar(
