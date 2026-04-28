@@ -1,5 +1,5 @@
 import 'package:admin_patitas/models/animal.dart';
-import 'package:admin_patitas/screens/animal_view.dart';
+import 'package:admin_patitas/screens/animalDetails/animal_view.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:flutter/material.dart';

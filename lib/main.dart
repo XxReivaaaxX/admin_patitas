@@ -1,3 +1,4 @@
+import 'package:admin_patitas/screens/externalAdoptionScreen/adopciones_external_screen.dart';
 import 'package:admin_patitas/screens/externalAdoptionScreen/public_adoptions_screen.dart';
 import 'package:admin_patitas/services/notification_service_cloud.dart';
 import 'package:admin_patitas/utils/colors.dart';
@@ -10,7 +11,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:admin_patitas/screens/menuPrincipal/principal_screen.dart';
 import 'package:admin_patitas/screens/userRegister/register_screen.dart';
-import 'package:admin_patitas/screens/panel_animales.dart';
+import 'package:admin_patitas/screens/animalsScreen/panel_animales.dart';
 import 'package:admin_patitas/screens/login/login.dart';
 import 'package:admin_patitas/screens/pantalla_carga.dart';
 import 'package:admin_patitas/screens/refugio_settings.dart';
@@ -72,7 +73,7 @@ class AdminPatitasApp extends StatelessWidget {
         '/manage_collaborators': (context) => const ManageCollaborators(),
         '/register_existing_users': (context) =>
             const RegisterExistingUsersScreen(),
-        '/adoptions': (context) => const PublicAdoptionsScreen(),
+        '/adoptions': (context) => const AdopcionesExternalScreen(),
       },
     );
   }
