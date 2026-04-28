@@ -1,10 +1,11 @@
 import 'dart:developer';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/services/role_service.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:admin_patitas/screens/externalAdoptionScreen/animal_detail_public_screen.dart';
 
 class AdoptionAnimalGroup {
   final Animal animal;
@@ -42,8 +43,21 @@ class _PublicAdoptionsScreenState extends State<PublicAdoptionsScreen> {
   }
 
   Future<void> _loadAdoptions() async {
+    log('>>> _loadAdoptions() iniciado', name: 'PublicAdoptions');
     try {
-      final List<Map<String, dynamic>> refugios = await RoleService().getAllRefugios();
+      // Asegurar sesión activa para poder leer Firebase (aunque sea anónima)
+      if (FirebaseAuth.instance.currentUser == null) {
+        log('>>> Sin sesión activa, iniciando sesión anónima...', name: 'PublicAdoptions');
+        await FirebaseAuth.instance.signInAnonymously();
+        log('>>> Sesión anónima iniciada', name: 'PublicAdoptions');
+      } else {
+        log('>>> Ya hay sesión activa: ${FirebaseAuth.instance.currentUser!.uid}', name: 'PublicAdoptions');
+      }
+
+      final List<Map<String, dynamic>> refugios =
+          await RoleService().getAllRefugios();
+      log('>>> Refugios encontrados: ${refugios.length}', name: 'PublicAdoptions');
+
       List<AdoptionAnimalGroup> allAvailable = [];
 
       for (var refugio in refugios) {
@@ -53,10 +67,20 @@ class _PublicAdoptionsScreenState extends State<PublicAdoptionsScreen> {
         final String whatsapp = refugio['data']['whatsapp'] ?? '';
         final String email = refugio['data']['email_contacto'] ?? '';
 
-        final List<Animal> refugioAnimals = await AnimalsService().getAnimals(refugioId);
-        
+        log('>>> Cargando animales del refugio: $refugioNombre ($refugioId)', name: 'PublicAdoptions');
+        final List<Animal> refugioAnimals =
+            await AnimalsService().getAnimals(refugioId);
+        log('>>> Animales encontrados en $refugioNombre: ${refugioAnimals.length}', name: 'PublicAdoptions');
+
         for (var animal in refugioAnimals) {
-          if (animal.estadoAdopcion == 'Disponible') {
+          final estado = animal.estadoAdopcion.toLowerCase().trim();
+          log('>>> Animal: "${animal.nombre}" | estado_adopcion RAW: "${animal.estadoAdopcion}"', name: 'PublicAdoptions');
+          final esDisponible = estado == 'disponible' ||
+              estado == 'disponible para adopcion' ||
+              estado == 'disponible para adopción' ||
+              estado == 'en adopcion' ||
+              estado == 'en adopción';
+          if (esDisponible) {
             allAvailable.add(AdoptionAnimalGroup(
               animal: animal,
               refugioId: refugioId,
@@ -69,14 +93,15 @@ class _PublicAdoptionsScreenState extends State<PublicAdoptionsScreen> {
         }
       }
 
+      log('>>> Total animales disponibles: ${allAvailable.length}', name: 'PublicAdoptions');
       if (mounted) {
         setState(() {
           _animals = allAvailable;
           _isLoading = false;
         });
       }
-    } catch (e) {
-      log('Error cargando adopciones públicas: $e');
+    } catch (e, stack) {
+      log('>>> ERROR en _loadAdoptions: $e\n$stack', name: 'PublicAdoptions');
       if (mounted) {
         setState(() => _isLoading = false);
       }
@@ -158,194 +183,145 @@ class _PublicAdoptionsScreenState extends State<PublicAdoptionsScreen> {
 
   Widget _buildAdoptionCard(AdoptionAnimalGroup group) {
     final animal = group.animal;
-    
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            offset: const Offset(0, 8),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
+
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => AnimalDetailPublicScreen(group: group),
+        ),
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              flex: 5,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                   animal.imageUrl.isNotEmpty
-                      ? Image.network(
-                          animal.imageUrl,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => 
-                            Image.asset('assets/img/dog_category_premium.png', fit: BoxFit.cover),
-                        )
-                      : Image.asset('assets/img/dog_category_premium.png', fit: BoxFit.cover),
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.6),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Text(
-                        animal.especie,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.05),
+              offset: const Offset(0, 8),
+              blurRadius: 20,
+              spreadRadius: 2,
             ),
-            Expanded(
-              flex: 5,
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                flex: 5,
+                child: Stack(
+                  fit: StackFit.expand,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: Text(
-                            animal.nombre,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.textDark,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    Hero(
+                      tag: 'animal_img_${animal.id}',
+                      child: animal.imageUrl.isNotEmpty
+                          ? Image.network(
+                              animal.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  const Icon(Icons.pets,
+                                      size: 60, color: Colors.grey),
+                            )
+                          : const Icon(Icons.pets,
+                              size: 60, color: Colors.grey),
+                    ),
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.6),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          animal.especie,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
                           ),
                         ),
-                        Icon(
-                          animal.genero == 'Macho' ? Icons.male : Icons.female, 
-                          color: animal.genero == 'Macho' ? Colors.blue : AppColors.primary, 
-                          size: 20
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      group.refugioNombre,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: AppColors.secondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Raza: ${animal.raza}',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                    const SizedBox(height: 8),
-                    const Spacer(),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => _showContactOptions(group),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                        ),
-                        child: const Text('¡Adoptame!', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showContactOptions(AdoptionAnimalGroup group) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Contactar a ${group.refugioNombre}'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text('¿Quieres adoptar a ${group.animal.nombre}? Contacta con el refugio:'),
-            const SizedBox(height: 20),
-            if (group.refugioTelefono.isNotEmpty)
-              _buildContactButton(
-                icon: Icons.phone,
-                label: 'Llamar: ${group.refugioTelefono}',
-                color: Colors.blue,
-                onTap: () => launchUrl(Uri.parse('tel:${group.refugioTelefono}')),
+              Expanded(
+                flex: 4,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              animal.nombre,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.textDark,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Icon(
+                            animal.genero == 'Macho'
+                                ? Icons.male
+                                : Icons.female,
+                            color: animal.genero == 'Macho'
+                                ? Colors.blue
+                                : AppColors.primary,
+                            size: 20,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        group.refugioNombre,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.secondary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Raza: ${animal.raza}',
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                      const Spacer(),
+                      Row(
+                        children: [
+                          const Icon(Icons.touch_app,
+                              size: 14, color: AppColors.primary),
+                          const SizedBox(width: 4),
+                          Text(
+                            'Ver detalles',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
               ),
-            if (group.refugioWhatsapp.isNotEmpty)
-              _buildContactButton(
-                icon: Icons.chat,
-                label: 'WhatsApp',
-                color: Colors.green,
-                onTap: () {
-                  final cleanWa = group.refugioWhatsapp.replaceAll(RegExp(r'[^0-9]'), '');
-                  launchUrl(Uri.parse('https://wa.me/$cleanWa'), mode: LaunchMode.externalApplication);
-                },
-              ),
-            if (group.refugioEmail.isNotEmpty)
-              _buildContactButton(
-                icon: Icons.email,
-                label: 'Enviar Correo',
-                color: Colors.orange,
-                onTap: () => launchUrl(Uri.parse('mailto:${group.refugioEmail}?subject=Interés en adoptar a ${group.animal.nombre}')),
-              ),
-            if (group.refugioTelefono.isEmpty && group.refugioWhatsapp.isEmpty && group.refugioEmail.isEmpty)
-              const Text('Este refugio no ha proporcionado información de contacto directa.'),
-          ],
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cerrar')),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildContactButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: ElevatedButton.icon(
-        onPressed: onTap,
-        icon: Icon(icon, color: Colors.white, size: 18),
-        label: Text(label, style: const TextStyle(color: Colors.white, fontSize: 13)),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: color,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ],
+          ),
         ),
       ),
     );
