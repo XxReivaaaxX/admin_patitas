@@ -73,7 +73,7 @@ class AdminPatitasApp extends StatelessWidget {
         '/manage_collaborators': (context) => const ManageCollaborators(),
         '/register_existing_users': (context) =>
             const RegisterExistingUsersScreen(),
-        '/adoptions': (context) => const AdopcionesExternalScreen(),
+        '/adoptions': (context) => const PublicAdoptionsScreen(),
       },
     );
   }

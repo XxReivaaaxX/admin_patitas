@@ -51,9 +51,10 @@ class VacunaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
+      color: Colors.white,
       margin: const EdgeInsets.only(bottom: 16),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 2,
+      elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(

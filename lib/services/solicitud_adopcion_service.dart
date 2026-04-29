@@ -32,7 +32,10 @@ class SolicitudAdopcionService {
           .get();
       return snapshot.exists;
     } catch (e) {
-      log('Error verificando solicitud duplicada: $e', name: 'SolicitudService');
+      log(
+        'Error verificando solicitud duplicada: $e',
+        name: 'SolicitudService',
+      );
       return false;
     }
   }
@@ -81,7 +84,10 @@ class SolicitudAdopcionService {
         'estado': 'pendiente',
       });
 
-      log('Solicitud enviada correctamente para $animalNombre', name: 'SolicitudService');
+      log(
+        'Solicitud enviada correctamente para $animalNombre',
+        name: 'SolicitudService',
+      );
     } catch (e) {
       log('Error al enviar solicitud: $e', name: 'SolicitudService');
       rethrow;
@@ -109,10 +115,7 @@ class SolicitudAdopcionService {
           .child(refugioId)
           .child(animalId)
           .child(key)
-          .update({
-        'estado': estado,
-        'fechaRespuesta': ServerValue.timestamp,
-      });
+          .update({'estado': estado, 'fechaRespuesta': ServerValue.timestamp});
 
       if (estado == 'aprobado') {
         await _enviarCorreoAprobacion(
@@ -125,7 +128,10 @@ class SolicitudAdopcionService {
         );
       }
 
-      log('Estado actualizado a "$estado" para $correo', name: 'SolicitudService');
+      log(
+        'Estado actualizado a "$estado" para $correo',
+        name: 'SolicitudService',
+      );
     } catch (e) {
       log('Error al actualizar estado: $e', name: 'SolicitudService');
       rethrow;
@@ -186,7 +192,10 @@ class SolicitudAdopcionService {
 
       return solicitudes;
     } catch (e) {
-      log('Error al obtener solicitudes del refugio: $e', name: 'SolicitudService');
+      log(
+        'Error al obtener solicitudes del refugio: $e',
+        name: 'SolicitudService',
+      );
       return [];
     }
   }
@@ -219,7 +228,10 @@ class SolicitudAdopcionService {
 
       return solicitudes;
     } catch (e) {
-      log('Error al obtener solicitudes del animal: $e', name: 'SolicitudService');
+      log(
+        'Error al obtener solicitudes del animal: $e',
+        name: 'SolicitudService',
+      );
       return [];
     }
   }
