@@ -20,15 +20,15 @@ class LogoBar extends StatelessWidget {
       child: Row(
         children: [
           Image.asset(
-            'assets/img/Logo_AdminPatitas.png',
+            'assets/img/logo_petflow.png',
             fit: BoxFit.contain,
-            height: sizeImg,
+            height: sizeImg * 1.5,
           ),
           Container(
             padding: const EdgeInsets.all(8.0),
             child: RichText(
               text: TextSpan(
-                text: 'ADMIN',
+                text: 'PET',
                 style: TextStyle(
                   color: colorIzq,
                   fontWeight: FontWeight.bold,
@@ -36,7 +36,7 @@ class LogoBar extends StatelessWidget {
                 ),
                 children: <TextSpan>[
                   TextSpan(
-                    text: 'PATITAS',
+                    text: 'FLOW',
                     style: TextStyle(
                       color: colorDer,
                       fontWeight: FontWeight.bold,

@@ -129,7 +129,7 @@ class _RegisterUserState extends State<RegisterUser> {
         automaticallyImplyLeading: !kIsWeb,
         backgroundColor: Colors.transparent,
         title: Text(
-          'ADMIN PATITAS',
+          'PETFLOW',
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
         ),
       ),

@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:firebase_database/firebase_database.dart';
+import 'package:admin_patitas/services/email_service.dart';
 
 class SolicitudAdopcionService {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
@@ -138,9 +139,7 @@ class SolicitudAdopcionService {
     }
   }
 
-  /// Envía un correo de aprobación al adoptante.
-  /// TODO: Implementar con el proveedor de correo elegido
-  /// (Firebase Extension "Trigger Email", EmailJS, SendGrid, etc.)
+  /// Envía un correo de aprobación al adoptante usando EmailJS.
   Future<void> _enviarCorreoAprobacion({
     required String correoAdoptante,
     required String nombreAdoptante,
@@ -149,16 +148,18 @@ class SolicitudAdopcionService {
     String? refugioTelefono,
     String? refugioEmail,
   }) async {
-    // TODO: Conectar con proveedor de correo
-    // Ejemplo del cuerpo del mensaje:
-    // "Hola $nombreAdoptante, el refugio $refugioNombre ha revisado tu solicitud
-    //  para adoptar a $animalNombre y quiere continuar el proceso contigo.
-    //  Por favor comunícate con ellos: $refugioTelefono / $refugioEmail"
-    log(
-      'TODO: enviar correo de aprobación a $correoAdoptante '
-      'de parte de $refugioNombre sobre $animalNombre',
-      name: 'SolicitudService',
+    final enviado = await EmailService.sendAprobacionEmail(
+      userName: nombreAdoptante,
+      userEmail: correoAdoptante,
+      refugioNombre: refugioNombre,
+      animalName: animalNombre,
     );
+
+    if (enviado) {
+      log('Notificación de aprobación enviada a $correoAdoptante', name: 'SolicitudService');
+    } else {
+      log('No se pudo enviar la notificación a $correoAdoptante', name: 'SolicitudService');
+    }
   }
 
   /// Obtiene todas las solicitudes de un refugio (para el panel futuro del refugio)

@@ -68,7 +68,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('assets/img/Logo_AdminPatitas.png', width: 150),
+            Image.asset('assets/img/logo_petflow.png', width: 250),
             const SizedBox(height: 60),
             Text(
               widget.mensaje,

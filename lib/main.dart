@@ -24,17 +24,17 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   //await NotificationServiceCloud.initialize();
 
-  runApp(const AdminPatitasApp());
+  runApp(const PetFlowApp());
 }
 
-class AdminPatitasApp extends StatelessWidget {
-  const AdminPatitasApp({super.key});
+class PetFlowApp extends StatelessWidget {
+  const PetFlowApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Refugio de Animales - AdminPatitas',
+      title: 'Refugio de Animales - PetFlow',
 
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(

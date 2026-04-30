@@ -62,8 +62,8 @@ class LoginWeb extends StatelessWidget {
                           );
                         },
                         child: Image.asset(
-                          'assets/img/Logo_AdminPatitas.png',
-                          height: 110,
+                          'assets/img/logo_petflow.png',
+                          height: 180,
                         ),
                       ),
                       const Text(

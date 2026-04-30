@@ -208,14 +208,14 @@ class _PerfilScreenState extends State<PerfilScreen> {
             onTap: () {
               showAboutDialog(
                 context: context,
-                applicationName: 'AdminPatitas',
+                applicationName: 'PetFlow',
                 applicationVersion: '1.0.0',
                 applicationIcon: ClipRRect(
                   borderRadius: BorderRadius.circular(8),
                   child: Image.asset(
-                    'assets/img/Logo_AdminPatitas.png',
-                    width: 60,
-                    height: 60,
+                    'assets/img/logo_petflow.png',
+                    width: 90,
+                    height: 90,
                     fit: BoxFit.contain,
                   ),
                 ),
