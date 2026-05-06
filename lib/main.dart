@@ -1,6 +1,4 @@
-import 'package:admin_patitas/screens/externalAdoptionScreen/adopciones_external_screen.dart';
 import 'package:admin_patitas/screens/externalAdoptionScreen/public_adoptions_screen.dart';
-import 'package:admin_patitas/services/notification_service_cloud.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/screens/refugioScreen/refugio_screen.dart';
@@ -17,6 +15,8 @@ import 'package:admin_patitas/screens/pantalla_carga.dart';
 import 'package:admin_patitas/screens/refugio_settings.dart';
 import 'package:admin_patitas/screens/manage_collaborators.dart';
 import 'package:admin_patitas/screens/register_existing_users.dart';
+import 'package:admin_patitas/screens/web_landing_screen.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,13 +56,15 @@ class PetFlowApp extends StatelessWidget {
         Locale('en', 'US'), // Inglés
       ],
 
-      initialRoute: '/',
+      home: kIsWeb
+          ? const WebLandingScreen()
+          : SplashScreen(
+              mensaje: "Cargando Aplicación",
+              nextRoute: '/login',
+              mainScreen: false,
+            ),
       routes: {
-        '/': (context) => SplashScreen(
-          mensaje: "Cargando Aplicación",
-          nextRoute: '/login',
-          mainScreen: false,
-        ),
+        '/landing_web': (context) => const WebLandingScreen(),
         '/login': (context) => const LoginScreen(),
         '/animales': (context) => const AnimalScreen(),
         '/principal': (context) => const PrincipalScreen(),
