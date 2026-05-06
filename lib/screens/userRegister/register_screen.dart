@@ -50,7 +50,7 @@ class _RegisterUserState extends State<RegisterUser> {
         context: context,
         builder: (context) => Dialog(
           insetPadding: const EdgeInsets.all(10),
-          child: Container(
+          child: SizedBox(
             width: MediaQuery.of(context).size.width * 0.95,
             height: MediaQuery.of(context).size.height * 0.85,
             child: Column(

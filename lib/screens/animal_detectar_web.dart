@@ -9,8 +9,13 @@ class AnimalDetectorWeb implements AnimalDetector {
   Future<Map<String, String>> detectar(File imagen) async {
     Uint8List bytes = await imagen.readAsBytes();
 
-    var request = http.MultipartRequest('POST', Uri.parse('http://localhost:5000/detectar'));
-    request.files.add(http.MultipartFile.fromBytes('imagen', bytes, filename: 'imagen.jpg'));
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('http://localhost:5000/detectar'),
+    );
+    request.files.add(
+      http.MultipartFile.fromBytes('imagen', bytes, filename: 'imagen.jpg'),
+    );
 
     var response = await request.send();
     if (response.statusCode == 200) {
@@ -24,4 +29,3 @@ class AnimalDetectorWeb implements AnimalDetector {
 
 /// Factory para Web
 AnimalDetector createAnimalDetector() => AnimalDetectorWeb();
-

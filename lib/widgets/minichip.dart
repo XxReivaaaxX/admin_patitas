@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class MiniChip extends StatelessWidget {
   final String label;
   final Color color;
-  const MiniChip({required this.label, required this.color});
+  const MiniChip({super.key, required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {

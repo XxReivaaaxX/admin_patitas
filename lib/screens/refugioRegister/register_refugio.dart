@@ -1,8 +1,6 @@
 import 'package:admin_patitas/screens/refugioRegister/refugio_register_mobile.dart';
 import 'package:admin_patitas/screens/refugioRegister/refugio_register_web.dart';
 
-import 'package:admin_patitas/widgets/logo_bar.dart';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 
@@ -22,8 +20,8 @@ class _RegisterRefugioState extends State<RegisterRefugio> {
 
   String nombre = "", direccion = "", idUsuario = "";
   List ayudantes = [];
-  final TextEditingController _nombre = new TextEditingController();
-  final TextEditingController _direccion = new TextEditingController();
+  final TextEditingController _nombre = TextEditingController();
+  final TextEditingController _direccion = TextEditingController();
 
   @override
   void initState() {

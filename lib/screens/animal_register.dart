@@ -208,24 +208,6 @@ class _AnimalRegisterState extends State<AnimalRegister> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-    required VoidCallback onPressed,
-  }) {
-    return OutlinedButton.icon(
-      icon: Icon(icon, color: color),
-      label: Text(label, style: TextStyle(color: color)),
-      style: OutlinedButton.styleFrom(
-        side: BorderSide(color: color),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      ),
-      onPressed: onPressed,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -484,8 +466,9 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
                   );
-                  if (pickedDate != null)
+                  if (pickedDate != null) {
                     setState(() => _fechaIngreso = pickedDate);
+                  }
                 },
                 child: Text(
                   _fechaIngreso == null

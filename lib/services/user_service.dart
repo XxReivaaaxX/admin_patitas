@@ -77,14 +77,19 @@ class UserController {
   }
 
   /// Obtiene datos del usuario desde la API
-  Future<Usuario> getUsuario(String id_user) async {
-    final uri = Uri.parse('${UrlApi.url}usuarios/$id_user');
-    final response = await http.get(uri);
+  Future<Usuario> getUsuario(String idUser) async {
+    final uri = Uri.parse('${UrlApi.url}usuarios/$idUser');
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString('auth_token');
+    final response = await http.get(
+      uri,
+      headers: token == null ? {} : {'Authorization': 'Bearer $token'},
+    );
 
     if (response.statusCode == 200) {
       log('Usuario obtenido: ${response.body}');
-      final data = jsonDecode(response.body);
-      return Usuario.getUsuario(data);
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      return Usuario.fromMap(data);
     } else {
       throw Exception('Error al cargar los datos del usuario');
     }

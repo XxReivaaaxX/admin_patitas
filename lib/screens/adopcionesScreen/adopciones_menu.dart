@@ -1,14 +1,12 @@
 import 'dart:developer';
 
 import 'package:admin_patitas/screens/adopcionesScreen/adopcion_screen_mobile.dart';
-import 'package:admin_patitas/screens/adopcionesScreen/adopcion_screen_web.dart';
 
 import 'package:admin_patitas/screens/adopcionesScreen/solicitud_screen_mobile.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/utils/state_tab.dart';
 import 'package:admin_patitas/widgets/estado_badge.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:admin_patitas/services/solicitud_adopcion_service.dart';
 import 'package:flutter/material.dart';
 
@@ -23,7 +21,6 @@ class _AdopcionesMenuState extends State<AdopcionesMenu> {
   String? id_refugio;
   String refugioNombre = "Refugio";
   bool _isLoading = true;
-  late final TabController _tabController;
   final SolicitudAdopcionService _service = SolicitudAdopcionService();
 
   List<Map<String, dynamic>> _todasLasSolicitudes = [];
@@ -126,34 +123,6 @@ class _AdopcionesMenuState extends State<AdopcionesMenu> {
     );
   }
 
-  Future<void> _loadRefugioNombre() async {
-    if (id_refugio == null || id_refugio!.isEmpty) {
-      if (mounted) setState(() => _isLoading = false);
-      return;
-    }
-
-    try {
-      final snapshot = await FirebaseDatabase.instance
-          .ref()
-          .child('refugios')
-          .child(id_refugio!)
-          .get();
-
-      if (snapshot.exists) {
-        final data = snapshot.value as Map<dynamic, dynamic>;
-        if (data['data'] != null && data['data']['nombre'] != null) {
-          refugioNombre = data['data']['nombre'];
-        }
-      }
-    } catch (e) {
-      // Usar nombre por defecto si falla
-    }
-
-    if (mounted) {
-      setState(() => _isLoading = false);
-    }
-  }
-
   Widget menuMobile() {
     return DefaultTabController(
       initialIndex: 0,
@@ -226,7 +195,7 @@ class _AdopcionesMenuState extends State<AdopcionesMenu> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: Offset(0, 4),
                     ),

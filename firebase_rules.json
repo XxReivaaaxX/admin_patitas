@@ -1,64 +1,77 @@
 {
-    "rules": {
-        "refugios": {
-            ".read": "auth != null",
-            "$refugioId": {
-                ".write": "auth != null && (data.child('id_usuario').val() === auth.uid || !data.exists())",
-                "colaboradores": {
-                    ".write": "auth != null && root.child('refugios').child($refugioId).child('id_usuario').val() === auth.uid"
-                }
-            }
-        },
-        "animales": {
-            ".read": true,
-            "$refugioId": {
-                "$animalId": {
-                    ".write": "auth != null && (root.child('refugios').child($refugioId).child('id_usuario').val() === auth.uid || root.child('refugios').child($refugioId).child('colaboradores').child(auth.uid).exists())",
-                    "vacunas": {
-                        "$vacunaId": {
-                            ".write": "auth != null && (root.child('refugios').child($refugioId).child('id_usuario').val() === auth.uid || root.child('refugios').child($refugioId).child('colaboradores').child(auth.uid).exists())"
-                        }
-                    }
-                }
-            }
-        },
-        "historialMedico": {
-            ".read": "auth != null",
-            ".write": "auth != null"
-        },
-        "users": {
-            ".read": "auth != null",
-            "$userId": {
-                ".read": "auth != null && auth.uid === $userId",
-                ".write": "auth != null && auth.uid === $userId",
-                "email": {
-                    ".validate": "newData.isString() && newData.val().matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$/i)"
-                },
-                "adopciones_guardadas": {
-                    "$animalId": {
-                        ".validate": "newData.hasChildren(['refugioId', 'animalId', 'nombre'])"
-                    }
-                }
-            }
-        },
-        "notifications": {
-            ".read": "auth != null",
-            ".write": "auth != null"
-        },
-        "user_notifications": {
-            ".read": "auth != null",
-            ".write": "auth != null"
-        },
-        "solicitudes_adopcion": {
-            "$refugioId": {
-                ".read": "auth != null && root.child('refugios').child($refugioId).child('id_usuario').val() === auth.uid",
-                "$animalId": {
-                    "$correoKey": {
-                        ".read": "auth != null",
-                        ".write": "auth != null"
-                    }
-                }
-            }
+  "rules": {
+    "refugios": {
+      ".read": "auth != null",
+      "$refugioId": {
+        ".write": "auth != null && (data.exists() ? data.child('id_usuario').val() === auth.uid : newData.child('id_usuario').val() === auth.uid)",
+        "colaboradores": {
+          "$userId": {
+            ".read": "auth != null && (auth.uid === $userId || root.child('refugios').child($refugioId).child('id_usuario').val() === auth.uid)",
+            ".write": "auth != null && root.child('refugios').child($refugioId).child('id_usuario').val() === auth.uid"
+          }
         }
+      }
+    },
+    "animales": {
+      ".read": true,
+      "$refugioId": {
+        "$animalId": {
+          ".write": "auth != null && (root.child('refugios').child($refugioId).child('id_usuario').val() === auth.uid || root.child('refugios').child($refugioId).child('colaboradores').child(auth.uid).exists())",
+          "vacunas": {
+            "$vacunaId": {
+              ".write": "auth != null && (root.child('refugios').child($refugioId).child('id_usuario').val() === auth.uid || root.child('refugios').child($refugioId).child('colaboradores').child(auth.uid).exists())"
+            }
+          }
+        }
+      }
+    },
+    "historialMedico": {
+      "$historialId": {
+        ".read": "auth != null && (root.child('refugios').child(data.child('id_refugio').val()).child('id_usuario').val() === auth.uid || root.child('refugios').child(data.child('id_refugio').val()).child('colaboradores').child(auth.uid).exists())",
+        ".write": "auth != null && (root.child('refugios').child(data.exists() ? data.child('id_refugio').val() : newData.child('id_refugio').val()).child('id_usuario').val() === auth.uid || root.child('refugios').child(data.exists() ? data.child('id_refugio').val() : newData.child('id_refugio').val()).child('colaboradores').child(auth.uid).exists())",
+        ".validate": "newData.hasChildren(['id_refugio', 'id_animal'])"
+      }
+    },
+    "users": {
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        ".write": "auth != null && auth.uid === $userId",
+        "email": {
+          ".validate": "newData.isString() && newData.val().matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}$/i)"
+        },
+        "adopciones_guardadas": {
+          "$animalId": {
+            ".validate": "newData.hasChildren(['refugioId', 'animalId', 'nombre'])"
+          }
+        }
+      }
+    },
+    "notifications": {
+      "$notifId": {
+        ".read": "auth != null && (root.child('refugios').child(data.child('refugioId').val()).child('id_usuario').val() === auth.uid || root.child('refugios').child(data.child('refugioId').val()).child('colaboradores').child(auth.uid).exists())",
+        ".write": "auth != null && (root.child('refugios').child(data.exists() ? data.child('refugioId').val() : newData.child('refugioId').val()).child('id_usuario').val() === auth.uid || root.child('refugios').child(data.exists() ? data.child('refugioId').val() : newData.child('refugioId').val()).child('colaboradores').child(auth.uid).exists())"
+      }
+    },
+    "user_notifications": {
+      "$userId": {
+        ".read": "auth != null && auth.uid === $userId",
+        "$refugioId": {
+          ".write": "auth != null && (auth.uid === $userId || root.child('refugios').child($refugioId).child('id_usuario').val() === auth.uid || root.child('refugios').child($refugioId).child('colaboradores').child(auth.uid).exists())",
+          "$notifId": {
+            ".validate": "newData.hasChildren(['isRead']) && newData.child('isRead').isBoolean()"
+          }
+        }
+      }
+    },
+    "solicitudes_adopcion": {
+      "$refugioId": {
+        ".read": "auth != null && (root.child('refugios').child($refugioId).child('id_usuario').val() === auth.uid || root.child('refugios').child($refugioId).child('colaboradores').child(auth.uid).exists())",
+        "$animalId": {
+          "$correoKey": {
+            ".write": "auth != null && (root.child('refugios').child($refugioId).child('id_usuario').val() === auth.uid || root.child('refugios').child($refugioId).child('colaboradores').child(auth.uid).exists() || !data.exists())"
+          }
+        }
+      }
     }
+  }
 }

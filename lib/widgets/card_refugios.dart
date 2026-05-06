@@ -9,7 +9,7 @@ class CardRefugios extends StatelessWidget {
   final double? sizeImg;
 
   const CardRefugios({
-    Key? key,
+    super.key,
     required this.sizeImg,
     required this.colorIzq,
     required this.colorDer,
@@ -17,7 +17,7 @@ class CardRefugios extends StatelessWidget {
     required this.nombre,
     required this.correo,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

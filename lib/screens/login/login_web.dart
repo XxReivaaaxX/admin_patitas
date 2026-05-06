@@ -1,4 +1,3 @@
-import 'package:admin_patitas/screens/externalAdoptionScreen/adopciones_external_screen.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/custom_text_field.dart';
 import 'package:admin_patitas/widgets/glass_card.dart';

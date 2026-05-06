@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Project hygiene / security
+*.rar
+backend/.env
+backend/Key.json

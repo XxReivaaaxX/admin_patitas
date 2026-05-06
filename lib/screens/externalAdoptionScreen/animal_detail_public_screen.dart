@@ -94,8 +94,11 @@ class AnimalDetailPublicScreen extends StatelessWidget {
                   // Refugio
                   Row(
                     children: [
-                      const Icon(Icons.home_work_outlined,
-                          size: 16, color: AppColors.secondary),
+                      const Icon(
+                        Icons.home_work_outlined,
+                        size: 16,
+                        color: AppColors.secondary,
+                      ),
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
@@ -155,9 +158,7 @@ class AnimalDetailPublicScreen extends StatelessWidget {
   void _openAdoptionForm(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => AdoptionRequestForm(group: group),
-      ),
+      MaterialPageRoute(builder: (_) => AdoptionRequestForm(group: group)),
     );
   }
 
@@ -209,7 +210,9 @@ class _GenderChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: (isMacho ? Colors.blue : AppColors.primary).withValues(alpha: 0.12),
+        color: (isMacho ? Colors.blue : AppColors.primary).withValues(
+          alpha: 0.12,
+        ),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

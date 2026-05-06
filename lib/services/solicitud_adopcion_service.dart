@@ -156,9 +156,15 @@ class SolicitudAdopcionService {
     );
 
     if (enviado) {
-      log('Notificación de aprobación enviada a $correoAdoptante', name: 'SolicitudService');
+      log(
+        'Notificación de aprobación enviada a $correoAdoptante',
+        name: 'SolicitudService',
+      );
     } else {
-      log('No se pudo enviar la notificación a $correoAdoptante', name: 'SolicitudService');
+      log(
+        'No se pudo enviar la notificación a $correoAdoptante',
+        name: 'SolicitudService',
+      );
     }
   }
 

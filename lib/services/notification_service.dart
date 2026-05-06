@@ -1,5 +1,6 @@
 import 'package:admin_patitas/models/notifications.dart';
 import 'package:admin_patitas/models/notifications_show.dart';
+import 'dart:developer';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:admin_patitas/services/refugio_management_service.dart';
@@ -25,7 +26,7 @@ class NotificationsService {
 
       return notifRef.key;
     } catch (e) {
-      print('Error al enviar notificación: $e');
+      log('Error al enviar notificación: $e', name: 'NotificationsService');
       return null;
     }
   }
@@ -89,7 +90,10 @@ class NotificationsService {
       }
       return null;
     } catch (e) {
-      print('Error al enviar notificación a destinatarios: $e');
+      log(
+        'Error al enviar notificación a destinatarios: $e',
+        name: 'NotificationsService',
+      );
       return null;
     }
   }
@@ -136,7 +140,10 @@ class NotificationsService {
 
       return result;
     } catch (e) {
-      print('Error al obtener notificaciones del usuario: $e');
+      log(
+        'Error al obtener notificaciones del usuario: $e',
+        name: 'NotificationsService',
+      );
       return [];
     }
   }
@@ -156,7 +163,10 @@ class NotificationsService {
           .child(notifId)
           .update({'isRead': true});
     } catch (e) {
-      print('Error al marcar notificación como leída: $e');
+      log(
+        'Error al marcar notificación como leída: $e',
+        name: 'NotificationsService',
+      );
     }
   }
 

@@ -1,10 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
@@ -410,8 +407,9 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                     lastDate: DateTime.now(),
                     locale: const Locale('es', 'ES'),
                   );
-                  if (pickedDate != null)
+                  if (pickedDate != null) {
                     setState(() => _fechaIngreso = pickedDate);
+                  }
                 },
                 child: Text(
                   _fechaIngreso == null

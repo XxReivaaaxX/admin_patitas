@@ -47,16 +47,25 @@ class _PublicAdoptionsScreenState extends State<PublicAdoptionsScreen> {
     try {
       // Asegurar sesión activa para poder leer Firebase (aunque sea anónima)
       if (FirebaseAuth.instance.currentUser == null) {
-        log('>>> Sin sesión activa, iniciando sesión anónima...', name: 'PublicAdoptions');
+        log(
+          '>>> Sin sesión activa, iniciando sesión anónima...',
+          name: 'PublicAdoptions',
+        );
         await FirebaseAuth.instance.signInAnonymously();
         log('>>> Sesión anónima iniciada', name: 'PublicAdoptions');
       } else {
-        log('>>> Ya hay sesión activa: ${FirebaseAuth.instance.currentUser!.uid}', name: 'PublicAdoptions');
+        log(
+          '>>> Ya hay sesión activa: ${FirebaseAuth.instance.currentUser!.uid}',
+          name: 'PublicAdoptions',
+        );
       }
 
-      final List<Map<String, dynamic>> refugios =
-          await RoleService().getAllRefugios();
-      log('>>> Refugios encontrados: ${refugios.length}', name: 'PublicAdoptions');
+      final List<Map<String, dynamic>> refugios = await RoleService()
+          .getAllRefugios();
+      log(
+        '>>> Refugios encontrados: ${refugios.length}',
+        name: 'PublicAdoptions',
+      );
 
       List<AdoptionAnimalGroup> allAvailable = [];
 
@@ -67,33 +76,49 @@ class _PublicAdoptionsScreenState extends State<PublicAdoptionsScreen> {
         final String whatsapp = refugio['data']['whatsapp'] ?? '';
         final String email = refugio['data']['email_contacto'] ?? '';
 
-        log('>>> Cargando animales del refugio: $refugioNombre ($refugioId)', name: 'PublicAdoptions');
-        final List<Animal> refugioAnimals =
-            await AnimalsService().getAnimals(refugioId);
-        log('>>> Animales encontrados en $refugioNombre: ${refugioAnimals.length}', name: 'PublicAdoptions');
+        log(
+          '>>> Cargando animales del refugio: $refugioNombre ($refugioId)',
+          name: 'PublicAdoptions',
+        );
+        final List<Animal> refugioAnimals = await AnimalsService().getAnimals(
+          refugioId,
+        );
+        log(
+          '>>> Animales encontrados en $refugioNombre: ${refugioAnimals.length}',
+          name: 'PublicAdoptions',
+        );
 
         for (var animal in refugioAnimals) {
           final estado = animal.estadoAdopcion.toLowerCase().trim();
-          log('>>> Animal: "${animal.nombre}" | estado_adopcion RAW: "${animal.estadoAdopcion}"', name: 'PublicAdoptions');
-          final esDisponible = estado == 'disponible' ||
+          log(
+            '>>> Animal: "${animal.nombre}" | estado_adopcion RAW: "${animal.estadoAdopcion}"',
+            name: 'PublicAdoptions',
+          );
+          final esDisponible =
+              estado == 'disponible' ||
               estado == 'disponible para adopcion' ||
               estado == 'disponible para adopción' ||
               estado == 'en adopcion' ||
               estado == 'en adopción';
           if (esDisponible) {
-            allAvailable.add(AdoptionAnimalGroup(
-              animal: animal,
-              refugioId: refugioId,
-              refugioNombre: refugioNombre,
-              refugioTelefono: telefono,
-              refugioWhatsapp: whatsapp,
-              refugioEmail: email,
-            ));
+            allAvailable.add(
+              AdoptionAnimalGroup(
+                animal: animal,
+                refugioId: refugioId,
+                refugioNombre: refugioNombre,
+                refugioTelefono: telefono,
+                refugioWhatsapp: whatsapp,
+                refugioEmail: email,
+              ),
+            );
           }
         }
       }
 
-      log('>>> Total animales disponibles: ${allAvailable.length}', name: 'PublicAdoptions');
+      log(
+        '>>> Total animales disponibles: ${allAvailable.length}',
+        name: 'PublicAdoptions',
+      );
       if (mounted) {
         setState(() {
           _animals = allAvailable;
@@ -129,35 +154,37 @@ class _PublicAdoptionsScreenState extends State<PublicAdoptionsScreen> {
         ),
       ),
       body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: AppColors.primary))
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : _animals.isEmpty
-              ? _buildEmptyState()
-              : LayoutBuilder(
-                  builder: (context, constraints) {
-                    int crossAxisCount = 1;
-                    if (constraints.maxWidth > 1200) {
-                      crossAxisCount = 4;
-                    } else if (constraints.maxWidth > 800) {
-                      crossAxisCount = 3;
-                    } else if (constraints.maxWidth > 600) {
-                      crossAxisCount = 2;
-                    }
+          ? _buildEmptyState()
+          : LayoutBuilder(
+              builder: (context, constraints) {
+                int crossAxisCount = 1;
+                if (constraints.maxWidth > 1200) {
+                  crossAxisCount = 4;
+                } else if (constraints.maxWidth > 800) {
+                  crossAxisCount = 3;
+                } else if (constraints.maxWidth > 600) {
+                  crossAxisCount = 2;
+                }
 
-                    return GridView.builder(
-                      padding: const EdgeInsets.all(20.0),
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: crossAxisCount,
-                        childAspectRatio: 0.7,
-                        crossAxisSpacing: 20,
-                        mainAxisSpacing: 20,
-                      ),
-                      itemCount: _animals.length,
-                      itemBuilder: (context, index) {
-                        return _buildAdoptionCard(_animals[index]);
-                      },
-                    );
+                return GridView.builder(
+                  padding: const EdgeInsets.all(20.0),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: 0.7,
+                    crossAxisSpacing: 20,
+                    mainAxisSpacing: 20,
+                  ),
+                  itemCount: _animals.length,
+                  itemBuilder: (context, index) {
+                    return _buildAdoptionCard(_animals[index]);
                   },
-                ),
+                );
+              },
+            ),
     );
   }
 
@@ -166,7 +193,11 @@ class _PublicAdoptionsScreenState extends State<PublicAdoptionsScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.pets, size: 80, color: AppColors.textDark.withValues(alpha: 0.2)),
+          Icon(
+            Icons.pets,
+            size: 80,
+            color: AppColors.textDark.withValues(alpha: 0.2),
+          ),
           const SizedBox(height: 20),
           Text(
             '¡Pronto habrán peluditos buscando hogar!',
@@ -221,18 +252,26 @@ class _PublicAdoptionsScreenState extends State<PublicAdoptionsScreen> {
                               animal.imageUrl,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.pets,
-                                      size: 60, color: Colors.grey),
+                                  const Icon(
+                                    Icons.pets,
+                                    size: 60,
+                                    color: Colors.grey,
+                                  ),
                             )
-                          : const Icon(Icons.pets,
-                              size: 60, color: Colors.grey),
+                          : const Icon(
+                              Icons.pets,
+                              size: 60,
+                              color: Colors.grey,
+                            ),
                     ),
                     Positioned(
                       top: 10,
                       right: 10,
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.black.withValues(alpha: 0.6),
                           borderRadius: BorderRadius.circular(20),
@@ -297,14 +336,19 @@ class _PublicAdoptionsScreenState extends State<PublicAdoptionsScreen> {
                       const SizedBox(height: 4),
                       Text(
                         'Raza: ${animal.raza}',
-                        style:
-                            const TextStyle(fontSize: 12, color: Colors.grey),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
                       ),
                       const Spacer(),
                       Row(
                         children: [
-                          const Icon(Icons.touch_app,
-                              size: 14, color: AppColors.primary),
+                          const Icon(
+                            Icons.touch_app,
+                            size: 14,
+                            color: AppColors.primary,
+                          ),
                           const SizedBox(width: 4),
                           Text(
                             'Ver detalles',

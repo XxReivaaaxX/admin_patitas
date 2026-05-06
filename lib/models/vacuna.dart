@@ -72,8 +72,9 @@ class Vacuna {
 
   // Verificar si la vacuna está al día
   bool isAlDia() {
-    if (proximaFecha.isEmpty)
+    if (proximaFecha.isEmpty) {
       return true; // Si no hay próxima fecha, asumimos que está al día
+    }
     try {
       final proxima = DateTime.parse(proximaFecha);
       final ahora = DateTime.now();

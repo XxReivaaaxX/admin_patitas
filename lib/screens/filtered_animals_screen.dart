@@ -74,7 +74,7 @@ class _FilteredAnimalsScreenState extends State<FilteredAnimalsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
@@ -290,8 +290,12 @@ class _FilteredAnimalsScreenState extends State<FilteredAnimalsScreen> {
                                         color:
                                             animal.estadoAdopcion ==
                                                 'Disponible'
-                                            ? Colors.green.withOpacity(0.1)
-                                            : Colors.orange.withOpacity(0.1),
+                                            ? Colors.green.withValues(
+                                                alpha: 0.1,
+                                              )
+                                            : Colors.orange.withValues(
+                                                alpha: 0.1,
+                                              ),
                                         borderRadius: BorderRadius.circular(12),
                                       ),
                                       child: Text(

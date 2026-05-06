@@ -18,6 +18,20 @@ import 'package:admin_patitas/screens/register_existing_users.dart';
 import 'package:admin_patitas/screens/web_landing_screen.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 
+final Map<String, WidgetBuilder> appRoutes = {
+  '/landing_web': (context) => const WebLandingScreen(),
+  '/login': (context) => const LoginScreen(),
+  '/animales': (context) => const AnimalScreen(),
+  '/principal': (context) => const PrincipalScreen(),
+  '/register': (context) => const RegisterUser(),
+  '/refugio': (context) => const RefugioScreen(),
+  '/sinRefugio': (context) => const SinRefugio(),
+  '/refugio_settings': (context) => const RefugioSettings(),
+  '/manage_collaborators': (context) => const ManageCollaborators(),
+  '/register_existing_users': (context) => const RegisterExistingUsersScreen(),
+  '/adoptions': (context) => const PublicAdoptionsScreen(),
+};
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await PreferencesController.iniciarPref();
@@ -63,20 +77,7 @@ class PetFlowApp extends StatelessWidget {
               nextRoute: '/login',
               mainScreen: false,
             ),
-      routes: {
-        '/landing_web': (context) => const WebLandingScreen(),
-        '/login': (context) => const LoginScreen(),
-        '/animales': (context) => const AnimalScreen(),
-        '/principal': (context) => const PrincipalScreen(),
-        '/register': (context) => const RegisterUser(),
-        '/refugio': (context) => const RefugioScreen(),
-        '/sinRefugio': (context) => const SinRefugio(),
-        '/refugio_settings': (context) => const RefugioSettings(),
-        '/manage_collaborators': (context) => const ManageCollaborators(),
-        '/register_existing_users': (context) =>
-            const RegisterExistingUsersScreen(),
-        '/adoptions': (context) => const PublicAdoptionsScreen(),
-      },
+      routes: appRoutes,
     );
   }
 }

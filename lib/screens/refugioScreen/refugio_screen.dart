@@ -1,17 +1,13 @@
 import 'package:admin_patitas/models/user_role.dart';
 import 'package:admin_patitas/screens/refugioRegister/register_refugio.dart';
 import 'package:admin_patitas/services/role_service.dart';
-import 'package:admin_patitas/services/adopcion_service.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
-import 'package:admin_patitas/screens/refugioScreen/menu_refugios.dart';
 import 'package:admin_patitas/widgets/custom_icon_button.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
+import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'dart:developer';
-
-import 'package:flutter/rendering.dart';
 
 class RefugioScreen extends StatefulWidget {
   const RefugioScreen({super.key});
@@ -20,40 +16,22 @@ class RefugioScreen extends StatefulWidget {
   State<RefugioScreen> createState() => _RefugioScreenState();
 }
 
-class _RefugioScreenState extends State<RefugioScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _RefugioScreenState extends State<RefugioScreen> {
   late Future<List<Map<String, dynamic>>> _futureRefugios;
   List<Map<String, dynamic>> _allRefugios = [];
   List<Map<String, dynamic>> _filteredRefugios = [];
   final TextEditingController _searchController = TextEditingController();
   final User user = FirebaseAuth.instance.currentUser!;
 
-  // Variables para adopciones guardadas
-  List<Map<String, dynamic>> _savedAnimals = [];
-  bool _isLoadingSaved = false;
-
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
     _loadRefugios();
-    _loadSavedAnimals();
-
-    _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
-        setState(() {}); // Rebuild to update FAB visibility immediately
-      }
-      if (_tabController.index == 1 && !_tabController.indexIsChanging) {
-        _loadSavedAnimals();
-      }
-    });
   }
 
   @override
   void dispose() {
     _searchController.dispose();
-    _tabController.dispose();
     super.dispose();
   }
 
@@ -62,51 +40,6 @@ class _RefugioScreenState extends State<RefugioScreen>
     _allRefugios = await _futureRefugios;
     setState(() {
       _filteredRefugios = _allRefugios;
-    });
-  }
-
-  Future<void> _loadSavedAnimals() async {
-    setState(() => _isLoadingSaved = true);
-    try {
-      final animals = await AdopcionService().getSavedAnimals(user.uid);
-      setState(() {
-        _savedAnimals = animals;
-      });
-    } catch (e) {
-      log('Error loading saved animals: $e');
-    } finally {
-      setState(() => _isLoadingSaved = false);
-    }
-  }
-
-  Future<void> _removeSavedAnimal(String animalId) async {
-    try {
-      await AdopcionService().removeAnimal(user.uid, animalId);
-      _loadSavedAnimals(); // Recargar lista
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Animal eliminado de guardados')),
-        );
-      }
-    } catch (e) {
-      log('Error removing animal: $e');
-    }
-  }
-
-  void _filterRefugios(String query) {
-    setState(() {
-      if (query.isEmpty) {
-        _filteredRefugios = _allRefugios;
-      } else {
-        _filteredRefugios = _allRefugios.where((refugio) {
-          Map<dynamic, dynamic> data = refugio['data'];
-          String nombre = (data['nombre'] ?? '').toString().toLowerCase();
-          String direccion = (data['direccion'] ?? '').toString().toLowerCase();
-          String searchLower = query.toLowerCase();
-          return nombre.contains(searchLower) ||
-              direccion.contains(searchLower);
-        }).toList();
-      }
     });
   }
 
@@ -288,8 +221,8 @@ class _RefugioScreenState extends State<RefugioScreen>
                               showDialog(
                                 context: context,
 
-                                barrierColor: AppColors.primary.withOpacity(
-                                  0.3,
+                                barrierColor: AppColors.primary.withValues(
+                                  alpha: 0.3,
                                 ),
                                 builder: (context) => const RegisterRefugio(),
                               );
@@ -396,7 +329,7 @@ class _RefugioScreenState extends State<RefugioScreen>
                                       context: context,
 
                                       barrierColor: AppColors.primary
-                                          .withOpacity(0.3),
+                                          .withValues(alpha: 0.3),
                                       builder: (context) =>
                                           const RegisterRefugio(),
                                     );
@@ -469,7 +402,7 @@ class _RefugioScreenState extends State<RefugioScreen>
                   showDialog(
                     context: context,
 
-                    barrierColor: AppColors.primary.withOpacity(0.3),
+                    barrierColor: AppColors.primary.withValues(alpha: 0.3),
                     builder: (context) => const RegisterRefugio(),
                   );
                 } else {
@@ -533,7 +466,7 @@ class _RefugioScreenState extends State<RefugioScreen>
                       child: Icon(
                         Icons.home_work_rounded,
                         size: 32,
-                        color: Colors.white.withOpacity(0.9),
+                        color: Colors.white.withValues(alpha: 0.9),
                       ),
                     ),
                   ),
@@ -598,7 +531,9 @@ class _RefugioScreenState extends State<RefugioScreen>
                               ),
                               decoration: BoxDecoration(
                                 // Cambiado a un color que resalte sobre blanco
-                                color: AppColors.secondary.withOpacity(0.1),
+                                color: AppColors.secondary.withValues(
+                                  alpha: 0.1,
+                                ),
                                 borderRadius: BorderRadius.circular(6),
                                 border: Border.all(
                                   color: AppColors.secondary,
