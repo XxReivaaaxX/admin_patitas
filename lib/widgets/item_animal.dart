@@ -1,10 +1,6 @@
-import 'dart:math';
-
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/custom_double_text.dart';
-import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 class ItemAnimal extends StatelessWidget {
   final void Function()? onTap,
@@ -16,7 +12,7 @@ class ItemAnimal extends StatelessWidget {
   final sizeImg;
 
   const ItemAnimal({
-    Key? key,
+    super.key,
     required this.sizeImg,
     required this.nombre,
     required this.especie,
@@ -30,7 +26,7 @@ class ItemAnimal extends StatelessWidget {
     required this.sexo,
     required this.raza,
     required this.constraints,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

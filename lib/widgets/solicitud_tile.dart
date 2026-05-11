@@ -8,6 +8,7 @@ class SolicitudTile extends StatelessWidget {
   final bool showAnimalName;
 
   const SolicitudTile({
+    super.key,
     required this.solicitud,
     required this.onTap,
     this.showAnimalName = false,

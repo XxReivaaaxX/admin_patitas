@@ -1,11 +1,12 @@
 import 'dart:typed_data';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:admin_patitas/utils/url_api.dart';
 
 class IAHandler {
   Future<void> loadModel() async {
-    print('La IA esta lista para usarse desde la API en App');
+    log('La IA esta lista para usarse desde la API en App', name: 'IAHandler');
   }
 
   // Se envía la imagen en base64 a la API y se obtiene la predicción

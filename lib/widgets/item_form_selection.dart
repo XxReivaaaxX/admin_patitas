@@ -21,7 +21,7 @@ class ItemFormSelection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: initialValue,
+      initialValue: initialValue,
       decoration: InputDecoration(
         labelText: text,
         border: const OutlineInputBorder(

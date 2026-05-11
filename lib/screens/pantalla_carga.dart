@@ -9,11 +9,11 @@ class SplashScreen extends StatefulWidget {
   final bool mainScreen;
 
   const SplashScreen({
-    Key? key,
+    super.key,
     required this.mensaje,
     required this.nextRoute,
     required this.mainScreen,
-  }) : super(key: key);
+  });
 
   @override
   _SplashScreenState createState() => _SplashScreenState();

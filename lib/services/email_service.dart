@@ -34,7 +34,7 @@ class EmailService {
             'user_email': userEmail,
             'refugio_nombre': refugioNombre,
             'animal_name': animalName,
-          }
+          },
         }),
       );
 
@@ -42,7 +42,10 @@ class EmailService {
         log('Correo enviado exitosamente con EmailJS.', name: 'EmailService');
         return true;
       } else {
-        log('Error al enviar correo con EmailJS. Código: ${response.statusCode}, Body: ${response.body}', name: 'EmailService');
+        log(
+          'Error al enviar correo con EmailJS. Código: ${response.statusCode}, Body: ${response.body}',
+          name: 'EmailService',
+        );
         return false;
       }
     } catch (e) {

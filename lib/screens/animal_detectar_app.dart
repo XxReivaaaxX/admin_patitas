@@ -46,7 +46,12 @@ class AnimalDetectorMobile implements AnimalDetector {
 
   String _getLabel(int index) {
     List<String> labels = [
-      'Labrador', 'Bulldog', 'Pastor Alemán', 'Gato Persa', 'Gato Siamés', 'Otro'
+      'Labrador',
+      'Bulldog',
+      'Pastor Alemán',
+      'Gato Persa',
+      'Gato Siamés',
+      'Otro',
     ];
     return labels[index < labels.length ? index : labels.length - 1];
   }
@@ -54,5 +59,3 @@ class AnimalDetectorMobile implements AnimalDetector {
 
 /// Factory para App
 AnimalDetector createAnimalDetector() => AnimalDetectorMobile();
-
-

@@ -2,7 +2,6 @@ import 'package:admin_patitas/models/routes_menu.dart';
 import 'package:admin_patitas/services/notification_service.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
-import 'package:admin_patitas/utils/state_tab.dart';
 import 'package:admin_patitas/widgets/logo_bar.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 

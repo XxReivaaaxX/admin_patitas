@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/utils/colors.dart';
@@ -74,7 +75,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
         );
       }
     } catch (e) {
-      print('Error al seleccionar imagen: $e');
+      log('Error al seleccionar imagen: $e', name: 'AnimalUpdate');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error al seleccionar imagen: $e')),
       );
@@ -106,7 +107,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
         Navigator.pop(context, animal);
       }
     } catch (e) {
-      print('Excepción: $e');
+      log('Excepción: $e', name: 'AnimalUpdate');
       if (mounted) {
         ScaffoldMessenger.of(
           context,

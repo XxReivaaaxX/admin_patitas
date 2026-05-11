@@ -84,8 +84,9 @@ class _LoginScreenState extends State<LoginScreen> {
     } on FirebaseAuthException catch (e) {
       if (mounted) setState(() => _errorMessage = _getErrorMessage(e.code));
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() => _errorMessage = "Error inesperado. Inténtelo de nuevo.");
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -147,13 +148,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
     if (email == null || email.isEmpty) return;
     if (!email.contains('@')) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Correo inválido'),
             backgroundColor: Colors.red,
           ),
         );
+      }
       return;
     }
 

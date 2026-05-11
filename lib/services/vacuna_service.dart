@@ -1,4 +1,5 @@
 import 'package:admin_patitas/models/vacuna.dart';
+import 'dart:developer';
 import 'package:firebase_database/firebase_database.dart';
 
 class VacunaService {
@@ -56,7 +57,7 @@ class VacunaService {
 
       await vacunaRef.set(vacuna.toJson());
     } catch (e) {
-      print('Error creando vacuna: $e');
+      log('Error creando vacuna: $e', name: 'VacunaService');
       rethrow;
     }
   }
@@ -95,7 +96,7 @@ class VacunaService {
 
       return vacunas;
     } catch (e) {
-      print('Error obteniendo vacunas: $e');
+      log('Error obteniendo vacunas: $e', name: 'VacunaService');
       return [];
     }
   }
@@ -116,7 +117,7 @@ class VacunaService {
           .child(vacunaId)
           .update(vacuna.toJson());
     } catch (e) {
-      print('Error actualizando vacuna: $e');
+      log('Error actualizando vacuna: $e', name: 'VacunaService');
       rethrow;
     }
   }
@@ -136,7 +137,7 @@ class VacunaService {
           .child(vacunaId)
           .remove();
     } catch (e) {
-      print('Error eliminando vacuna: $e');
+      log('Error eliminando vacuna: $e', name: 'VacunaService');
       rethrow;
     }
   }
@@ -181,7 +182,10 @@ class VacunaService {
 
       return resultado;
     } catch (e) {
-      print('Error obteniendo animales con vacunas próximas: $e');
+      log(
+        'Error obteniendo animales con vacunas próximas: $e',
+        name: 'VacunaService',
+      );
       return [];
     }
   }

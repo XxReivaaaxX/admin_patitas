@@ -56,7 +56,7 @@ class AdopcionScreenMobile extends StatelessWidget {
             child: ExpansionTile(
               shape: const Border(),
               leading: CircleAvatar(
-                backgroundColor: AppColors.primary.withOpacity(0.12),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.12),
                 child: const Icon(
                   Icons.pets,
                   color: AppColors.primary,

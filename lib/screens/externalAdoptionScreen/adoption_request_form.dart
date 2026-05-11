@@ -96,8 +96,7 @@ class _AdoptionRequestFormState extends State<AdoptionRequestForm> {
         experienciaPrevia: _experienciaPrevia!,
         tipoVivienda: _tipoVivienda!,
         tieneNinos: _tieneNinos!,
-        edadesNinos:
-            _tieneNinos! ? _edadesNinosCtrl.text.trim() : '',
+        edadesNinos: _tieneNinos! ? _edadesNinosCtrl.text.trim() : '',
         otrasMascotas: _otrasMascotas!,
         horasSolo: _horasSolo!,
         puedeCostearVet: _puedeCostearVet!,
@@ -107,7 +106,9 @@ class _AdoptionRequestFormState extends State<AdoptionRequestForm> {
       _showSuccess();
     } catch (e) {
       if (!mounted) return;
-      _showError('Ocurrió un error al enviar tu solicitud. Inténtalo de nuevo.');
+      _showError(
+        'Ocurrió un error al enviar tu solicitud. Inténtalo de nuevo.',
+      );
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -190,7 +191,10 @@ class _AdoptionRequestFormState extends State<AdoptionRequestForm> {
         backgroundColor: AppColors.primary,
         title: Text(
           'Solicitud para ${animal.nombre}',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -258,10 +262,7 @@ class _AdoptionRequestFormState extends State<AdoptionRequestForm> {
             const SizedBox(height: 4),
             Text(
               'Esta información ayuda al refugio a tomar la mejor decisión para ${animal.nombre}.',
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey.shade600,
-              ),
+              style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
             ),
             const SizedBox(height: 16),
 
@@ -314,7 +315,11 @@ class _AdoptionRequestFormState extends State<AdoptionRequestForm> {
             _DropdownQuestion<String>(
               question: '5. ¿Cuántas horas al día estaría solo el animal?',
               value: _horasSolo,
-              items: const ['Menos de 4 horas', 'Entre 4 y 8 horas', 'Más de 8 horas'],
+              items: const [
+                'Menos de 4 horas',
+                'Entre 4 y 8 horas',
+                'Más de 8 horas',
+              ],
               onChanged: (v) => setState(() => _horasSolo = v),
             ),
             const SizedBox(height: 16),
@@ -399,8 +404,10 @@ class _AdoptionRequestFormState extends State<AdoptionRequestForm> {
           borderRadius: BorderRadius.circular(14),
           borderSide: const BorderSide(color: AppColors.primary, width: 2),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
       ),
     );
   }
@@ -436,12 +443,12 @@ class _AnimalBanner extends StatelessWidget {
               width: 70,
               height: 70,
               child: animal.imageUrl.isNotEmpty
-                  ? Image.network(animal.imageUrl, fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const Icon(
-                        Icons.pets,
-                        color: Colors.white,
-                        size: 40,
-                      ))
+                  ? Image.network(
+                      animal.imageUrl,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          const Icon(Icons.pets, color: Colors.white, size: 40),
+                    )
                   : const Icon(Icons.pets, color: Colors.white, size: 40),
             ),
           ),
@@ -460,10 +467,7 @@ class _AnimalBanner extends StatelessWidget {
                 ),
                 Text(
                   '${animal.especie} · ${animal.raza}',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.white70,
-                  ),
+                  style: const TextStyle(fontSize: 13, color: Colors.white70),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -585,7 +589,7 @@ class _DropdownQuestion<T> extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<T>(
-          value: value,
+          initialValue: value,
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.white,
@@ -601,15 +605,19 @@ class _DropdownQuestion<T> extends StatelessWidget {
               borderRadius: BorderRadius.circular(14),
               borderSide: const BorderSide(color: AppColors.primary, width: 2),
             ),
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 4,
+            ),
           ),
           hint: const Text('Selecciona una opción'),
           items: items
-              .map((item) => DropdownMenuItem<T>(
-                    value: item,
-                    child: Text(item.toString()),
-                  ))
+              .map(
+                (item) => DropdownMenuItem<T>(
+                  value: item,
+                  child: Text(item.toString()),
+                ),
+              )
               .toList(),
           onChanged: onChanged,
         ),

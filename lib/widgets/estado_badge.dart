@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class EstadoBadge extends StatelessWidget {
   final String estado;
   final bool light;
-  const EstadoBadge({required this.estado, this.light = false});
+  const EstadoBadge({super.key, required this.estado, this.light = false});
 
   @override
   Widget build(BuildContext context) {

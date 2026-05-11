@@ -20,7 +20,6 @@ class _AnimalScreenState extends State<AnimalScreen> {
   void initState() {
     id_refugio = PreferencesController.preferences.getString('refugio');
 
-    // TODO: implement initState
     super.initState();
   }
 
@@ -92,7 +91,7 @@ class _AnimalScreenState extends State<AnimalScreen> {
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 8,
                       offset: Offset(0, 4),
                     ),

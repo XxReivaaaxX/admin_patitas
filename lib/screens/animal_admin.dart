@@ -8,8 +8,6 @@ import 'package:admin_patitas/screens/animalDetails/animal_view.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/custom_icon_button.dart';
 import 'package:admin_patitas/widgets/item_animal.dart';
-import 'package:admin_patitas/widgets/item_animal_colum.dart';
-import 'package:admin_patitas/widgets/primary_button.dart';
 import 'package:flutter/material.dart';
 
 class AnimalAdmin extends StatefulWidget {
@@ -77,7 +75,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                 child: Container(
                   height: 42,
                   decoration: BoxDecoration(
-                    color: AppColors.secondary.withOpacity(0.09),
+                    color: AppColors.secondary.withValues(alpha: 0.09),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: TextField(
@@ -114,7 +112,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -220,7 +218,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               context: context,
                               builder: (BuildContext context) => AlertDialog(
                                 title: Text(
-                                  'Eliminar a ' + snapshot.data![index].nombre,
+                                  'Eliminar a ${snapshot.data![index].nombre}',
                                 ),
                                 content: const Text(
                                   'Desea eliminar este animal se borraran todos sus datos',
@@ -360,7 +358,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                               context: context,
                               builder: (BuildContext context) => AlertDialog(
                                 title: Text(
-                                  'Eliminar a ' + snapshot.data![index].nombre,
+                                  'Eliminar a ${snapshot.data![index].nombre}',
                                 ),
                                 content: const Text(
                                   'Desea eliminar este animal se borraran todos sus datos',

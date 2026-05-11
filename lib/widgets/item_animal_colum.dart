@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:admin_patitas/widgets/text_form_register.dart';
 import 'package:flutter/material.dart';
 
@@ -12,7 +10,7 @@ class ItemAnimalColum extends StatelessWidget {
   final sizeImg;
 
   const ItemAnimalColum({
-    Key? key,
+    super.key,
     required this.sizeImg,
     required this.nombre,
     required this.edad,
@@ -23,7 +21,7 @@ class ItemAnimalColum extends StatelessWidget {
     required this.onpressedEliminar,
     required this.onPressedAdopcion,
     required this.imageUrl,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

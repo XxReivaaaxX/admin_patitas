@@ -6,9 +6,9 @@ import 'package:firebase_database/firebase_database.dart';
 class AnimalsService {
   final DatabaseReference _database = FirebaseDatabase.instance.ref();
 
-  Future<void> registerAnimals(String id_refugio, Animal animal) async {
+  Future<void> registerAnimals(String idRefugio, Animal animal) async {
     try {
-      final newAnimalRef = _database.child('animales').child(id_refugio).push();
+      final newAnimalRef = _database.child('animales').child(idRefugio).push();
 
       await newAnimalRef.set({
         'nombre': animal.nombre,

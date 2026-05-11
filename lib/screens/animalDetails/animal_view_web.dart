@@ -7,7 +7,6 @@ import 'package:admin_patitas/screens/animal_update.dart';
 import 'package:admin_patitas/screens/historial_register.dart';
 import 'package:admin_patitas/screens/vacuna_register.dart';
 import 'package:admin_patitas/services/vacuna_service.dart';
-import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/card_info_animal.dart';
 import 'package:admin_patitas/widgets/card_info_historial.dart';
 import 'package:admin_patitas/widgets/custom_icon_button.dart';

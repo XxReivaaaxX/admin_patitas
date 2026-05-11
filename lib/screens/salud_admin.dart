@@ -15,7 +15,7 @@ class SaludAdmin extends StatefulWidget {
 }
 
 class _SaludAdminState extends State<SaludAdmin> {
-  String _selectedValue = '2'; // Iniciar con Enfermedades
+  final String _selectedValue = '2'; // Iniciar con Enfermedades
   String title = 'Enfermedades';
   Map<String, String> options = {'2': 'Enfermedades'};
 
