@@ -65,16 +65,30 @@ class _CardInfoHistorialState extends State<CardInfoHistorial> {
                         icono: Icons.settings,
                         texto: "Actualizar datos",
                         onTap: () async {
-                          final respuesta = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => HistorialUpdate(
-                                id_historial: widget.historialMedico.id,
-                                nombre: widget.nombre,
-                                historialMedico: widget.historialMedico,
+                          final respuesta = await showDialog(
+                            context: context,
+
+                            barrierColor: AppColors.primary.withOpacity(0.3),
+                            builder: (context) => Center(
+                              child: SizedBox(
+                                width: 850,
+                                height: 600,
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  elevation: 10,
+                                  child: HistorialUpdate(
+                                    id_historial: widget.historialMedico.id,
+                                    nombre: widget.nombre,
+                                    historialMedico: widget.historialMedico,
+                                    isMobile: widget.isMobile,
+                                  ),
+                                ),
                               ),
                             ),
                           );
+
                           //recargar la lista cuando se cierra la ventana anterior
                           if (respuesta != null) {
                             setState(() {
@@ -108,6 +122,7 @@ class _CardInfoHistorialState extends State<CardInfoHistorial> {
                               id_historial: widget.historialMedico.id,
                               nombre: widget.nombre,
                               historialMedico: widget.historialMedico,
+                              isMobile: widget.isMobile,
                             ),
                           ),
                         );

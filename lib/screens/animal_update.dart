@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/services/animals_service.dart';
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/item_form_selection.dart';
@@ -23,10 +24,12 @@ String _processImage(List<int> bytes) {
 class AnimalUpdate extends StatefulWidget {
   final String? id_refugio;
   final Animal animal;
+  final bool isMobile;
   const AnimalUpdate({
     super.key,
     required this.id_refugio,
     required this.animal,
+    required this.isMobile,
   });
 
   @override
@@ -44,7 +47,7 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
   DateTime? _fechaIngreso;
   String? _newImageUrl; // Para almacenar la nueva imagen si se selecciona
 
-  final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
+  final Color colorPrincipal = AppColors.primary;
 
   @override
   void initState() {
@@ -123,17 +126,23 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
 
   @override
   Widget build(BuildContext context) {
-    // Determinar qué imagen mostrar
     String displayImageUrl = _newImageUrl ?? widget.animal.imageUrl;
+    final bool isDesktop = !widget.isMobile;
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: colorPrincipal,
+        backgroundColor: isDesktop ? Colors.white : colorPrincipal,
         title: Text(
           widget.animal.nombre,
           style: const TextStyle(color: Colors.white),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        leading: IconButton(
+          icon: const Icon(Icons.close), // Aquí está la "X"
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        iconTheme: isDesktop
+            ? IconThemeData(color: colorPrincipal)
+            : IconThemeData(color: Colors.white),
       ),
       body: Container(
         alignment: Alignment.center,
@@ -141,7 +150,10 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
         child: Form(
           key: _formKey,
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 50, vertical: 40),
+            margin: EdgeInsets.symmetric(
+              horizontal: isDesktop ? 80 : 50,
+              vertical: 40,
+            ),
             child: ListView(
               shrinkWrap: true,
               children: [
@@ -155,200 +167,248 @@ class _AnimalUpdateState extends State<AnimalUpdate> {
                 ),
                 const SizedBox(height: 30),
 
-                // Imagen actual del animal
-                Center(
-                  child: Column(
-                    children: [
-                      Container(
-                        width: 200,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey, width: 2),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(10),
-                          child: displayImageUrl.isNotEmpty
-                              ? (displayImageUrl.startsWith('data:image')
-                                    ? Image.memory(
-                                        Uri.parse(
-                                          displayImageUrl,
-                                        ).data!.contentAsBytes(),
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                              return Container(
-                                                color: Colors.grey[200],
-                                                child: Icon(
-                                                  Icons.pets,
-                                                  size: 80,
-                                                  color: Colors.grey[400],
-                                                ),
-                                              );
-                                            },
-                                      )
-                                    : Image.network(
-                                        displayImageUrl,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                              return Container(
-                                                color: Colors.grey[200],
-                                                child: Icon(
-                                                  Icons.pets,
-                                                  size: 80,
-                                                  color: Colors.grey[400],
-                                                ),
-                                              );
-                                            },
-                                      ))
-                              : Container(
-                                  color: Colors.grey[200],
-                                  child: Icon(
-                                    Icons.pets,
-                                    size: 80,
-                                    color: Colors.grey[400],
-                                  ),
-                                ),
-                        ),
+                // organizacion sies mobile
+                isDesktop
+                    ? Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Columna izquierda: imagen
+                          _buildImagePicker(displayImageUrl),
+                          const SizedBox(width: 40),
+                          // Columna derecha: todos los campos
+                          Expanded(child: _buildFormFields(isDesktop)),
+                        ],
+                      )
+                    : Column(
+                        children: [
+                          _buildImagePicker(displayImageUrl),
+                          const SizedBox(height: 30),
+                          _buildFormFields(isDesktop),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      ElevatedButton.icon(
-                        onPressed: _pickImage,
-                        icon: const Icon(Icons.photo_camera),
-                        label: Text(
-                          _newImageUrl != null
-                              ? 'Cambiar Foto Nuevamente'
-                              : 'Cambiar Foto',
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colorPrincipal,
-                          foregroundColor: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 30),
 
-                Formulario(
-                  controller: _nombre,
-                  text: 'Nombre',
-                  textOcul: false,
-                  colorBorder: Colors.black,
-                  colorBorderFocus: colorPrincipal,
-                  colorTextForm: Colors.grey,
-                  colorText: Colors.black,
-                  sizeM: 30,
-                  sizeP: 10,
-                  floatingLabel: true,
-                ),
-                const SizedBox(height: 20),
-
-                Row(
-                  children: [
-                    Expanded(
-                      child: ItemFormSelection(
-                        initialValue: _especie,
-                        onChanged: (value) => _especie = value,
-                        validator: (value) =>
-                            value == null ? 'Seleccione una especie' : null,
-                        items: ['Perro', 'Gato', 'Otro'],
-                        text: 'Especie',
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ItemFormSelection(
-                        initialValue: _sexo,
-                        onChanged: (value) => _sexo = value,
-                        validator: (value) =>
-                            value == null ? 'Seleccione el Sexo' : null,
-                        items: ['Macho', 'Hembra'],
-                        text: 'Sexo',
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                ItemFormSelection(
-                  initialValue: _estadoAdopcion,
-                  onChanged: (value) => _estadoAdopcion = value,
-                  validator: (value) =>
-                      value == null ? 'Seleccione estado de adopción' : null,
-                  items: ['Disponible', 'No Disponible'],
-                  text: 'Estado Adopción',
-                ),
-                const SizedBox(height: 20),
-
-                Formulario(
-                  controller: _raza,
-                  text: 'Raza',
-                  textOcul: false,
-                  colorBorder: Colors.black,
-                  colorBorderFocus: colorPrincipal,
-                  colorTextForm: Colors.grey,
-                  colorText: Colors.black,
-                  sizeM: 30,
-                  sizeP: 10,
-                  floatingLabel: true,
-                ),
-                const SizedBox(height: 16),
-
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 20,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      side: const BorderSide(color: Colors.grey, width: 2),
-                    ),
-                  ),
-                  onPressed: () async {
-                    final pickedDate = await showDatePicker(
-                      context: context,
-                      initialDate: _fechaIngreso ?? DateTime.now(),
-                      firstDate: DateTime(2020),
-                      lastDate: DateTime.now(),
-                    );
-                    if (pickedDate != null) {
-                      setState(() {
-                        _fechaIngreso = pickedDate;
-                      });
-                    }
-                  },
-                  child: Text(
-                    _fechaIngreso == null
-                        ? 'Seleccionar fecha de ingreso'
-                        : 'Fecha: ${_fechaIngreso!.day.toString().padLeft(2, '0')}/'
-                              '${_fechaIngreso!.month.toString().padLeft(2, '0')}/'
-                              '${_fechaIngreso!.year}',
-                  ),
-                ),
                 const SizedBox(height: 24),
 
-                BotonLogin(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      updateAnimal();
-                    }
-                  },
-                  texto: 'Actualizar Animal',
-                  color: Colors.white,
-                  colorB: colorPrincipal,
-                  size: 15,
-                  negrita: FontWeight.normal,
+                //boton de actualizar
+                SizedBox(
+                  width: isDesktop ? 300 : double.infinity,
+                  child: Align(
+                    alignment: isDesktop
+                        ? Alignment.centerRight
+                        : Alignment.center,
+                    child: SizedBox(
+                      width: isDesktop ? 260 : double.infinity,
+                      child: BotonLogin(
+                        onPressed: () {
+                          if (_formKey.currentState!.validate()) {
+                            updateAnimal();
+                          }
+                        },
+                        texto: 'Actualizar Animal',
+                        color: Colors.white,
+                        colorB: colorPrincipal,
+                        size: 15,
+                        negrita: FontWeight.normal,
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  //selector de imagen
+  Widget _buildImagePicker(String displayImageUrl) {
+    return Column(
+      children: [
+        Container(
+          width: 200,
+          height: 200,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.grey, width: 2),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: displayImageUrl.isNotEmpty
+                ? (displayImageUrl.startsWith('data:image')
+                      ? Image.memory(
+                          Uri.parse(displayImageUrl).data!.contentAsBytes(),
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _imagePlaceholder(),
+                        )
+                      : Image.network(
+                          displayImageUrl,
+                          fit: BoxFit.cover,
+                          errorBuilder: (_, __, ___) => _imagePlaceholder(),
+                        ))
+                : _imagePlaceholder(),
+          ),
+        ),
+        const SizedBox(height: 16),
+        ElevatedButton.icon(
+          onPressed: _pickImage,
+          icon: const Icon(Icons.photo_camera),
+          label: Text(
+            _newImageUrl != null ? 'Cambiar Foto Nuevamente' : 'Cambiar Foto',
+          ),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: colorPrincipal,
+            foregroundColor: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+  // Placeholder para imagen
+
+  Widget _imagePlaceholder() => Container(
+    color: Colors.grey[200],
+    child: Icon(Icons.pets, size: 80, color: Colors.grey[400]),
+  );
+
+  //campos del formulario
+  Widget _buildFormFields(bool isDesktop) {
+    return Column(
+      children: [
+        // Nombre (ancho completo)
+        Formulario(
+          controller: _nombre,
+          text: 'Nombre',
+          textOcul: false,
+          colorBorder: Colors.black,
+          colorBorderFocus: Colors.grey,
+          colorTextForm: Colors.grey,
+          colorText: Colors.black,
+          sizeM: 10,
+          sizeP: 10,
+          floatingLabel: true,
+        ),
+        const SizedBox(height: 20),
+
+        // Especie + Sexo (siempre en fila)
+        Row(
+          children: [
+            Expanded(
+              child: ItemFormSelection(
+                initialValue: _especie,
+                onChanged: (value) => _especie = value,
+                validator: (value) =>
+                    value == null ? 'Seleccione una especie' : null,
+                items: ['Perro', 'Gato', 'Otro'],
+                text: 'Especie',
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: ItemFormSelection(
+                initialValue: _sexo,
+                onChanged: (value) => _sexo = value,
+                validator: (value) =>
+                    value == null ? 'Seleccione el Sexo' : null,
+                items: ['Macho', 'Hembra'],
+                text: 'Sexo',
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 20),
+
+        //campos de estado de adopcion y raza (se organizan diferente segun el tamaño de pantalla)
+        isDesktop
+            ? Row(
+                children: [
+                  Expanded(
+                    child: ItemFormSelection(
+                      initialValue: _estadoAdopcion,
+                      onChanged: (value) => _estadoAdopcion = value,
+                      validator: (value) => value == null
+                          ? 'Seleccione estado de adopción'
+                          : null,
+                      items: ['Disponible', 'No Disponible'],
+                      text: 'Estado Adopción',
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Formulario(
+                      controller: _raza,
+                      text: 'Raza',
+                      textOcul: false,
+                      colorBorder: Colors.black,
+                      colorBorderFocus: Colors.grey,
+                      colorTextForm: Colors.grey,
+                      colorText: Colors.black,
+                      sizeM: 10,
+                      sizeP: 10,
+                      floatingLabel: true,
+                    ),
+                  ),
+                ],
+              )
+            : Column(
+                children: [
+                  ItemFormSelection(
+                    initialValue: _estadoAdopcion,
+                    onChanged: (value) => _estadoAdopcion = value,
+                    validator: (value) =>
+                        value == null ? 'Seleccione estado de adopción' : null,
+                    items: ['Disponible', 'No Disponible'],
+                    text: 'Estado Adopción',
+                  ),
+                  const SizedBox(height: 20),
+                  Formulario(
+                    controller: _raza,
+                    text: 'Raza',
+                    textOcul: false,
+                    colorBorder: Colors.black,
+                    colorBorderFocus: colorPrincipal,
+                    colorTextForm: Colors.grey,
+                    colorText: Colors.black,
+                    sizeM: 30,
+                    sizeP: 10,
+                    floatingLabel: true,
+                  ),
+                ],
+              ),
+        const SizedBox(height: 16),
+
+        // Fecha de ingreso (ancho completo)
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.white,
+            foregroundColor: Colors.black,
+            minimumSize: const Size(double.infinity, 60),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: const BorderSide(color: Colors.grey, width: 2),
+            ),
+          ),
+          onPressed: () async {
+            final pickedDate = await showDatePicker(
+              context: context,
+              initialDate: _fechaIngreso ?? DateTime.now(),
+              firstDate: DateTime(2020),
+              lastDate: DateTime.now(),
+            );
+            if (pickedDate != null) {
+              setState(() => _fechaIngreso = pickedDate);
+            }
+          },
+          child: Text(
+            _fechaIngreso == null
+                ? 'Seleccionar fecha de ingreso'
+                : 'Fecha: ${_fechaIngreso!.day.toString().padLeft(2, '0')}/'
+                      '${_fechaIngreso!.month.toString().padLeft(2, '0')}/'
+                      '${_fechaIngreso!.year}',
+          ),
+        ),
+      ],
     );
   }
 }

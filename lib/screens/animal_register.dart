@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:admin_patitas/services/notification_service.dart';
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -40,7 +41,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
   String? _resultadoIA;
   //bool _modeloCargado = false;
 
-  final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
+  final Color colorPrincipal = AppColors.primary;
 
   late IA.IAHandler ia;
 

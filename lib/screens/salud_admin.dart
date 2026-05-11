@@ -3,6 +3,7 @@ import 'package:admin_patitas/models/historial_medico.dart';
 import 'package:admin_patitas/screens/animalDetails/animal_view.dart';
 import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/services/historial_medico_service.dart';
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class SaludAdmin extends StatefulWidget {
@@ -88,12 +89,16 @@ class _SaludAdminState extends State<SaludAdmin> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: AppColors.backgroundLight,
       appBar: AppBar(
-        backgroundColor: const Color.fromRGBO(55, 148, 194, 1),
+        backgroundColor: AppColors.backgroundLight,
         title: Text(
           title.isEmpty ? 'Salud del Animal' : title,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
         ),
         iconTheme: const IconThemeData(color: Colors.white),
         actions: [],
@@ -151,6 +156,7 @@ class _SaludAdminState extends State<SaludAdmin> {
                     );
                   },
                   child: Card(
+                    color: Colors.white,
                     margin: const EdgeInsets.only(bottom: 16),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -284,7 +290,7 @@ class _SaludAdminState extends State<SaludAdmin> {
                                 Icon(
                                   Icons.healing,
                                   size: 20,
-                                  color: Colors.blue[400],
+                                  color: AppColors.secondary,
                                 ),
                                 const SizedBox(width: 8),
                                 Expanded(

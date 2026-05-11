@@ -1,5 +1,6 @@
 import 'package:admin_patitas/models/historial_medico.dart';
 import 'package:admin_patitas/services/historial_medico_service.dart';
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/item_form_selection.dart';
@@ -9,11 +10,13 @@ import 'package:flutter/material.dart';
 class HistorialUpdate extends StatefulWidget {
   final String? id_historial, nombre;
   final HistorialMedico historialMedico;
+  final bool isMobile;
   const HistorialUpdate({
     super.key,
     required this.id_historial,
     required this.nombre,
     required this.historialMedico,
+    required this.isMobile,
   });
 
   @override
@@ -29,7 +32,8 @@ class _HistorialUpdateState extends State<HistorialUpdate> {
   String? _castrado;
   DateTime? _fechaRevision;
 
-  final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
+  final Color colorPrincipal = AppColors.primary;
+  final Color colorText = Colors.black54;
 
   @override
   void initState() {
@@ -107,25 +111,34 @@ class _HistorialUpdateState extends State<HistorialUpdate> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = !widget.isMobile;
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: colorPrincipal,
+        backgroundColor: Colors.white,
         title: Text(
           'Historial Médico - ${widget.nombre}',
           style: const TextStyle(color: Colors.white),
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: const IconThemeData(color: AppColors.primary),
+        leading: IconButton(
+          icon: const Icon(Icons.close), // Aquí está la "X"
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: Container(
         color: Colors.white,
         child: Form(
           key: _formKey,
           child: ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 40),
+            padding: EdgeInsets.symmetric(
+              horizontal: isDesktop ? 80 : 50,
+              vertical: 40,
+            ),
             children: [
               TextForm(
                 lines: 2,
-                texto: 'EDICIÓN DE HISTORIAL MÉDICO',
+                texto: 'Actualizar Historial Médico',
                 color: colorPrincipal,
                 size: 26,
                 aling: TextAlign.center,
@@ -133,67 +146,111 @@ class _HistorialUpdateState extends State<HistorialUpdate> {
               ),
               const SizedBox(height: 30),
 
-              // Peso
-              Formulario(
-                controller: _peso,
-                text: 'Peso (kg)',
-                textOcul: false,
-                colorBorder: Colors.black,
-                colorBorderFocus: colorPrincipal,
-                colorTextForm: Colors.grey,
-                colorText: Colors.black,
-                sizeM: 30,
-                sizeP: 10,
-                floatingLabel: true,
+              // ── Peso + Castrado: siempre en fila ──────────────────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: Formulario(
+                      controller: _peso,
+                      text: 'Peso (kg)',
+                      textOcul: false,
+                      colorBorder: Colors.black,
+                      colorBorderFocus: colorPrincipal,
+                      colorTextForm: Colors.grey,
+                      colorText: Colors.black,
+                      sizeM: 5,
+                      sizeP: 10,
+                      floatingLabel: true,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ItemFormSelection(
+                      initialValue: _castrado,
+                      onChanged: (value) => _castrado = value,
+                      validator: (value) =>
+                          value == null ? 'Seleccione una opción' : null,
+                      items: ['Sí', 'No'],
+                      text: 'Castrado',
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
 
-              // Castrado
-              ItemFormSelection(
-                initialValue: _castrado,
-                onChanged: (value) => _castrado = value,
-                validator: (value) =>
-                    value == null ? 'Seleccione una opción' : null,
-                items: ['Sí', 'No'],
-                text: 'Castrado',
-              ),
+              // ── Enfermedades + Tratamiento: fila en desktop, columna en mobile ──
+              isDesktop
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Formulario(
+                            controller: _enfermedades,
+                            text: 'Enfermedades',
+                            textOcul: false,
+                            colorBorder: Colors.black,
+                            colorBorderFocus: colorPrincipal,
+                            colorTextForm: Colors.grey,
+                            colorText: Colors.black,
+                            sizeM: 30,
+                            sizeP: 10,
+                            floatingLabel: true,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Formulario(
+                            controller: _tratamiento,
+                            text: 'Tratamiento',
+                            textOcul: false,
+                            colorBorder: Colors.black,
+                            colorBorderFocus: colorPrincipal,
+                            colorTextForm: Colors.grey,
+                            colorText: Colors.black,
+                            sizeM: 30,
+                            sizeP: 10,
+                            floatingLabel: true,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        Formulario(
+                          controller: _enfermedades,
+                          text: 'Enfermedades',
+                          textOcul: false,
+                          colorBorder: Colors.black,
+                          colorBorderFocus: colorPrincipal,
+                          colorTextForm: Colors.grey,
+                          colorText: Colors.black,
+                          sizeM: 30,
+                          sizeP: 10,
+                          floatingLabel: true,
+                        ),
+                        const SizedBox(height: 20),
+                        Formulario(
+                          controller: _tratamiento,
+                          text: 'Tratamiento',
+                          textOcul: false,
+                          colorBorder: Colors.black,
+                          colorBorderFocus: colorPrincipal,
+                          colorTextForm: Colors.grey,
+                          colorText: Colors.black,
+                          sizeM: 30,
+                          sizeP: 10,
+                          floatingLabel: true,
+                        ),
+                      ],
+                    ),
               const SizedBox(height: 20),
 
-              // Enfermedades
-              Formulario(
-                controller: _enfermedades,
-                text: 'Enfermedades',
-                textOcul: false,
-                colorBorder: Colors.black,
-                colorBorderFocus: colorPrincipal,
-                colorTextForm: Colors.grey,
-                colorText: Colors.black,
-                sizeM: 30,
-                sizeP: 10,
-                floatingLabel: true,
-              ),
-              const SizedBox(height: 20),
-
-              // Tratamiento
-              Formulario(
-                controller: _tratamiento,
-                text: 'Tratamiento',
-                textOcul: false,
-                colorBorder: Colors.black,
-                colorBorderFocus: colorPrincipal,
-                colorTextForm: Colors.grey,
-                colorText: Colors.black,
-                sizeM: 30,
-                sizeP: 10,
-                floatingLabel: true,
-              ),
-              const SizedBox(height: 20),
-
-              // Fecha de revisión
+              // ── Fecha de revisión ─────────────────────────────────────────
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
+                  minimumSize: const Size(double.infinity, 60),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 20,
@@ -226,14 +283,20 @@ class _HistorialUpdateState extends State<HistorialUpdate> {
               ),
               const SizedBox(height: 30),
 
-              // Botón de actualización
-              BotonLogin(
-                onPressed: updateHistorial,
-                texto: 'Actualizar Historial Médico',
-                color: Colors.white,
-                colorB: colorPrincipal,
-                size: 15,
-                negrita: FontWeight.normal,
+              // ── Botón guardar ─────────────────────────────────────────────
+              Align(
+                alignment: isDesktop ? Alignment.centerRight : Alignment.center,
+                child: SizedBox(
+                  width: isDesktop ? 300 : double.infinity,
+                  child: BotonLogin(
+                    onPressed: updateHistorial,
+                    texto: 'Actualizar Historial Médico',
+                    color: Colors.white,
+                    colorB: colorPrincipal,
+                    size: 15,
+                    negrita: FontWeight.normal,
+                  ),
+                ),
               ),
             ],
           ),

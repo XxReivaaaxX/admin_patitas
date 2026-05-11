@@ -182,6 +182,7 @@ class AnimalViewMobile extends StatelessWidget {
                                   builder: (context) => AnimalUpdate(
                                     id_refugio: idRefugio,
                                     animal: animal,
+                                    isMobile: true,
                                   ),
                                 ),
                               );

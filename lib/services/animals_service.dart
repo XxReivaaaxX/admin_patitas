@@ -95,4 +95,37 @@ class AnimalsService {
       log('Error al eliminar animal de Firebase: $e');
     }
   }
+
+  Future<List<Animal>> filterAnimals(
+    String refugio, {
+    String searchQuery = '',
+    String? especie,
+    String? estadoSalud,
+    String? estadoAdopcion,
+    String? genero,
+  }) async {
+    final animals = await getAnimals(refugio);
+
+    return animals.where((animal) {
+      final query = searchQuery.toLowerCase();
+
+      final matchesSearch =
+          query.isEmpty ||
+          animal.nombre.toLowerCase().contains(query) ||
+          animal.raza.toLowerCase().contains(query);
+
+      final matchesEspecie = especie == null || animal.especie == especie;
+      final matchesSalud =
+          estadoSalud == null || animal.estadoSalud == estadoSalud;
+      final matchesAdopcion =
+          estadoAdopcion == null || animal.estadoAdopcion == estadoAdopcion;
+      final matchesGenero = genero == null || animal.genero == genero;
+
+      return matchesSearch &&
+          matchesEspecie &&
+          matchesSalud &&
+          matchesAdopcion &&
+          matchesGenero;
+    }).toList();
+  }
 }

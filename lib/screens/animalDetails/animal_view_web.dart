@@ -138,15 +138,31 @@ class AnimalViewWeb extends StatelessWidget {
                                   icono: Icons.settings,
                                   texto: "Actualizar datos",
                                   onTap: () async {
-                                    final res = await Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => AnimalUpdate(
-                                          id_refugio: idRefugio,
-                                          animal: animal,
+                                    final res = await showDialog(
+                                      context: context,
+
+                                      barrierColor: AppColors.primary
+                                          .withOpacity(0.3),
+                                      builder: (context) => Center(
+                                        child: SizedBox(
+                                          width: 850,
+                                          height: 600,
+                                          child: Card(
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                            elevation: 10,
+                                            child: AnimalUpdate(
+                                              id_refugio: idRefugio,
+                                              animal: animal,
+                                              isMobile: false,
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     );
+
                                     if (res != null) {
                                       onAnimalUpdated(res);
                                     }
@@ -202,7 +218,7 @@ class AnimalViewWeb extends StatelessWidget {
                             );
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
+                            backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                           ),
                         ),
@@ -269,6 +285,34 @@ class AnimalViewWeb extends StatelessWidget {
                                 icono: Icons.add,
                                 texto: "Nueva vacuna",
                                 onTap: () async {
+                                  final result = await showDialog(
+                                    context: context,
+
+                                    barrierColor: AppColors.primary.withOpacity(
+                                      0.3,
+                                    ),
+                                    builder: (context) => Center(
+                                      child: SizedBox(
+                                        width: 850,
+                                        height: 600,
+                                        child: Card(
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                          ),
+                                          elevation: 10,
+                                          child: VacunaRegister(
+                                            refugioId: idRefugio!,
+                                            animalId: animal.id,
+                                            animalNombre: animal.nombre,
+                                            animalEspecie: animal.especie,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                  /*
                                   final result = await Navigator.push(
                                     context,
                                     MaterialPageRoute(
@@ -279,7 +323,7 @@ class AnimalViewWeb extends StatelessWidget {
                                         animalEspecie: animal.especie,
                                       ),
                                     ),
-                                  );
+                                  );*/
                                   if (result == true) loadVacunas();
                                 },
                               ),

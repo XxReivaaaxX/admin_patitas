@@ -1,3 +1,4 @@
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:flutter/material.dart';
 
 class ItemFormSelection extends StatelessWidget {
@@ -25,6 +26,14 @@ class ItemFormSelection extends StatelessWidget {
         labelText: text,
         border: const OutlineInputBorder(
           borderRadius: BorderRadius.all(Radius.circular(10)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: const BorderRadius.all(Radius.circular(10)),
+          borderSide: BorderSide(color: AppColors.primary),
+        ),
+        floatingLabelStyle: TextStyle(
+          color: AppColors.primary,
+          fontWeight: FontWeight.bold,
         ),
       ),
       items: items.map((especie) {

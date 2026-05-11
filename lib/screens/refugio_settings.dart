@@ -1,3 +1,4 @@
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:admin_patitas/services/refugio_management_service.dart';
@@ -188,8 +189,11 @@ class _RefugioSettingsState extends State<RefugioSettings> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Configurar Refugio'),
-        backgroundColor: const Color(0xFF4FC3F7),
+        title: const Text(
+          'Configurar Refugio',
+          style: TextStyle(color: Colors.white),
+        ),
+        backgroundColor: AppColors.primary,
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -234,12 +238,15 @@ class _RefugioSettingsState extends State<RefugioSettings> {
                         color: Colors.white,
                       ),
                     )
-                  : const Icon(Icons.save),
-              label: const Text('Guardar Cambios'),
+                  : const Icon(Icons.save, color: Colors.white),
+              label: const Text(
+                'Guardar Cambios',
+                style: TextStyle(color: Colors.white),
+              ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4FC3F7),
+                backgroundColor: AppColors.primary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                textStyle: const TextStyle(fontSize: 16),
+                textStyle: const TextStyle(fontSize: 16, color: Colors.white),
               ),
             ),
             const SizedBox(height: 40),

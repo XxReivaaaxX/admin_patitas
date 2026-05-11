@@ -1,5 +1,6 @@
 import 'package:admin_patitas/models/vacuna.dart';
 import 'package:admin_patitas/services/vacuna_service.dart';
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/item_form_selection.dart';
@@ -38,7 +39,7 @@ class _VacunaRegisterState extends State<VacunaRegister> {
   bool _mostrarCampoPersonalizado = false;
   List<String> _vacunasDisponibles = [];
 
-  final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
+  final Color colorPrincipal = AppColors.primary;
 
   @override
   void initState() {

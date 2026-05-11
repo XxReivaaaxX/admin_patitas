@@ -23,6 +23,27 @@ class AnimalAdmin extends StatefulWidget {
 class _AnimalAdminState extends State<AnimalAdmin> {
   late Future<List<Animal>> _futureAnimals;
 
+  // varibles para filtros
+  String _searchQuery = '';
+  String? _filtroEspecie;
+  String? _filtroEstadoSalud;
+  String? _filtroEstadoAdopcion;
+  String? _filtroGenero;
+
+  /// Dispara una nueva consulta al servicio con los criterios actuales.
+  void _reloadAnimals() {
+    setState(() {
+      _futureAnimals = AnimalsService().filterAnimals(
+        widget.refugio!,
+        searchQuery: _searchQuery,
+        especie: _filtroEspecie,
+        estadoSalud: _filtroEstadoSalud,
+        estadoAdopcion: _filtroEstadoAdopcion,
+        genero: _filtroGenero,
+      );
+    });
+  }
+
   @override
   void initState() {
     log(
@@ -61,7 +82,8 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                   ),
                   child: TextField(
                     onChanged: (value) {
-                      // tu lógica de búsqueda
+                      _searchQuery = value;
+                      _reloadAnimals();
                     },
                     decoration: InputDecoration(
                       hintText: 'Buscar animal...',
@@ -115,13 +137,35 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                   icono: Icons.add,
                   texto: "Nuevo Animal",
                   onTap: () async {
-                    await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            AnimalRegister(idRefugio: widget.refugio!),
-                      ),
-                    );
+                    if (MediaQuery.of(context).size.width >= 1000) {
+                      await showDialog(
+                        context: context,
+
+                        barrierColor: AppColors.primary.withOpacity(0.3),
+                        builder: (context) => Center(
+                          child: SizedBox(
+                            width: 850,
+                            height: 600,
+                            child: Card(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              elevation: 10,
+                              child: AnimalRegister(idRefugio: widget.refugio!),
+                            ),
+                          ),
+                        ),
+                      );
+                    } else {
+                      await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              AnimalRegister(idRefugio: widget.refugio!),
+                        ),
+                      );
+                    }
+
                     //recargar la lista cuando se cierra la ventana anterior
                     setState(() {
                       _futureAnimals = AnimalsService().getAnimals(
@@ -216,6 +260,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                                 builder: (context) => AnimalUpdate(
                                   id_refugio: widget.refugio,
                                   animal: snapshot.data![index],
+                                  isMobile: true,
                                 ),
                               ),
                             );
@@ -355,6 +400,7 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                                 builder: (context) => AnimalUpdate(
                                   id_refugio: widget.refugio,
                                   animal: snapshot.data![index],
+                                  isMobile: true,
                                 ),
                               ),
                             );
