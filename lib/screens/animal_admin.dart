@@ -1,7 +1,9 @@
 import 'dart:developer';
 
+import 'package:admin_patitas/models/report_models.dart';
 import 'package:admin_patitas/screens/animal_update.dart';
 import 'package:admin_patitas/services/animals_service.dart';
+import 'package:admin_patitas/services/report_service.dart';
 import 'package:admin_patitas/models/animal.dart';
 import 'package:admin_patitas/screens/animal_register.dart';
 import 'package:admin_patitas/screens/animalDetails/animal_view.dart';
@@ -20,6 +22,7 @@ class AnimalAdmin extends StatefulWidget {
 
 class _AnimalAdminState extends State<AnimalAdmin> {
   late Future<List<Animal>> _futureAnimals;
+  bool _isGeneratingReport = false;
 
   @override
   void initState() {
@@ -32,6 +35,216 @@ class _AnimalAdminState extends State<AnimalAdmin> {
     log('refugio obtenido en vista de animales:  ${widget.refugio!}');
 
     super.initState();
+  }
+
+  Future<void> _generateReportAndDownload(ReportFilter filter) async {
+    if (widget.refugio == null || widget.refugio!.isEmpty) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se encontró el refugio seleccionado.'),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isGeneratingReport = true);
+
+    try {
+      final service = ReportService();
+      final result = await service.buildReportData(widget.refugio!, filter);
+      final bytes = await service.buildExcel(result);
+      final fileName = service.buildFileName(widget.refugio!, DateTime.now());
+      await service.saveExcel(bytes, fileName);
+
+      if (!mounted) return;
+
+      final bool noDataInPeriod =
+          result.stats.altasPeriodo == 0 &&
+          result.stats.vacunasAplicadasPeriodo == 0 &&
+          result.dataset.salud.where((e) => e.revisionEnPeriodo).isEmpty;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            noDataInPeriod
+                ? 'Reporte generado sin registros en el período seleccionado.'
+                : 'Reporte Excel generado y descargado correctamente.',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No fue posible generar el reporte: $e')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingReport = false);
+      }
+    }
+  }
+
+  Future<void> _openReportFilterSheet() async {
+    ReportFilterMode mode = ReportFilterMode.currentMonth;
+    DateTime? fromDate;
+    DateTime? toDate;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setSheetState) {
+            Future<void> pickFromDate() async {
+              final initial = fromDate ?? DateTime.now();
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: initial,
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+              );
+              if (picked != null) {
+                setSheetState(() {
+                  fromDate = picked;
+                });
+              }
+            }
+
+            Future<void> pickToDate() async {
+              final initial = toDate ?? fromDate ?? DateTime.now();
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: initial,
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+              );
+              if (picked != null) {
+                setSheetState(() {
+                  toDate = picked;
+                });
+              }
+            }
+
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Generar Reporte Excel',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  SegmentedButton<ReportFilterMode>(
+                    segments: const [
+                      ButtonSegment<ReportFilterMode>(
+                        value: ReportFilterMode.currentMonth,
+                        label: Text('Mes actual'),
+                        icon: Icon(Icons.calendar_month),
+                      ),
+                      ButtonSegment<ReportFilterMode>(
+                        value: ReportFilterMode.customRange,
+                        label: Text('Rango personalizado'),
+                        icon: Icon(Icons.date_range),
+                      ),
+                    ],
+                    selected: {mode},
+                    onSelectionChanged: (selection) {
+                      setSheetState(() {
+                        mode = selection.first;
+                      });
+                    },
+                  ),
+                  if (mode == ReportFilterMode.customRange) ...[
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: pickFromDate,
+                            icon: const Icon(Icons.date_range),
+                            label: Text(
+                              fromDate == null
+                                  ? 'Desde'
+                                  : '${fromDate!.day}/${fromDate!.month}/${fromDate!.year}',
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: pickToDate,
+                            icon: const Icon(Icons.date_range),
+                            label: Text(
+                              toDate == null
+                                  ? 'Hasta'
+                                  : '${toDate!.day}/${toDate!.month}/${toDate!.year}',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: _isGeneratingReport
+                          ? null
+                          : () {
+                              if (mode == ReportFilterMode.customRange) {
+                                if (fromDate == null || toDate == null) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Seleccione fecha desde y hasta.',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                if (toDate!.isBefore(fromDate!)) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'La fecha "hasta" no puede ser menor a "desde".',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+                              }
+
+                              final filter =
+                                  mode == ReportFilterMode.currentMonth
+                                  ? ReportFilter.currentMonth()
+                                  : ReportFilter(
+                                      mode: ReportFilterMode.customRange,
+                                      from: fromDate,
+                                      to: toDate,
+                                    );
+
+                              Navigator.pop(sheetContext);
+                              _generateReportAndDownload(filter);
+                            },
+                      icon: const Icon(Icons.download),
+                      label: const Text('Generar y descargar'),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -103,6 +316,45 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                   icon: Icon(Icons.tune_rounded, color: Colors.white, size: 20),
                   padding: EdgeInsets.zero,
                 ),
+              ),
+
+              const SizedBox(width: 10),
+
+              // Botón reporte
+              Container(
+                height: 35,
+                width: 35,
+                decoration: BoxDecoration(
+                  color: AppColors.primary,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: _isGeneratingReport
+                    ? const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      )
+                    : IconButton(
+                        onPressed: _openReportFilterSheet,
+                        icon: const Icon(
+                          Icons.table_view_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        padding: EdgeInsets.zero,
+                        tooltip: 'Reporte Excel',
+                      ),
               ),
 
               const SizedBox(width: 10),
