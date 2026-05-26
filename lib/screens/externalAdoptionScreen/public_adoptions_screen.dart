@@ -51,7 +51,10 @@ class _PublicAdoptionsScreenState extends State<PublicAdoptionsScreen> {
           '>>> Sin sesión activa, iniciando sesión anónima...',
           name: 'PublicAdoptions',
         );
-        await FirebaseAuth.instance.signInAnonymously();
+        if (FirebaseAuth.instance.currentUser == null) {
+          await FirebaseAuth.instance.signInAnonymously();
+        }
+
         log('>>> Sesión anónima iniciada', name: 'PublicAdoptions');
       } else {
         log(

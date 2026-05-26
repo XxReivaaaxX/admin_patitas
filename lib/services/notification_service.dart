@@ -9,24 +9,16 @@ class NotificationsService {
   final DatabaseReference _db = FirebaseDatabase.instance.ref();
 
   //crea la notificacion base
-  Future<String?> sendNotification({
-    required String title,
-    required String body,
-    required String refugioId,
-  }) async {
+  Future<String?> sendNotification(Notifications notification) async {
     try {
       final notifRef = _db.child('notifications').push();
 
-      await notifRef.set({
-        'title': title,
-        'body': body,
-        'refugioId': refugioId,
-        'date': DateTime.now().toIso8601String(),
-      });
+      await notifRef.set(notification.toMap());
 
       return notifRef.key;
     } catch (e) {
       log('Error al enviar notificación: $e', name: 'NotificationsService');
+
       return null;
     }
   }
@@ -36,14 +28,21 @@ class NotificationsService {
     required String refugioId,
     required String title,
     required String body,
+    required String type,
+    required String targetId,
   }) async {
     try {
-      //Guarda la notificación original
-      final String? notifId = await sendNotification(
+      final notification = Notifications(
+        id: '',
         title: title,
         body: body,
         refugioId: refugioId,
+        date: DateTime.now().toIso8601String(),
+        type: type,
+        targetId: targetId,
       );
+      //Guarda la notificación original
+      final String? notifId = await sendNotification(notification);
 
       if (notifId != null) {
         final currentUserId = FirebaseAuth.instance.currentUser?.uid;

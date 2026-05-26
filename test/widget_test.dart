@@ -18,11 +18,11 @@ void main() {
     // Verify that our counter has incremented.
     expect(find.text('0'), findsNothing);
     expect(find.text('1'), findsOneWidget);
-    /*
-  test('App route table contains critical routes', () {
-    expect(appRoutes.containsKey('/login'), isTrue);
-    expect(appRoutes.containsKey('/register'), isTrue);
-    expect(appRoutes.containsKey('/adoptions'), isTrue);
-  });*/
+
+    test('App route table contains critical routes', () {
+      expect(appRoutes.containsKey('/login'), isTrue);
+      expect(appRoutes.containsKey('/register'), isTrue);
+      expect(appRoutes.containsKey('/adoptions'), isTrue);
+    });
   });
 }

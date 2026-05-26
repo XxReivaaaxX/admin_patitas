@@ -31,49 +31,58 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
   // visualisacion de menu para mobile
 
   Widget getMenuMovil() {
-    return Scaffold(
-      body: RoutesMenu(index: itemIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: itemIndex < 3 ? itemIndex : 0,
-        onTap: (int index) {
-          setState(() {
-            itemIndex = index; // Directamente 0 o 1
-          });
-        },
-        backgroundColor: AppColors.backgroundLight,
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.black,
+    return ValueListenableBuilder<int>(
+      valueListenable: indexMenu,
+      builder: (concontext, currentIndex, _) {
+        return Scaffold(
+          body: RoutesMenu(),
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: currentIndex < 3 ? currentIndex : 0,
+            onTap: (int index) {
+              setState(() {
+                indexMenu.value = index; // Directamente 0 o 1
+              });
+            },
+            backgroundColor: AppColors.backgroundLight,
+            selectedItemColor: Colors.white,
+            unselectedItemColor: Colors.black,
 
-        selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
-        selectedFontSize: 0,
-        unselectedFontSize: 12,
+            selectedLabelStyle: TextStyle(fontWeight: FontWeight.bold),
+            selectedFontSize: 0,
+            unselectedFontSize: 12,
 
-        items: [
-          BottomNavigationBarItem(
-            activeIcon: itemIndex < 2
-                ? buildSelectedIcon(Icons.home, 'Principal')
-                : buildUnselectedIcon(Icons.home_outlined, 'Principal'),
-            icon: buildUnselectedIcon(Icons.home_outlined, 'Principal'),
-            label: '',
+            items: [
+              BottomNavigationBarItem(
+                activeIcon: currentIndex == 0
+                    ? buildSelectedIcon(Icons.home, 'Principal')
+                    : buildUnselectedIcon(Icons.home_outlined, 'Principal'),
+                icon: buildUnselectedIcon(Icons.home_outlined, 'Principal'),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                activeIcon: currentIndex == 1
+                    ? buildSelectedIcon(Icons.pets, 'Animales')
+                    : buildUnselectedIcon(Icons.pets_outlined, 'Animales'),
+                icon: buildUnselectedIcon(Icons.pets_outlined, 'Animales'),
+                label: '',
+              ),
+              BottomNavigationBarItem(
+                activeIcon: currentIndex == 2
+                    ? buildSelectedIcon(Icons.volunteer_activism, 'Adopciones')
+                    : buildUnselectedIcon(
+                        Icons.volunteer_activism_outlined,
+                        'Adopciones',
+                      ),
+                icon: buildUnselectedIcon(
+                  Icons.volunteer_activism_outlined,
+                  'Adopciones',
+                ),
+                label: '',
+              ),
+            ],
           ),
-          BottomNavigationBarItem(
-            activeIcon: buildSelectedIcon(Icons.pets, 'Animales'),
-            icon: buildUnselectedIcon(Icons.pets_outlined, 'Animales'),
-            label: '',
-          ),
-          BottomNavigationBarItem(
-            activeIcon: buildSelectedIcon(
-              Icons.volunteer_activism,
-              'Adopciones',
-            ),
-            icon: buildUnselectedIcon(
-              Icons.volunteer_activism_outlined,
-              'Adopciones',
-            ),
-            label: '',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
   /*
@@ -195,21 +204,25 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
 
   // visualizacion de menu para web
   Widget getMenuWeb() {
+    bool isWebTabSelected = indexMenu.value < 3;
     return SizedBox(
       child: TabBar(
         isScrollable: true,
-        onTap: (index) => setState(() => itemIndex = index),
+        onTap: (index) => setState(() => indexMenu.value = index),
 
         indicatorColor: Colors.transparent,
         dividerColor: Colors.transparent,
         indicatorSize: TabBarIndicatorSize.label,
 
-        labelColor: itemIndex >= 3 ? Colors.black : AppColors.secondary,
+        labelColor: isWebTabSelected ? AppColors.secondary : Colors.black,
         unselectedLabelColor: Colors.black,
 
-        labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        unselectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.normal,
+        labelStyle: TextStyle(
+          fontWeight: isWebTabSelected ? FontWeight.bold : FontWeight.normal,
+          fontSize: 18,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontWeight: isWebTabSelected ? FontWeight.bold : FontWeight.normal,
           fontSize: 18,
         ),
 
@@ -240,8 +253,7 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
             return IconButton(
               onPressed: () {
                 setState(() {
-                  itemIndex = 3;
-                  itemExternalIndex = 3;
+                  indexMenu.value = 3;
                 });
               },
               icon: Stack(
@@ -293,8 +305,7 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
         GestureDetector(
           onTap: () {
             setState(() {
-              itemIndex = 4;
-              itemExternalIndex = 4;
+              indexMenu.value = 4;
             });
           },
           child: CircleAvatar(
@@ -332,7 +343,7 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
                   : [getExternalMenu()],
             ),
             // mostrar la pagina principal segun el tamaño de la pantalla
-            body: isWeb ? RoutesMenu(index: itemIndex) : getMenuMovil(),
+            body: isWeb ? RoutesMenu() : getMenuMovil(),
           ),
         );
       },

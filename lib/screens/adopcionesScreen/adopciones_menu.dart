@@ -11,7 +11,8 @@ import 'package:admin_patitas/services/solicitud_adopcion_service.dart';
 import 'package:flutter/material.dart';
 
 class AdopcionesMenu extends StatefulWidget {
-  const AdopcionesMenu({super.key});
+  final int initialTab;
+  const AdopcionesMenu({super.key, this.initialTab = 0});
 
   @override
   State<AdopcionesMenu> createState() => _AdopcionesMenuState();
@@ -26,12 +27,19 @@ class _AdopcionesMenuState extends State<AdopcionesMenu> {
   List<Map<String, dynamic>> _todasLasSolicitudes = [];
   Map<String, List<Map<String, dynamic>>> _porAnimal = {};
 
-  final ValueNotifier<int> _selectedIndexNotifier = ValueNotifier<int>(0);
+  //final ValueNotifier<int> _selectedIndexNotifier = ValueNotifier<int>(0);
+  late final ValueNotifier<int> _selectedIndexNotifier;
 
   @override
   void initState() {
     super.initState();
     id_refugio = PreferencesController.preferences.getString('refugio');
+    log('id_refugio cargado: $id_refugio', name: 'AdopcionesMenu');
+    log(
+      'Todas las keys guardadas: ${PreferencesController.preferences.getKeys()}',
+      name: 'AdopcionesMenu',
+    );
+    _selectedIndexNotifier = ValueNotifier<int>(widget.initialTab);
 
     _loadSolicitudes();
   }
@@ -125,7 +133,7 @@ class _AdopcionesMenuState extends State<AdopcionesMenu> {
 
   Widget menuMobile() {
     return DefaultTabController(
-      initialIndex: 0,
+      initialIndex: widget.initialTab,
       length: 2,
       child: Builder(
         builder: (context) {

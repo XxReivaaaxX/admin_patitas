@@ -1,6 +1,8 @@
+import 'dart:async';
 import 'dart:developer';
 
 import 'package:admin_patitas/models/animal.dart';
+import 'package:admin_patitas/services/notification_service.dart';
 import 'package:firebase_database/firebase_database.dart';
 
 class AnimalsService {
@@ -21,6 +23,15 @@ class AnimalsService {
         'estado_adopcion': animal.estadoAdopcion,
         'imagenUrl': animal.imageUrl,
       });
+      unawaited(
+        NotificationsService().sendNotificationToCollaborators(
+          refugioId: idRefugio,
+          title: "Nuevo animal en el refugio",
+          body: "",
+          type: 'createAnimal',
+          targetId: newAnimalRef.key!,
+        ),
+      );
 
       log("Animal registrado correctamente en Firebase: ${newAnimalRef.key}");
     } catch (e) {
@@ -77,6 +88,47 @@ class AnimalsService {
     }
   }
 
+  Future<Animal?> getAnimalById(String refugio, String animalId) async {
+    try {
+      if (animalId.isEmpty) {
+        log('Error: ID del animal vacío');
+        return null;
+      }
+
+      final snapshot = await _database
+          .child('animales')
+          .child(refugio)
+          .child(animalId)
+          .get();
+
+      if (!snapshot.exists) {
+        log('Animal no encontrado');
+        return null;
+      }
+
+      final data = snapshot.value as Map<dynamic, dynamic>;
+
+      final animal = Animal(
+        id: animalId,
+        nombre: data['nombre'] ?? '',
+        especie: data['especie'] ?? '',
+        raza: data['raza'] ?? '',
+        genero: data['sexo'] ?? '',
+        historialMedicoId: data['historial_medico_id'] ?? '',
+        estadoSalud: data['estado_salud'] ?? '',
+        fechaIngreso: data['fecha_ingreso'] ?? '',
+        estadoAdopcion: data['estado_adopcion'] ?? '',
+        imageUrl: data['imagenUrl'] ?? '',
+      );
+
+      return animal;
+    } catch (e) {
+      log('Error al obtener animal de Firebase: $e');
+
+      return null;
+    }
+  }
+
   Future<void> deleteAnimals(String refugio, Animal animal) async {
     try {
       if (animal.id.isEmpty) {
@@ -127,5 +179,37 @@ class AnimalsService {
           matchesAdopcion &&
           matchesGenero;
     }).toList();
+  }
+
+  Future<List<Animal>> getAnimalsAvailable(String refugio) async {
+    try {
+      // Nueva Query que busca exclusivamente los que están en estado "Disponible"
+      final snapshot = await _database
+          .child('animales')
+          .child(refugio)
+          .orderByChild('estado_adopcion')
+          .equalTo('Disponible')
+          .get();
+
+      if (snapshot.exists) {
+        final data = snapshot.value as Map<dynamic, dynamic>;
+        final List<Animal> animals = [];
+
+        data.forEach((key, value) {
+          final animalData = Map<String, dynamic>.from(value as Map);
+          animals.add(Animal.fromJson(key, animalData));
+        });
+
+        return animals;
+      } else {
+        log(
+          'No se encontraron animales con estado Disponible en el refugio: $refugio',
+        );
+        return [];
+      }
+    } catch (e) {
+      log('Error al obtener animales disponibles de Firebase: $e');
+      return [];
+    }
   }
 }

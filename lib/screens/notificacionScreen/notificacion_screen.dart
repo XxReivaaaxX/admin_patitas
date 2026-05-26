@@ -1,5 +1,10 @@
 import 'package:admin_patitas/models/notifications_show.dart';
+import 'package:admin_patitas/models/routes_menu.dart';
+import 'package:admin_patitas/screens/adopcionesScreen/adopciones_menu.dart';
+import 'package:admin_patitas/screens/animalDetails/animal_view.dart';
+import 'package:admin_patitas/services/animals_service.dart';
 import 'package:admin_patitas/services/notification_service.dart';
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/widgets/item_notification.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -35,17 +40,42 @@ class _NotificacionScreenState extends State<NotificacionScreen> {
 
   //ejecuta la actualizacion de lectura del item seleccionado
   Future<void> _onTapItem(NotificationsShow item) async {
-    if (item.isRead) return;
+    if (!item.isRead) {
+      await NotificationsService().updateReadNotificationState(
+        userId: _currentUser!.uid,
+        notifId: item.notifications.id,
+        refugioId: id_refugio!,
+      );
 
-    await NotificationsService().updateReadNotificationState(
-      userId: _currentUser!.uid,
-      notifId: item.notifications.id,
-      refugioId: id_refugio!,
-    );
+      setState(() {
+        _loadNotifications();
+      });
+    }
 
-    setState(() {
-      _loadNotifications();
-    });
+    // ===== NAVEGACION =====
+
+    switch (item.notifications.type) {
+      case 'createAnimal':
+        final animal = await AnimalsService().getAnimalById(
+          id_refugio!,
+          item.notifications.targetId,
+        );
+
+        if (animal != null && mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => AnimalView(animal: animal)),
+          );
+        }
+
+        break;
+
+      case 'solicitudAdopcion':
+        adopcionesTab.value = 1;
+        indexMenu.value = 2;
+
+        break;
+    }
   }
 
   @override
@@ -82,7 +112,7 @@ class _NotificacionScreenState extends State<NotificacionScreen> {
                     item.isRead
                         ? Icons.notifications_none
                         : Icons.notifications_active,
-                    color: item.isRead ? Colors.grey : Colors.orange,
+                    color: item.isRead ? Colors.grey : AppColors.secondary,
                   ),
                   notificationTitle: item.notifications.title,
                   notificationBody: item.notifications.body,

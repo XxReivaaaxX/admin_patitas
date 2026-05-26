@@ -114,6 +114,11 @@ class _RegisterUserState extends State<RegisterUser> {
           ),
         ),
       );
+      /*
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => VerifyEmailScreen()),
+      );*/
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error al registrar usuario')),

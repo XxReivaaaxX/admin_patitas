@@ -65,6 +65,14 @@ class UserController {
         log('Usuario registrado: ${user.uid}');
         return true;
       }
+      /*
+      if (user != null) {
+        // Enviar correo de verificación
+        await user.sendEmailVerification();
+       
+        log('Correo enviado');
+        return true;
+      }*/
 
       return false;
     } on FirebaseAuthException catch (e) {

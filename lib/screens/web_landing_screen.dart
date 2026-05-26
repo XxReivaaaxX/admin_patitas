@@ -1,4 +1,5 @@
 import 'package:admin_patitas/utils/colors.dart';
+import 'package:admin_patitas/widgets/image_carousel.dart';
 import 'package:flutter/material.dart';
 
 class WebLandingScreen extends StatelessWidget {
@@ -62,7 +63,7 @@ class WebLandingScreen extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
-                  color: AppColors.complementary,
+                  color: AppColors.primary,
                 ),
               ),
             ],
@@ -100,7 +101,7 @@ class WebLandingScreen extends StatelessWidget {
                     elevation: 0,
                   ),
                   child: const Text(
-                    'Soy Refugio / Iniciar Sesión',
+                    'Iniciar Sesión',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -144,7 +145,7 @@ class WebLandingScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 15),
                           ),
                           child: const Text(
-                            'Soy Refugio / Iniciar Sesión',
+                            'Iniciar Sesión',
                             style: TextStyle(fontSize: 18),
                           ),
                         ),
@@ -172,12 +173,12 @@ class WebLandingScreen extends StatelessWidget {
               children: [
                 Expanded(child: _buildHeroContent(context)),
                 const SizedBox(width: 60),
-                Expanded(child: _buildHeroImage()),
+                Expanded(child: ImageCarousel()),
               ],
             )
           : Column(
               children: [
-                _buildHeroImage(),
+                ImageCarousel(),
                 const SizedBox(height: 40),
                 _buildHeroContent(context, centered: true),
               ],
@@ -191,6 +192,7 @@ class WebLandingScreen extends StatelessWidget {
           ? CrossAxisAlignment.center
           : CrossAxisAlignment.start,
       children: [
+        /*
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
           decoration: BoxDecoration(
@@ -205,7 +207,7 @@ class WebLandingScreen extends StatelessWidget {
               fontSize: 16,
             ),
           ),
-        ),
+        ),*/
         const SizedBox(height: 20),
         Text(
           'Transformando la manera en que los refugios y adoptantes se conectan.',
@@ -234,10 +236,10 @@ class WebLandingScreen extends StatelessWidget {
           alignment: centered ? WrapAlignment.center : WrapAlignment.start,
           children: [
             ElevatedButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/adoptions'),
-              icon: const Icon(Icons.favorite),
+              onPressed: () => Navigator.pushNamed(context, '/login'),
+              icon: const Icon(Icons.business),
               label: const Text(
-                'Quiero Adoptar',
+                'Gestiona tu Refugio',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               style: ElevatedButton.styleFrom(
@@ -255,18 +257,15 @@ class WebLandingScreen extends StatelessWidget {
               ),
             ),
             OutlinedButton.icon(
-              onPressed: () => Navigator.pushNamed(context, '/login'),
-              icon: const Icon(Icons.pets),
+              onPressed: () => Navigator.pushNamed(context, '/adoptions'),
+              icon: const Icon(Icons.favorite),
               label: const Text(
-                'Acceso a Refugios',
+                'Quiero Adoptar',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.complementary,
-                side: const BorderSide(
-                  color: AppColors.complementary,
-                  width: 2,
-                ),
+                foregroundColor: AppColors.secondary,
+                side: const BorderSide(color: AppColors.secondary, width: 2),
                 padding: const EdgeInsets.symmetric(
                   horizontal: 35,
                   vertical: 25,
@@ -477,7 +476,7 @@ class WebLandingScreen extends StatelessWidget {
                 'FLOW',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: AppColors.complementary,
+                  color: AppColors.primary,
                   fontSize: 18,
                 ),
               ),

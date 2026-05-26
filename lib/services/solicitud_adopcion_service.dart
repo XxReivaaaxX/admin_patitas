@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:developer';
+import 'package:admin_patitas/services/notification_service.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:admin_patitas/services/email_service.dart';
 
@@ -84,6 +86,15 @@ class SolicitudAdopcionService {
         'fechaSolicitud': ServerValue.timestamp,
         'estado': 'pendiente',
       });
+      unawaited(
+        NotificationsService().sendNotificationToCollaborators(
+          refugioId: refugioId,
+          title: "Nueva Solicitud de adopcion para $animalNombre",
+          body: "",
+          type: 'solicitudAdopcion',
+          targetId: ref.key!,
+        ),
+      );
 
       log(
         'Solicitud enviada correctamente para $animalNombre',

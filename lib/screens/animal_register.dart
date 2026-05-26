@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:admin_patitas/services/notification_service.dart';
 import 'package:admin_patitas/utils/colors.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show isSkiaWeb, kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -166,13 +166,6 @@ class _AnimalRegisterState extends State<AnimalRegister> {
 
       await AnimalsService().registerAnimals(widget.idRefugio, animal);
       // Ejecutar en segundo plano sin `await` para que la pantalla no se congele
-      unawaited(
-        NotificationsService().sendNotificationToCollaborators(
-          refugioId: widget.idRefugio,
-          title: "Nuevo animal en el refugio",
-          body: "",
-        ),
-      );
 
       if (mounted) {
         _showSnack('Animal registrado exitosamente');
@@ -301,29 +294,31 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                 onPressed: _isLoading
                     ? null
                     : () {
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (context) => Wrap(
-                            children: [
-                              ListTile(
-                                leading: const Icon(Icons.camera_alt),
-                                title: const Text('Cámara'),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  seleccionarImagen(desdeCamara: true);
-                                },
-                              ),
-                              ListTile(
-                                leading: const Icon(Icons.photo),
-                                title: const Text('Galería'),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  seleccionarImagen(desdeCamara: false);
-                                },
-                              ),
-                            ],
-                          ),
-                        );
+                        !kIsWeb
+                            ? showModalBottomSheet(
+                                context: context,
+                                builder: (context) => Wrap(
+                                  children: [
+                                    ListTile(
+                                      leading: const Icon(Icons.camera_alt),
+                                      title: const Text('Cámara'),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        seleccionarImagen(desdeCamara: true);
+                                      },
+                                    ),
+                                    ListTile(
+                                      leading: const Icon(Icons.photo),
+                                      title: const Text('Galería'),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        seleccionarImagen(desdeCamara: false);
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : seleccionarImagen(desdeCamara: false);
                       },
               ),
 

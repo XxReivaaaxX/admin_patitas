@@ -8,32 +8,46 @@ import 'package:admin_patitas/screens/perfil_screen.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-class RoutesMenu extends StatelessWidget {
-  final int index;
-  const RoutesMenu({super.key, required this.index});
+ValueNotifier<int> indexMenu = ValueNotifier<int>(0);
+ValueNotifier<int> adopcionesTab = ValueNotifier<int>(0);
 
+class RoutesMenu extends StatefulWidget {
+  const RoutesMenu({super.key});
+
+  @override
+  State<RoutesMenu> createState() => _RoutesMenuState();
+}
+
+class _RoutesMenuState extends State<RoutesMenu> {
   bool _isWeb(BuildContext context) {
     return kIsWeb || MediaQuery.of(context).size.width > 600;
   }
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> mobilePages = [
-      const InicioScreen(),
-      const AnimalScreen(),
-      const AdopcionesMenu(),
-      const NotificacionScreen(),
-      const PerfilScreen(),
-    ];
+    return ValueListenableBuilder<int>(
+      valueListenable: indexMenu,
+      builder: (context, currentIndex, _) {
+        List<Widget> mobilePages = [
+          const InicioScreen(),
+          const AnimalScreen(),
+          AdopcionesMenu(initialTab: adopcionesTab.value),
+          const NotificacionScreen(),
+          const PerfilScreen(),
+        ];
 
-    List<Widget> webPages = [
-      const InicioScreen(),
-      const AnimalScreen(),
-      const AdopcionesMenu(),
-      const NotificacionScreen(),
-      const PerfilScreen(),
-    ];
+        List<Widget> webPages = [
+          const InicioScreen(),
+          const AnimalScreen(),
+          AdopcionesMenu(initialTab: adopcionesTab.value),
+          const NotificacionScreen(),
+          const PerfilScreen(),
+        ];
 
-    return _isWeb(context) ? webPages[index] : mobilePages[index];
+        return _isWeb(context)
+            ? webPages[currentIndex]
+            : mobilePages[currentIndex];
+      },
+    );
   }
 }
