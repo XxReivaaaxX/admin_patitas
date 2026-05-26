@@ -8,6 +8,7 @@ import 'package:admin_patitas/utils/preferences_service.dart';
 import 'package:admin_patitas/utils/state_tab.dart';
 import 'package:admin_patitas/widgets/estado_badge.dart';
 import 'package:admin_patitas/services/solicitud_adopcion_service.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 
 class AdopcionesMenu extends StatefulWidget {
@@ -47,6 +48,18 @@ class _AdopcionesMenuState extends State<AdopcionesMenu> {
   Future<void> _loadSolicitudes() async {
     setState(() => _isLoading = true);
     try {
+      if (id_refugio != null) {
+        final refSnapshot = await FirebaseDatabase.instance
+            .ref()
+            .child('refugios')
+            .child(id_refugio!)
+            .child('nombre')
+            .get();
+        if (refSnapshot.exists && refSnapshot.value != null) {
+          refugioNombre = refSnapshot.value.toString();
+        }
+      }
+
       final solicitudes = await _service.getSolicitudesByRefugio(id_refugio!);
 
       // Agrupar por animal

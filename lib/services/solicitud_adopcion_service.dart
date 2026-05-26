@@ -130,11 +130,30 @@ class SolicitudAdopcionService {
           .update({'estado': estado, 'fechaRespuesta': ServerValue.timestamp});
 
       if (estado == 'aprobado') {
+        String finalRefugioNombre = refugioNombre ?? 'el refugio';
+        if (finalRefugioNombre == 'Refugio' ||
+            finalRefugioNombre == 'el refugio' ||
+            finalRefugioNombre.trim().isEmpty) {
+          try {
+            final snapshot = await _database
+                .child('refugios')
+                .child(refugioId)
+                .child('nombre')
+                .get();
+            if (snapshot.exists && snapshot.value != null) {
+              finalRefugioNombre = snapshot.value.toString();
+            }
+          } catch (e) {
+            log('Error al obtener el nombre del refugio de la DB: $e',
+                name: 'SolicitudService');
+          }
+        }
+
         await _enviarCorreoAprobacion(
           correoAdoptante: correo,
           nombreAdoptante: nombreAdoptante ?? 'Adoptante',
           animalNombre: animalNombre ?? 'la mascota',
-          refugioNombre: refugioNombre ?? 'el refugio',
+          refugioNombre: finalRefugioNombre,
           refugioTelefono: refugioTelefono,
           refugioEmail: refugioEmail,
         );
