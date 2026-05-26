@@ -432,6 +432,26 @@ class _AnimalAdminState extends State<AnimalAdmin> {
           future: _futureAnimals,
           builder: (context, snapshot) {
             if (snapshot.hasData) {
+              if (snapshot.data!.isEmpty) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.pets, size: 80, color: Colors.grey[400]),
+                      const SizedBox(height: 16),
+                      Text(
+                        'No hay animales registrados',
+                        style: TextStyle(fontSize: 16, color: Colors.grey[600]),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Selecciona el símbolo + para agregar',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[400]),
+                      ),
+                    ],
+                  ),
+                );
+              }
               return LayoutBuilder(
                 builder: (context, constraints) {
                   if (constraints.maxWidth < 700) {
@@ -593,14 +613,19 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                           estado: snapshot.data![index].estadoSalud,
                           estadoAdopcion: snapshot.data![index].estadoAdopcion,
                           imageUrl: snapshot.data![index].imageUrl,
-                          onTap: () {
-                            Navigator.push(
+                          onTap: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (context) =>
                                     AnimalView(animal: snapshot.data![index]),
                               ),
                             );
+                            setState(() {
+                              _futureAnimals = AnimalsService().getAnimals(
+                                widget.refugio!,
+                              );
+                            });
                           },
                           onpressedEliminar: () async {
                             final dialog = await showDialog<String>(
@@ -868,13 +893,11 @@ class _AnimalAdminState extends State<AnimalAdmin> {
                           padding: const EdgeInsets.symmetric(vertical: 14),
                         ),
                         onPressed: () {
-                          // Persistir selección y relanzar la consulta al servicio
                           _filtroEspecie = tempEspecie;
-                          //_filtroEstadoSalud = tempSalud;
                           _filtroEstadoAdopcion = tempAdopcion;
                           _filtroGenero = tempGenero;
                           Navigator.pop(ctx);
-                          _reloadAnimals(); // <- llama al servicio
+                          _reloadAnimals();
                         },
                         child: const Text(
                           'Aplicar',

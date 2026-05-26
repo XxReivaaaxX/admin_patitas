@@ -6,6 +6,7 @@ import 'package:admin_patitas/models/vacuna.dart';
 import 'package:admin_patitas/screens/animal_update.dart';
 import 'package:admin_patitas/screens/historial_register.dart';
 import 'package:admin_patitas/screens/vacuna_register.dart';
+import 'package:admin_patitas/services/historial_medico_service.dart';
 import 'package:admin_patitas/services/vacuna_service.dart';
 import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/card_info_animal.dart';
@@ -18,11 +19,17 @@ class AnimalViewWeb extends StatelessWidget {
   final Animal animal;
   final Map<String, String> infoAnimal;
   final String? idRefugio;
+  final String idHistorial;
   final Future<HistorialMedico>? historialMedico;
   final List<Vacuna> vacunas;
   final bool loadingVacunas;
   final BoxConstraints constraints;
   final Future<void> Function() loadVacunas;
+  final void Function(
+    String newIdHistorial,
+    Future<HistorialMedico> futureHistorial,
+  )
+  onHistorialCreated;
   final void Function(Animal updatedAnimal) onAnimalUpdated;
 
   const AnimalViewWeb({
@@ -36,6 +43,8 @@ class AnimalViewWeb extends StatelessWidget {
     required this.constraints,
     required this.loadVacunas,
     required this.onAnimalUpdated,
+    required this.onHistorialCreated,
+    required this.idHistorial,
   });
 
   @override
@@ -197,35 +206,48 @@ class AnimalViewWeb extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 20),
               children: [
                 // Historial médico
-                if (animal.historialMedicoId == '') ...[
+                if (idHistorial == '') ...[
                   Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Container(
-                        margin: const EdgeInsets.all(16.0),
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.add),
-                          label: const Text('Crear historial medico'),
-                          onPressed: () async {
-                            await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => HistorialRegister(
-                                  nombre: animal.nombre,
-                                  id_animal: animal.id,
-                                  id_refugio: idRefugio,
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.add),
+                        label: const Text('Crear historial médico'),
+                        onPressed: () async {
+                          final historialRes = await showDialog(
+                            context: context,
+                            barrierColor: AppColors.primary.withOpacity(0.3),
+                            builder: (context) => Center(
+                              child: SizedBox(
+                                width: 850,
+                                height: 600,
+                                child: Card(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  elevation: 10,
+                                  child: HistorialRegister(
+                                    nombre: animal.nombre,
+                                    id_animal: animal.id,
+                                    id_refugio: idRefugio,
+                                    isMobile: false,
+                                  ),
                                 ),
                               ),
+                            ),
+                          );
+
+                          if (historialRes != null && historialRes != '') {
+                            onHistorialCreated(
+                              historialRes,
+                              HistorialMedicoService().getHistorialMedico(
+                                historialRes,
+                              ),
                             );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            foregroundColor: Colors.white,
-                          ),
-                        ),
+                          }
+                        },
                       ),
-                      const Text(
-                        'No hay historial medico selecciona + para crear uno',
-                      ),
+                      const Text('No hay historial médico.'),
                     ],
                   ),
                 ] else ...[

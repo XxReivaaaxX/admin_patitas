@@ -59,7 +59,6 @@ class _AdopcionesMenuState extends State<AdopcionesMenu> {
           refugioNombre = refSnapshot.value.toString();
         }
       }
-
       final solicitudes = await _service.getSolicitudesByRefugio(id_refugio!);
 
       // Agrupar por animal
@@ -382,10 +381,7 @@ class _DetalleSolicitudDialog extends StatelessWidget {
                         ),
                         Text(
                           'Solicitud para: $animalNombre',
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 13,
-                          ),
+                          style: const TextStyle(fontSize: 13),
                         ),
                       ],
                     ),

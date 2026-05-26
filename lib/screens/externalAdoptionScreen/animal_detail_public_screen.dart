@@ -11,146 +11,153 @@ class AnimalDetailPublicScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final animal = group.animal;
+    final double sizeWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: AppColors.backgroundLight,
-      body: CustomScrollView(
-        slivers: [
-          // ── AppBar con foto hero ──────────────────────────────────────
-          SliverAppBar(
-            expandedHeight: 320,
-            pinned: true,
-            backgroundColor: AppColors.primary,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.white),
-              onPressed: () => Navigator.pop(context),
+
+      body: Padding(
+        padding: sizeWidth > 1000
+            ? const EdgeInsets.symmetric(horizontal: 240)
+            : const EdgeInsets.symmetric(horizontal: 0),
+        child: CustomScrollView(
+          slivers: [
+            // ── AppBar con foto hero ──────────────────────────────────────
+            SliverAppBar(
+              expandedHeight: 320,
+              pinned: true,
+              backgroundColor: AppColors.primary,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back, color: Colors.white),
+                onPressed: () => Navigator.pop(context),
+              ),
+              flexibleSpace: FlexibleSpaceBar(
+                background: Hero(
+                  tag: 'animal_img_${animal.id}',
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      animal.imageUrl.isNotEmpty
+                          ? Image.network(
+                              animal.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                            )
+                          : _buildPlaceholder(),
+                      // Gradiente inferior para legibilidad
+                      Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withValues(alpha: 0.55),
+                            ],
+                            stops: const [0.5, 1.0],
+                          ),
+                        ),
+                      ),
+                      // Badge de especie
+                      Positioned(
+                        top: 16,
+                        right: 16,
+                        child: _Badge(label: animal.especie),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: Hero(
-                tag: 'animal_img_${animal.id}',
-                child: Stack(
-                  fit: StackFit.expand,
+
+            // ── Contenido ────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    animal.imageUrl.isNotEmpty
-                        ? Image.network(
-                            animal.imageUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _buildPlaceholder(),
-                          )
-                        : _buildPlaceholder(),
-                    // Gradiente inferior para legibilidad
-                    Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withValues(alpha: 0.55),
-                          ],
-                          stops: const [0.5, 1.0],
+                    // Nombre + género
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            animal.nombre,
+                            style: const TextStyle(
+                              fontSize: 30,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.textDark,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        _GenderChip(genero: animal.genero),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+
+                    // Refugio
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.home_work_outlined,
+                          size: 16,
+                          color: AppColors.secondary,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            group.refugioNombre,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: AppColors.secondary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Tarjetas de info
+                    _InfoGrid(animal: animal),
+
+                    const SizedBox(height: 32),
+
+                    // Botón Adóptame
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () => _openAdoptionForm(context),
+                        icon: const Icon(Icons.favorite, color: Colors.white),
+                        label: const Text(
+                          '¡Adóptame!',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 4,
+                          shadowColor: AppColors.primary.withValues(alpha: 0.5),
                         ),
                       ),
                     ),
-                    // Badge de especie
-                    Positioned(
-                      top: 16,
-                      right: 16,
-                      child: _Badge(label: animal.especie),
-                    ),
+                    const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
-          ),
-
-          // ── Contenido ────────────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Nombre + género
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          animal.nombre,
-                          style: const TextStyle(
-                            fontSize: 30,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.textDark,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      _GenderChip(genero: animal.genero),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-
-                  // Refugio
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.home_work_outlined,
-                        size: 16,
-                        color: AppColors.secondary,
-                      ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          group.refugioNombre,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.secondary,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Tarjetas de info
-                  _InfoGrid(animal: animal),
-
-                  const SizedBox(height: 32),
-
-                  // Botón Adóptame
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton.icon(
-                      onPressed: () => _openAdoptionForm(context),
-                      icon: const Icon(Icons.favorite, color: Colors.white),
-                      label: const Text(
-                        '¡Adóptame!',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 4,
-                        shadowColor: AppColors.primary.withValues(alpha: 0.5),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                ],
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

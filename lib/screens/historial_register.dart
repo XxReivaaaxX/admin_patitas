@@ -1,5 +1,6 @@
 import 'package:admin_patitas/models/historial_medico.dart';
 import 'package:admin_patitas/services/historial_medico_service.dart';
+import 'package:admin_patitas/utils/colors.dart';
 import 'package:admin_patitas/widgets/botonlogin.dart';
 import 'package:admin_patitas/widgets/formulario.dart';
 import 'package:admin_patitas/widgets/item_form_selection.dart';
@@ -8,11 +9,13 @@ import 'package:flutter/material.dart';
 
 class HistorialRegister extends StatefulWidget {
   final String? id_animal, id_refugio, nombre;
+  final bool isMobile;
   const HistorialRegister({
     super.key,
     required this.nombre,
     required this.id_animal,
     required this.id_refugio,
+    required this.isMobile,
   });
 
   @override
@@ -28,7 +31,7 @@ class _HistorialRegisterState extends State<HistorialRegister> {
   String? _castrado;
   DateTime? _fechaRevision;
 
-  final Color colorPrincipal = const Color.fromRGBO(55, 148, 194, 1);
+  final Color colorPrincipal = AppColors.primary;
 
   void registerHistorial() async {
     if (!_formKey.currentState!.validate()) return;
@@ -87,6 +90,7 @@ class _HistorialRegisterState extends State<HistorialRegister> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDesktop = !widget.isMobile;
     return Scaffold(
       appBar: AppBar(
         backgroundColor: colorPrincipal,
@@ -113,66 +117,111 @@ class _HistorialRegisterState extends State<HistorialRegister> {
               ),
               const SizedBox(height: 30),
 
-              // Peso
-              Formulario(
-                controller: _peso,
-                text: 'Peso (kg)',
-                textOcul: false,
-                colorBorder: Colors.black,
-                colorBorderFocus: colorPrincipal,
-                colorTextForm: Colors.grey,
-                colorText: Colors.black,
-                sizeM: 30,
-                sizeP: 10,
-                floatingLabel: true,
+              // ── Peso + Castrado: siempre en fila ──────────────────────────
+              Row(
+                children: [
+                  Expanded(
+                    child: Formulario(
+                      controller: _peso,
+                      text: 'Peso (kg)',
+                      textOcul: false,
+                      colorBorder: Colors.black,
+                      colorBorderFocus: colorPrincipal,
+                      colorTextForm: Colors.grey,
+                      colorText: Colors.black,
+                      sizeM: 5,
+                      sizeP: 10,
+                      floatingLabel: true,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ItemFormSelection(
+                      initialValue: _castrado,
+                      onChanged: (value) => _castrado = value,
+                      validator: (value) =>
+                          value == null ? 'Seleccione una opción' : null,
+                      items: ['Sí', 'No'],
+                      text: 'Castrado',
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 20),
 
-              // Castrado
-              ItemFormSelection(
-                onChanged: (value) => _castrado = value,
-                validator: (value) =>
-                    value == null ? 'Seleccione una opción' : null,
-                items: ['Sí', 'No'],
-                text: 'Castrado',
-              ),
+              // ── Enfermedades + Tratamiento: fila en desktop, columna en mobile ──
+              isDesktop
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Formulario(
+                            controller: _enfermedades,
+                            text: 'Enfermedades',
+                            textOcul: false,
+                            colorBorder: Colors.black,
+                            colorBorderFocus: colorPrincipal,
+                            colorTextForm: Colors.grey,
+                            colorText: Colors.black,
+                            sizeM: 30,
+                            sizeP: 10,
+                            floatingLabel: true,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Formulario(
+                            controller: _tratamiento,
+                            text: 'Tratamiento',
+                            textOcul: false,
+                            colorBorder: Colors.black,
+                            colorBorderFocus: colorPrincipal,
+                            colorTextForm: Colors.grey,
+                            colorText: Colors.black,
+                            sizeM: 30,
+                            sizeP: 10,
+                            floatingLabel: true,
+                          ),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        Formulario(
+                          controller: _enfermedades,
+                          text: 'Enfermedades',
+                          textOcul: false,
+                          colorBorder: Colors.black,
+                          colorBorderFocus: colorPrincipal,
+                          colorTextForm: Colors.grey,
+                          colorText: Colors.black,
+                          sizeM: 30,
+                          sizeP: 10,
+                          floatingLabel: true,
+                        ),
+                        const SizedBox(height: 20),
+                        Formulario(
+                          controller: _tratamiento,
+                          text: 'Tratamiento',
+                          textOcul: false,
+                          colorBorder: Colors.black,
+                          colorBorderFocus: colorPrincipal,
+                          colorTextForm: Colors.grey,
+                          colorText: Colors.black,
+                          sizeM: 30,
+                          sizeP: 10,
+                          floatingLabel: true,
+                        ),
+                      ],
+                    ),
               const SizedBox(height: 20),
 
-              // Enfermedades
-              Formulario(
-                controller: _enfermedades,
-                text: 'Enfermedades',
-                textOcul: false,
-                colorBorder: Colors.black,
-                colorBorderFocus: colorPrincipal,
-                colorTextForm: Colors.grey,
-                colorText: Colors.black,
-                sizeM: 30,
-                sizeP: 10,
-                floatingLabel: true,
-              ),
-              const SizedBox(height: 20),
-
-              // Tratamiento
-              Formulario(
-                controller: _tratamiento,
-                text: 'Tratamiento',
-                textOcul: false,
-                colorBorder: Colors.black,
-                colorBorderFocus: colorPrincipal,
-                colorTextForm: Colors.grey,
-                colorText: Colors.black,
-                sizeM: 30,
-                sizeP: 10,
-                floatingLabel: true,
-              ),
-              const SizedBox(height: 20),
-
-              // Fecha de revisión
+              // ── Fecha de revisión ─────────────────────────────────────────
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                   foregroundColor: Colors.black,
+                  minimumSize: const Size(double.infinity, 60),
                   padding: const EdgeInsets.symmetric(
                     horizontal: 20,
                     vertical: 20,
@@ -185,7 +234,7 @@ class _HistorialRegisterState extends State<HistorialRegister> {
                 onPressed: () async {
                   final pickedDate = await showDatePicker(
                     context: context,
-                    initialDate: DateTime.now(),
+                    initialDate: _fechaRevision ?? DateTime.now(),
                     firstDate: DateTime(2020),
                     lastDate: DateTime.now(),
                   );

@@ -219,6 +219,7 @@ class AnimalViewMobile extends StatelessWidget {
                                 nombre: animal.nombre,
                                 id_animal: animal.id,
                                 id_refugio: idRefugio,
+                                isMobile: true,
                               ),
                             ),
                           );

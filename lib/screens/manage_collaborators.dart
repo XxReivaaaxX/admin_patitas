@@ -210,7 +210,7 @@ class _ManageCollaboratorsState extends State<ManageCollaborators> {
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Icon(Icons.add),
+                            child: const Icon(Icons.add, color: Colors.white),
                           ),
                         ],
                       ),

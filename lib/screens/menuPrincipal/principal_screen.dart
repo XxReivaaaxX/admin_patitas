@@ -330,6 +330,7 @@ class _PrincipalScreenState extends State<PrincipalScreen> {
           initialIndex: itemIndex,
           child: Scaffold(
             appBar: AppBar(
+              automaticallyImplyLeading: false,
               actionsPadding: EdgeInsets.symmetric(horizontal: 20),
               backgroundColor: AppColors.backgroundLight,
               title: LogoBar(

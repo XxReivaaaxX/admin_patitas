@@ -39,6 +39,10 @@ class _AnimalViewState extends State<AnimalView> {
     idRefugio = PreferencesController.preferences.getString('refugio');
     animal = widget.animal;
     id_historial = widget.animal.historialMedicoId;
+    log('🔵 initState llamado');
+    log(
+      '🔵 widget.animal.historialMedicoId: ${widget.animal.historialMedicoId}',
+    );
 
     if (id_historial != '') {
       historialMedico = HistorialMedicoService().getHistorialMedico(
@@ -108,6 +112,7 @@ class _AnimalViewState extends State<AnimalView> {
     Future<HistorialMedico> futureHistorial,
   ) {
     if (!mounted) return;
+
     setState(() {
       id_historial = newIdHistorial;
       historialMedico = futureHistorial;
@@ -164,10 +169,12 @@ class _AnimalViewState extends State<AnimalView> {
               idRefugio: idRefugio,
               historialMedico: historialMedico,
               vacunas: vacunas,
+              idHistorial: id_historial,
               loadingVacunas: loadingVacunas,
               constraints: constraints,
               loadVacunas: loadVacunas,
               onAnimalUpdated: _onAnimalUpdated,
+              onHistorialCreated: _onHistorialCreated,
             );
           }
         },

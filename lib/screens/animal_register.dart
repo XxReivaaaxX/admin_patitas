@@ -399,6 +399,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                       ),
                     ),
                     const SizedBox(width: 10),
+                    /*
                     OutlinedButton.icon(
                       onPressed: _isLoading ? null : descargarImagen,
                       icon: const Icon(Icons.download, color: Colors.green),
@@ -407,10 +408,11 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                         foregroundColor: Colors.green,
                         side: const BorderSide(color: Colors.green),
                       ),
-                    ),
+                    ),*/
                   ],
                 ),
-                const SizedBox(height: 10),
+                //const SizedBox(height: 10),
+                /*
 
                 // Botón IA habilitado para Web y App
                 ElevatedButton.icon(
@@ -439,7 +441,7 @@ class _AnimalRegisterState extends State<AnimalRegister> {
                         ),
                       ),
                     ),
-                  ),
+                  ),*/
               ],
               const SizedBox(height: 16),
               ElevatedButton(
